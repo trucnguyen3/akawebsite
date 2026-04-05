@@ -503,6 +503,40 @@
 
         // Chạy hàm ngay khi load xong
         window.addEventListener('load', createFavicon);
+
+        function OptanonWrapper() {
+            // 1. Lấy danh sách các nhóm cookie đã được đồng ý
+            // Ví dụ: ",C0001,C0002,C0004,"
+            var consentGroups = window.OnetrustActiveGroups;
+
+            // 2. Kiểm tra các nhóm cụ thể (Ví dụ C0004 là Targeting/Marketing)
+            var isMarketingAccepted = consentGroups.includes('C0004');
+            var isPerformanceAccepted = consentGroups.includes('C0002');
+
+            // 3. Gửi dữ liệu sang Netcore Smartech
+            if (typeof smartech !== 'undefined') {
+                smartech('contact', '1', {
+                    'pk^email': 'truc.nguyen@akadigital.vn', // Định danh người dùng (nếu có)
+                    'PAYLOAD': {
+                        'Consent_Marketing': isMarketingAccepted ? 'Yes' : 'No',
+                        'Consent_Performance': isPerformanceAccepted ? 'Yes' : 'No',
+                        'OneTrust_Groups': consentGroups
+                    }
+                });
+                console.log("Đã cập nhật Consent sang Netcore");
+            }
+        }
+
+        window.addEventListener('OneTrustGroupsUpdated', function (event) {
+            var updatedGroups = event.detail; // Chứa danh sách nhóm mới nhất
+
+            if (typeof smartech !== 'undefined') {
+                smartech('dispatch', 'Consent_Update', {
+                    'groups': updatedGroups,
+                    'timestamp': new Date().toISOString()
+                });
+            }
+        });
     </script>
 
     <div id="auth-modal"
