@@ -86,6 +86,10 @@
                 opacity: 1;
             }
         }
+
+        .auth-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
     </style>
 
     <script src='//cdnt.netcoresmartech.com/smartechclient.js'></script>
@@ -621,6 +625,31 @@
 
         // Chạy kiểm tra UI ngay khi load trang
         document.addEventListener('DOMContentLoaded', renderUI);
+
+        function submitLogin() {
+            const email = document.getElementById('login-email').value;
+            if (!email) return alert("Vui lòng nhập email");
+
+            // Giả lập dữ liệu trả về từ server
+            const mockUser = {
+                email: email,
+                mobile: "Khách hàng thân thiết"
+            };
+            handleAuthSuccess(mockUser);
+        }
+
+        function submitSignup() {
+            const email = document.getElementById('signup-email').value;
+            const mobile = document.getElementById('signup-mobile').value;
+
+            if (!email || !mobile) return alert("Vui lòng điền đủ thông tin");
+
+            const mockUser = {
+                email: email,
+                mobile: mobile
+            };
+            handleAuthSuccess(mockUser);
+        }
     </script>
 
     <div id="auth-modal"
@@ -654,90 +683,47 @@
             </div>
 
             <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-
                 <div id="login-form">
-                    <h3 class="text-2xl font-black text-slate-800 mb-2">Đăng nhập</h3>
-                    <p class="text-slate-500 text-sm mb-8">Chưa có tài khoản? <a href="javascript:void(0)"
-                            onclick="switchForm('signup')" class="text-blue-600 font-bold hover:underline">Đăng ký
-                            ngay</a>
-                    </p>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-2">Đăng nhập</h3>
+                    <p class="text-sm text-slate-500 mb-8">Nhập thông tin để tiếp tục</p>
 
-                    <form class="space-y-5">
+                    <div class="space-y-4">
                         <div>
-                            <label
-                                class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 ml-1">Email</label>
-                            <div
-                                class="flex items-center bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus-within:border-blue-500 focus-within:bg-white transition">
-                                <i class="far fa-envelope text-slate-400 mr-3"></i>
-                                <input type="email" placeholder="example@mail.com"
-                                    class="bg-transparent w-full outline-none text-sm font-medium">
-                            </div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Email</label>
+                            <input type="email" id="login-email" placeholder="example@gmail.com"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
                         </div>
-                        <div>
-                            <label
-                                class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 ml-1">Mật
-                                khẩu</label>
-                            <div
-                                class="flex items-center bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus-within:border-blue-500 focus-within:bg-white transition">
-                                <i class="fas fa-lock text-slate-400 mr-3"></i>
-                                <input type="password" placeholder="••••••••"
-                                    class="bg-transparent w-full outline-none text-sm font-medium">
-                            </div>
-                            <div class="text-right mt-2">
-                                <a href="#" class="text-xs font-bold text-slate-400 hover:text-blue-600">Quên mật
-                                    khẩu?</a>
-                            </div>
-                        </div>
-                        <button type="submit"
-                            class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all transform active:scale-[0.98]">
-                            Đăng nhập
+                        <button onclick="submitLogin()"
+                            class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition">
+                            Đăng nhập ngay
                         </button>
-                    </form>
+                    </div>
+                    <p class="text-center mt-8 text-sm text-slate-500">Chưa có tài khoản? <a
+                            href="javascript:toggleAuth('signup')" class="text-blue-600 font-bold">Đăng ký</a></p>
                 </div>
 
                 <div id="signup-form" class="hidden">
-                    <h3 class="text-2xl font-black text-slate-800 mb-2">Tạo tài khoản</h3>
-                    <p class="text-slate-500 text-sm mb-8">Đã có tài khoản? <a href="javascript:void(0)"
-                            onclick="switchForm('login')" class="text-blue-600 font-bold hover:underline">Đăng nhập</a>
-                    </p>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-2">Đăng ký thành viên</h3>
+                    <p class="text-sm text-slate-500 mb-8">Bắt đầu hành trình đẳng cấp cùng SkyPremium</p>
 
-                    <form class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Họ
-                                    tên</label>
-                                <input type="text" placeholder="Nguyen Van A"
-                                    class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition text-sm font-medium">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Số điện
-                                    thoại</label>
-                                <input type="text" placeholder="090..."
-                                    class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition text-sm font-medium">
-                            </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Email</label>
+                            <input type="email" id="signup-email" placeholder="example@gmail.com"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Email</label>
-                            <input type="email" placeholder="example@mail.com"
-                                class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition text-sm font-medium">
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Số điện thoại</label>
+                            <input type="tel" id="signup-mobile" placeholder="090 123 4567"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1 ml-1">Mật
-                                khẩu</label>
-                            <input type="password" placeholder="Tối thiểu 8 ký tự"
-                                class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition text-sm font-medium">
-                        </div>
-                        <div class="flex items-start gap-2 py-2">
-                            <input type="checkbox" class="mt-1 rounded text-blue-600">
-                            <span class="text-[10px] text-slate-500 leading-tight italic">
-                                Tôi đồng ý với Điều khoản dịch vụ và Chính sách bảo mật dữ liệu của SkyPremium.
-                            </span>
-                        </div>
-                        <button type="submit"
-                            class="w-full py-4 bg-orange-500 text-white rounded-xl font-bold shadow-lg shadow-orange-200 hover:bg-orange-600 transition-all">
-                            Đăng ký ngay
+                        <button onclick="submitSignup()"
+                            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg shadow-slate-200 hover:bg-blue-600 transition">
+                            Tạo tài khoản
                         </button>
-                    </form>
+                    </div>
+                    <p class="text-center mt-8 text-sm text-slate-500">Đã có tài khoản? <a
+                            href="javascript:toggleAuth('login')" class="text-blue-600 font-bold">Đăng nhập</a></p>
                 </div>
             </div>
         </div>
