@@ -506,6 +506,7 @@
         // Chạy hàm ngay khi load xong
         window.addEventListener('load', createFavicon);
 
+        /*
         function OptanonWrapper() {
             // 1. Lấy danh sách các nhóm cookie đã được đồng ý
             // Ví dụ: ",C0001,C0002,C0004,"
@@ -530,8 +531,30 @@
                 console.log("Update to Netcore profile");
             }
         }
+        */
 
         window.addEventListener('OneTrustGroupsUpdated', function (event) {
+            var consentGroups = window.OnetrustActiveGroups;
+
+            // 2. Kiểm tra các nhóm cụ thể (Ví dụ C0004 là Targeting/Marketing)
+            var isMarketingAccepted = consentGroups.includes('C0004');
+            var isPerformanceAccepted = consentGroups.includes('C0002');
+
+            console.log("OneTrust load successfully");
+
+            // 3. Gửi dữ liệu sang Netcore Smartech
+            if (typeof smartech !== 'undefined') {
+                smartech('contact', '1', {
+                    'pk^email': 'truc.nguyen@akadigital.vn', // Định danh người dùng (nếu có)
+                    'PAYLOAD': {
+                        'Consent_Marketing': isMarketingAccepted ? 'Yes' : 'No',
+                        'Consent_Performance': isPerformanceAccepted ? 'Yes' : 'No',
+                        'OneTrust_Groups': consentGroups
+                    }
+                });
+                console.log("Update to Netcore profile");
+            }
+
             var updatedGroups = event.detail; // Chứa danh sách nhóm mới nhất
 
             if (typeof smartech !== 'undefined') {
