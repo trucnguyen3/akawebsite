@@ -113,14 +113,18 @@
                 <a href="#" class="hover:text-blue-600 transition">Hỗ trợ</a>
             </nav>
             <div class="flex items-center gap-4">
-                <button onclick="toggleAuth('login')"
-                    class="px-5 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-full transition">
-                    Đăng nhập
-                </button>
-                <button onclick="toggleAuth('signup')"
-                    class="px-5 py-2 text-sm font-semibold bg-blue-600 text-white rounded-full shadow-lg shadow-blue-200 hover:bg-blue-700 transition">
-                    Đăng ký
-                </button>
+                <div id="auth-buttons" class="flex items-center gap-2">
+                    <button onclick="toggleAuth('login')"
+                        class="px-5 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 rounded-full transition">
+                        Đăng nhập
+                    </button>
+                    <button onclick="toggleAuth('signup')"
+                        class="px-5 py-2 text-sm font-semibold bg-blue-600 text-white rounded-full shadow-lg shadow-blue-200 hover:bg-blue-700 transition">
+                        Đăng ký
+                    </button>
+                </div>
+                <div id="user-profile" class="hidden">
+                </div>
             </div>
         </div>
     </header>
@@ -546,11 +550,12 @@
             if (typeof smartech !== 'undefined') {
                 smartech('contact', '1', {
                     'pk^email': 'truc.nguyen@akadigital.vn', // Định danh người dùng (nếu có)
-                    'PAYLOAD': {
-                        'Consent_Marketing': isMarketingAccepted ? 'Yes' : 'No',
-                        'Consent_Performance': isPerformanceAccepted ? 'Yes' : 'No',
-                        'OneTrust_Groups': consentGroups
-                    }
+                    'CONSENT_PURPOSE_A': "",
+                    'CONSENT_DOCUMENT_A': "",
+                    'CONSENT_TIME_A': "",
+                    'CONSENT_PURPOSE_B': "",
+                    'CONSENT_DOCUMENT_B': "",
+                    'CONSENT_TIME_B': ""
                 });
                 console.log("Update to Netcore profile");
             }
@@ -566,6 +571,56 @@
                 console.log("Update to Netcore event");
             }
         });
+
+        // 1. Giả lập hàm xử lý khi Submit Form (Bạn sẽ gọi hàm này khi API trả về thành công)
+        function handleAuthSuccess(userData) {
+            // Lưu thông tin vào localStorage (chuyển object thành string)
+            localStorage.setItem('sky_user', JSON.stringify(userData));
+
+            // Đóng modal và cập nhật giao diện
+            closeAuth();
+            renderUI();
+        }
+
+        // 2. Hàm cập nhật giao diện dựa trên trạng thái đăng nhập
+        function renderUI() {
+            const userData = JSON.parse(localStorage.getItem('sky_user'));
+            const authButtons = document.getElementById('auth-buttons'); // Cần đặt ID này cho div chứa nút Login/Signup
+            const userProfile = document.getElementById('user-profile'); // Cần tạo div này để hiện thông tin user
+
+            if (userData) {
+                // Đã đăng nhập: Ẩn nút cũ, hiện thông tin user
+                authButtons.classList.add('hidden');
+                userProfile.classList.remove('hidden');
+                userProfile.innerHTML = `
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden md:block">
+                        <p class="text-xs font-bold text-blue-900">${userData.email}</p>
+                        <p class="text-[10px] text-slate-500">${userData.mobile || 'Thành viên Premium'}</p>
+                    </div>
+                    <button onclick="handleLogout()" class="px-4 py-2 text-xs font-bold bg-slate-100 text-slate-600 rounded-full hover:bg-red-50 hover:text-red-500 transition">
+                        Đăng xuất
+                    </button>
+                </div>
+            `;
+            } else {
+                // Chưa đăng nhập: Hiện lại nút Login/Signup
+                authButtons.classList.remove('hidden');
+                userProfile.classList.add('hidden');
+            }
+        }
+
+        // 3. Hàm xử lý Logout
+        function handleLogout() {
+            // Có nên clear localStorage không? Xem giải thích bên dưới
+            localStorage.removeItem('sky_user');
+
+            // Reload hoặc render lại UI
+            window.location.reload();
+        }
+
+        // Chạy kiểm tra UI ngay khi load trang
+        document.addEventListener('DOMContentLoaded', renderUI);
     </script>
 
     <div id="auth-modal"
