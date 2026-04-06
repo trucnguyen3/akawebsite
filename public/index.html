@@ -515,6 +515,8 @@
             var isMarketingAccepted = consentGroups.includes('C0004');
             var isPerformanceAccepted = consentGroups.includes('C0002');
 
+            console.log("OneTrust load successfully");
+
             // 3. Gửi dữ liệu sang Netcore Smartech
             if (typeof smartech !== 'undefined') {
                 smartech('contact', '1', {
@@ -525,7 +527,7 @@
                         'OneTrust_Groups': consentGroups
                     }
                 });
-                console.log("Đã cập nhật Consent sang Netcore");
+                console.log("Update to Netcore profile");
             }
         }
 
@@ -537,6 +539,8 @@
                     'groups': updatedGroups,
                     'timestamp': new Date().toISOString()
                 });
+
+                console.log("Update to Netcore event");
             }
         });
     </script>
