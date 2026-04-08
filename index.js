@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const path = require('path');
 
 const port = 6595;
 const host = '0.0.0.0'; // Bắt buộc phải là 0.0.0.0 để nhận traffic từ internet
