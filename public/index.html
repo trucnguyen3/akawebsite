@@ -645,25 +645,23 @@
         }
 
         async function handleShare() {
-            const shareData = {
-                title: 'SkyPremium - Trải nghiệm bay đẳng cấp',
-                text: 'Khám phá ngay ứng dụng đặt vé máy bay SkyPremium với nhiều ưu đãi hấp dẫn!',
-                url: 'https://uat.akadigital.net/ek7m/fecdemo'
-            };
+            const shareUrl = 'https://uat.akadigital.net/ek7m/fecdemo';
 
             try {
-                // Kiểm tra xem trình duyệt có hỗ trợ Web Share API không
                 if (navigator.share) {
-                    await navigator.share(shareData);
+                    // CHỈ SHARE URL - Bỏ title và text
+                    // Khi chỉ có URL, Zalo sẽ buộc phải dùng trình Crawler để lấy 
+                    // Thumbnail từ AppsFlyer mà bạn đã setup ở Bước 1.
+                    await navigator.share({
+                        url: shareUrl
+                    });
                     console.log('Chia sẻ thành công!');
                 } else {
-                    // Trường hợp trình duyệt máy tính (Desktop) không hỗ trợ share mặc định
-                    // Ta có thể copy link vào clipboard làm giải pháp thay thế
-                    navigator.clipboard.writeText(shareData.url);
-                    alert('Đã sao chép liên kết vào bộ nhớ tạm!');
+                    navigator.clipboard.writeText(shareUrl);
+                    alert('Đã sao chép liên kết!');
                 }
             } catch (err) {
-                console.log('Lỗi hoặc người dùng hủy share:', err);
+                console.log('Lỗi:', err);
             }
         }
     </script>
