@@ -23,7 +23,7 @@ app.get('/download', (req, res) => {
             <head>
                 <meta property="og:title" content="SkyPremium - Trải nghiệm bay đẳng cấp" />
                 <meta property="og:description" content="Khám phá ngay ứng dụng đặt vé máy bay SkyPremium!" />
-                <meta property="og:image" content="https://uat1.akadigital.net/assets/images/share-thumbnail.jpg" />
+                <meta property="og:image" content="https://static.wixstatic.com/media/09c7dc_1d2f30ffb15d452ab8cd7b006339d86a~mv2.png/v1/fill/w_286,h_371,al_c,q_95,enc_avif,quality_auto/09c7dc_1d2f30ffb15d452ab8cd7b006339d86a~mv2.png" />
                 <meta property="og:type" content="website" />
             </head>
             <body></body>
