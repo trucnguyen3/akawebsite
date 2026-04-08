@@ -354,13 +354,19 @@
                     <div class="text-xs text-slate-500">
                         Hệ thống bảo mật bởi <span class="text-blue-500 font-bold">CloudArmor</span>
                     </div><br />
-                    <div class="text-xs text-slate-500">
-                        <a href="https://uat.akadigital.net/ek7m/fecdemo" style="text-decoration: none;">
+                    <div class="text-xs text-slate-500 mt-4 flex gap-2">
+                        <a href="https://uat.akadigital.net/ek7m/fecdemo" class="flex-1" style="text-decoration: none;">
                             <button
-                                class="mt-4 w-full py-3 px-6 bg-blue-600 text-white border border-blue-600 hover:bg-white hover:text-blue-600 rounded-xl text-sm font-bold transition-all shadow-blue-200">
+                                class="w-full py-3 px-6 bg-blue-600 text-white border border-blue-600 hover:bg-white hover:text-blue-600 rounded-xl text-sm font-bold transition-all shadow-blue-200">
                                 Tải app tại đây
                             </button>
                         </a>
+
+                        <button onclick="handleShare()"
+                            class="w-12 h-12 flex items-center justify-center bg-slate-100 text-slate-600 border border-slate-200 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
+                            title="Chia sẻ">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -636,6 +642,29 @@
                 mobile: mobile
             };
             handleAuthSuccess(mockUser);
+        }
+
+        async function handleShare() {
+            const shareData = {
+                title: 'SkyPremium - Trải nghiệm bay đẳng cấp',
+                text: 'Khám phá ngay ứng dụng đặt vé máy bay SkyPremium với nhiều ưu đãi hấp dẫn!',
+                url: 'https://uat.akadigital.net/ek7m/fecdemo'
+            };
+
+            try {
+                // Kiểm tra xem trình duyệt có hỗ trợ Web Share API không
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                    console.log('Chia sẻ thành công!');
+                } else {
+                    // Trường hợp trình duyệt máy tính (Desktop) không hỗ trợ share mặc định
+                    // Ta có thể copy link vào clipboard làm giải pháp thay thế
+                    navigator.clipboard.writeText(shareData.url);
+                    alert('Đã sao chép liên kết vào bộ nhớ tạm!');
+                }
+            } catch (err) {
+                console.log('Lỗi hoặc người dùng hủy share:', err);
+            }
         }
     </script>
 
