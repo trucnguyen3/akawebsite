@@ -355,7 +355,7 @@
                         Hệ thống bảo mật bởi <span class="text-blue-500 font-bold">CloudArmor</span>
                     </div><br />
                     <div class="text-xs text-slate-500 mt-4 flex gap-2">
-                        <a href="https://uat.akadigital.net/ek7m/fecdemo" class="flex-1" style="text-decoration: none;">
+                        <a href="https://uat1.akadigital.net/download" class="flex-1" style="text-decoration: none;">
                             <button
                                 class="w-full py-3 px-6 bg-blue-600 text-white border border-blue-600 hover:bg-white hover:text-blue-600 rounded-xl text-sm font-bold transition-all shadow-blue-200">
                                 Tải app tại đây
@@ -645,7 +645,7 @@
         }
 
         async function handleShare() {
-            const shareUrl = 'https://uat.akadigital.net/ek7m/fecdemo';
+            const shareUrl = 'https://uat1.akadigital.net/download';
 
             try {
                 if (navigator.share) {
@@ -658,7 +658,6 @@
                     console.log('Chia sẻ thành công!');
                 } else {
                     navigator.clipboard.writeText(shareUrl);
-                    alert('Đã sao chép liên kết!');
                 }
             } catch (err) {
                 console.log('Lỗi:', err);
