@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyPremium - Webhook Center (Secure)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body class="bg-slate-900 text-slate-100 h-screen flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-500/20">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <span class="text-xl font-bold tracking-tight">SkyWebhook <span
+                    class="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded ml-2 font-mono"><i
+                        class="fas fa-lock text-[10px] mr-1"></i>HTTPS LIVE</span></span>
+        </div>
+        <div class="text-sm bg-slate-900 px-4 py-2 rounded-xl border border-slate-700 max-w-md truncate">
+            <span class="text-slate-500 font-mono">Secure Endpoint:</span>
+            <span class="text-emerald-400 font-bold font-mono ml-1" id="webhook-url"></span>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- CỘT TRÁI: DANH SÁCH SỰ KIỆN -->
+        <div class="w-1/3 border-r border-slate-700 flex flex-col bg-slate-850">
+            <div class="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                <span class="text-xs uppercase tracking-wider font-bold text-slate-400" id="request-count">Requests
+                    (0)</span>
+                <button onclick="clearRequests()" class="text-xs text-slate-400 hover:text-red-400 transition">Xóa tất
+                    cả</button>
+            </div>
+            <div id="request-list" class="flex-1 overflow-y-auto divide-y divide-slate-800">
+                <div id="empty-state" class="p-8 text-center text-slate-500 text-sm">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2 block text-blue-500"></i>
+                    Đang đợi dữ liệu mã hóa từ đối tác...
+                </div>
+            </div>
+        </div>
+
+        <!-- CỘT PHẢI: CHI TIẾT PAYLOAD -->
+        <div class="w-2/3 p-6 overflow-y-auto flex flex-col bg-slate-900" id="detail-pane">
+            <div class="text-slate-500 flex flex-col items-center justify-center h-full">
+                <i class="fas fa-bolt text-4xl mb-4 text-slate-700"></i>
+                <p>Chọn một dữ liệu bên trái để phân tích cấu trúc Payload JSON gửi về</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Tự động nhận diện Domain tên miền thực tế chạy qua HTTPS
+        document.getElementById('webhook-url').innerText = window.location.origin + '/webhook';
+
+        // Tự động bắt sóng wss:// bảo mật cao nhờ môi trường HTTPS
+        const socket = io();
+        let allRequests = [];
+        let selectedRequestId = null;
+
+        socket.on('new-webhook', (payload) => {
+            allRequests.unshift(payload);
+            updateUI();
+        });
+
+        async function fetchInitialData() {
+            try {
+                const res = await fetch('/api/webhooks');
+                allRequests = await res.json();
+                updateUI();
+            } catch (err) { console.error("Lỗi đồng bộ lịch sử Webhook:", err); }
+        }
+
+        function updateUI() {
+            const listContainer = document.getElementById('request-list');
+            const countText = document.getElementById('request-count');
+            countText.innerText = `Requests (${allRequests.length})`;
+
+            if (allRequests.length === 0) {
+                listContainer.innerHTML = `<div class="p-8 text-center text-slate-500 text-sm">Hệ thống đang sẵn sàng, chưa nhận dữ liệu...</div>`;
+                document.getElementById('detail-pane').innerHTML = `<div class="text-slate-500 text-center m-auto"><p>Trống</p></div>`;
+                return;
+            }
+
+            listContainer.innerHTML = '';
+
+            allRequests.forEach(req => {
+                const isSelected = req.id === selectedRequestId;
+                const time = new Date(req.timestamp).toLocaleTimeString();
+
+                const item = document.createElement('div');
+                item.className = `p-4 cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'bg-blue-600/20 border-l-4 border-blue-500' : 'hover:bg-slate-800'}`;
+                item.onclick = () => selectRequest(req.id);
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="px-2 py-1 text-[10px] font-black rounded bg-emerald-500 text-slate-900">${req.method}</span>
+                        <span class="text-sm font-mono text-slate-300">#${req.id.toString().slice(-4)}</span>
+                    </div>
+                    <span class="text-xs text-slate-500 font-mono">${time}</span>
+                `;
+                listContainer.appendChild(item);
+            });
+
+            if (!selectedRequestId && allRequests.length > 0) {
+                selectRequest(allRequests[0].id);
+            }
+        }
+
+        function selectRequest(id) {
+            selectedRequestId = id;
+            const req = allRequests.find(r => r.id === id);
+            if (!req) return;
+
+            updateActiveTab();
+
+            const detailPane = document.getElementById('detail-pane');
+            detailPane.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-3">
+                            <span class="px-2.5 py-1 text-xs font-black rounded bg-emerald-500 text-slate-900">${req.method}</span>
+                            Chi tiết Payload kết nối
+                        </h2>
+                        <span class="text-xs font-mono text-slate-400"><i class="fas fa-lock text-emerald-400 mr-1"></i>SSL Mã Hóa</span>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Query Parameters</h3>
+                        <pre class="bg-slate-950 p-4 rounded-xl font-mono text-sm text-amber-400 overflow-x-auto border border-slate-800">${JSON.stringify(req.query, null, 2)}</pre>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Headers bảo mật</h3>
+                        <pre class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-400 overflow-x-auto border border-slate-800">${JSON.stringify(req.headers, null, 2)}</pre>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Payload Body (JSON dữ liệu trả về)</h3>
+                        <pre class="bg-slate-950 p-5 rounded-2xl font-mono text-sm text-emerald-400 overflow-x-auto border border-emerald-900/20 shadow-inner">${JSON.stringify(req.body, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateActiveTab() {
+            const listContainer = document.getElementById('request-list');
+            Array.from(listContainer.children).forEach((child, idx) => {
+                const req = allRequests[idx];
+                if (req) {
+                    child.className = req.id === selectedRequestId
+                        ? "p-4 cursor-pointer transition-all flex items-center justify-between bg-blue-600/20 border-l-4 border-blue-500"
+                        : "p-4 cursor-pointer transition-all flex items-center justify-between hover:bg-slate-800";
+                }
+            });
+        }
+
+        function clearRequests() {
+            allRequests = [];
+            selectedRequestId = null;
+            updateUI();
+        }
+
+        fetchInitialData();
+    </script>
+</body>
+
+</html>
