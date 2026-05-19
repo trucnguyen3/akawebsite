@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -20,7 +21,7 @@ app.use(express.static('public'));
 // CẤU HÌNH TOKEN BẢO MẬT CỦA BẠN
 // ==========================================
 // Hãy thay chuỗi này bằng một mã bí mật khó đoán của riêng bạn
-const WEBHOOK_SECRET_TOKEN = "SkyPremium_Secret_Token_2026_lmaoez6969_phasmophobia_topplayerinside_2602"; 
+const WEBHOOK_SECRET_TOKEN = process.env.WEBHOOK_TOKEN || "lmaoez";
 
 
 // --- ROUTE GIAO DIỆN ---
