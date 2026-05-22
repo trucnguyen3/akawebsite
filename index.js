@@ -81,7 +81,8 @@ app.post('/webhook', (req, res) => {
 app.post('/webhook-appsflyer', (req, res) => {
     //console.log(`[AppsFlyer] Nhận push API event từ IP: ${req.ip}`);
 
-    console.log(`[AppsFlyer] Nhận push API event: ${req}`)
+    // In ra dữ liệu JSON của AppsFlyer gửi sang
+    console.log(`[AppsFlyer] Nhận push API event:`, req.body);
 
     // Đẩy thẳng vào bộ xử lý dữ liệu mà không cần thông qua bất kỳ vòng kiểm tra token nào
     processAndEmitWebhook(req, "APPSFLYER");
