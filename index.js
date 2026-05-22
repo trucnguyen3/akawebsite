@@ -18,10 +18,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public')); 
 
-// ĐỌC CẤU HÌNH BẢO MẬT TỪ FILE .ENV
+// ĐỌC CẤU HÌNH BẢO MẬT CHO CỔNG WEBHOOK CHÍNH
 const WEBHOOK_SECRET_TOKEN = process.env.WEBHOOK_TOKEN || "SkyPremium_Secret_Token_2026"; 
 const WEBHOOK_USER = process.env.WEBHOOK_USER || "skypra_partner";
 const WEBHOOK_PASS = process.env.WEBHOOK_PASS || "SecurePassword2026!";
+
+// Mảng chung để gom tất cả lịch sử webhook hiển thị trên giao diện Center
+let webhookPayloads = []; 
 
 // --- CÁC ROUTE GIAO DIỆN ---
 app.get('/download', (req, res) => {
@@ -33,80 +36,93 @@ app.get('/webhook-center', (req, res) => {
 });
 
 
-// --- ENDPOINT NHẬN WEBHOOK (HỖ TRỢ CẢ BEARER VÀ BASIC AUTH) ---
-let webhookPayloads = []; 
-
+// =================================================================
+// 1. ENDPOINT WEBHOOK CHÍNH (YÊU CẦU BẢO MẬT KÉP: BEARER / BASIC AUTH)
+// =================================================================
 app.post('/webhook', (req, res) => {
     const authHeader = req.headers['authorization'];
     const customTokenHeader = req.headers['x-webhook-token'];
-    
     let isAuthenticated = false;
 
-    // 1. KIỂM TRA NẾU KHÁCH HÀNG GỬI HEADER AUTHORIZATION
     if (authHeader) {
-        // Trường hợp A: Khách hàng dùng Bearer Token tiêu chuẩn
         if (authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7);
-            if (token === WEBHOOK_SECRET_TOKEN) {
-                isAuthenticated = true;
-            }
+            if (token === WEBHOOK_SECRET_TOKEN) isAuthenticated = true;
         } 
-        // Trường hợp B: Khách hàng dùng Basic Auth tiêu chuẩn
         else if (authHeader.startsWith('Basic ')) {
             try {
                 const base64Credentials = authHeader.split(' ')[1];
                 const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
                 const [username, password] = credentials.split(':');
-
-                if (username === WEBHOOK_USER && password === WEBHOOK_PASS) {
-                    isAuthenticated = true;
-                }
+                if (username === WEBHOOK_USER && password === WEBHOOK_PASS) isAuthenticated = true;
             } catch (err) {
                 return res.status(400).json({ status: 'error', message: 'Bad Request: Định dạng Basic Auth lỗi.' });
             }
         }
     } 
-    // Trường hợp C: Khách hàng dùng Custom Header tự chế (x-webhook-token)
     else if (customTokenHeader && customTokenHeader === WEBHOOK_SECRET_TOKEN) {
         isAuthenticated = true;
     }
 
-    // 2. CHẶN ĐỨNG NẾU KHÔNG VƯỢT QUA BẤT KỲ CƠ CHẾ NÀO
     if (!isAuthenticated) {
-        console.log(`[CẢNH BÁO] Truy cập trái phép bị chặn từ IP: ${req.ip}`);
-        return res.status(401).json({ 
-            status: 'error', 
-            message: 'Unauthorized: Bạn cần cung cấp Bearer Token hoặc Basic Auth hợp lệ.' 
-        });
+        console.log(`[CẢNH BÁO] Từ chối truy cập không Authen tại cổng chính từ IP: ${req.ip}`);
+        return res.status(401).json({ status: 'error', message: 'Unauthorized: Endpoint này bắt buộc phải cấu hình Token hoặc Basic Auth.' });
     }
 
-    // 3. BIỆN PHÁP AN TOÀN: XÓA SẠCH MỌI DẤU VẾT TOKEN/PASSWORD TRƯỚC KHI EMIT SANG SOCKET
+    // Làm sạch và xử lý dữ liệu
+    processAndEmitWebhook(req, "SECURE_WEBHOOK");
+    res.status(200).json({ status: 'success', message: 'Secure webhook received and processed.' });
+});
+
+
+// =================================================================
+// 2. ENDPOINT WEBHOOK APPSFLYER (HOÀN TOÀN KHÔNG CẦN AUTHEN)
+// =================================================================
+app.post('/webhook-appsflyer', (req, res) => {
+    console.log(`[AppsFlyer] Nhận push API event từ IP: ${req.ip}`);
+
+    // Đẩy thẳng vào bộ xử lý dữ liệu mà không cần thông qua bất kỳ vòng kiểm tra token nào
+    processAndEmitWebhook(req, "APPSFLYER");
+
+    // Phản hồi mã 200 OK để server AppsFlyer biết đã nhận thông tin thành công, tránh việc hệ thống gửi lại (retry) dữ liệu
+    res.status(200).json({ status: 'success', message: 'AppsFlyer push data received successfully without authentication' });
+});
+
+
+// =================================================================
+// HÀM XỬ LÝ CHUNG VÀ BẮN REALTIME LÊN GIAO DIỆN CENTER
+// =================================================================
+function processAndEmitWebhook(req, type) {
     const safeHeaders = { ...req.headers };
+    
+    // Luôn luôn xóa thông tin nhạy cảm của hệ thống trước khi đưa ra màn hình hiển thị công cộng
     delete safeHeaders['authorization'];
     delete safeHeaders['x-webhook-token'];
+    delete safeHeaders['cookie'];
 
     const newPayload = {
         id: Date.now(),
         timestamp: new Date().toISOString(),
-        headers: safeHeaders, // Chỉ đẩy header an toàn lên màn hình hiển thị
+        headers: safeHeaders,
         body: req.body,
         query: req.query,
-        method: req.method
+        // Đánh dấu nhãn (Method) trực quan để giao diện phân biệt được nguồn dữ liệu đến từ đâu
+        method: type === "APPSFLYER" ? "APPSFLYER" : req.method
     };
 
     webhookPayloads.unshift(newPayload);
     if (webhookPayloads.length > 50) webhookPayloads.pop();
 
-    // Bắn dữ liệu Realtime cực kỳ an toàn
+    // Phát tín hiệu Realtime xuống webhook.html qua Socket.io
     io.emit('new-webhook', newPayload);
-
-    res.status(200).json({ status: 'success', message: 'Webhook received and authenticated successfully' });
-});
+}
 
 app.get('/api/webhooks', (req, res) => {
     res.json(webhookPayloads);
 });
 
 server.listen(port, host, () => {
-    console.log(`🚀 Node.js đang chạy song song hai lớp bảo mật (Bearer & Basic Auth) tại cổng ${port}`);
+    console.log(`🚀 Node.js đang chạy:`);
+    console.log(`   - Cổng bảo mật (Bearer & Basic): https://yourdomain.com/webhook`);
+    console.log(`   - Cổng công cộng cho AppsFlyer: https://yourdomain.com/webhook-appsflyer`);
 });
