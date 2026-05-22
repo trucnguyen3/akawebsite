@@ -123,6 +123,6 @@ app.get('/api/webhooks', (req, res) => {
 
 server.listen(port, host, () => {
     console.log(`🚀 Node.js đang chạy:`);
-    console.log(`   - Cổng bảo mật (Bearer & Basic): https://yourdomain.com/webhook`);
-    console.log(`   - Cổng công cộng cho AppsFlyer: https://yourdomain.com/webhook-appsflyer`);
+    console.log(`   - Cổng bảo mật (Bearer & Basic): https://uat1.akadigital.net/webhook`);
+    console.log(`   - Cổng công cộng cho AppsFlyer: https://uat1.akadigital.net/webhook-appsflyer`);
 });
