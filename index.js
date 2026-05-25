@@ -79,10 +79,10 @@ app.post('/webhook', (req, res) => {
 // 2. ENDPOINT WEBHOOK APPSFLYER (HOÀN TOÀN KHÔNG CẦN AUTHEN)
 // =================================================================
 app.post('/webhook-appsflyer', (req, res) => {
-    //console.log(`[AppsFlyer] Nhận push API event từ IP: ${req.ip}`);
+    console.log(`[AppsFlyer] Nhận push API event từ IP: ${req.ip}`);
 
     // In ra dữ liệu JSON của AppsFlyer gửi sang
-    console.log(`[AppsFlyer] Nhận push API event:`, req.body);
+    //console.log(`[AppsFlyer] Nhận push API event:`, req.body);
 
     // Đẩy thẳng vào bộ xử lý dữ liệu mà không cần thông qua bất kỳ vòng kiểm tra token nào
     processAndEmitWebhook(req, "APPSFLYER");
