@@ -99,15 +99,38 @@ app.post('/webhook-zalo', (req, res) => {
 
     // OPTIONAL: Kiểm tra chữ ký bảo mật từ Zalo (Signature Verification)
     if (ZALO_APP_SECRET) {
-        const zaloMac = req.headers['x-zevent-signature'] || req.body.mac;
+        // 1. Lấy header chữ ký từ Zalo (Dạng: "mac=75d40fb4bdbc84ca...")
+        const rawSignature = req.headers['x-zevent-signature'] || req.body.mac || "";
+        
+        // 2. Tách bỏ tiền tố "mac=" nếu có
+        const zaloMac = rawSignature.startsWith("mac=") ? rawSignature.replace("mac=", "") : rawSignature;
+
         if (zaloMac) {
-            const rawData = JSON.stringify(req.body);
-            const expectedMac = crypto.createHmac('sha256', ZALO_APP_SECRET).update(rawData).digest('hex');
-            
-            if (zaloMac !== expectedMac) {
+            const { app_id, timestamp } = req.body;
+            const bodyStr = JSON.stringify(req.body);
+
+            // Cách 1: Hash raw body chuẩn HMAC-SHA256 với Secret Key
+            const expectedMac1 = crypto
+                .createHmac('sha256', ZALO_APP_SECRET)
+                .update(bodyStr)
+                .digest('hex');
+
+            // Cách 2: Chuỗi Hash kết hợp theo chuẩn Zalo (app_id + body + timestamp + secret)
+            const combinedData = `${app_id || ''}${bodyStr}${timestamp || ''}${ZALO_APP_SECRET}`;
+            const expectedMac2 = crypto
+                .createHash('sha256')
+                .update(combinedData)
+                .digest('hex');
+
+            // Kiểm tra xem khớp 1 trong 2 cách
+            const isValid = (zaloMac === expectedMac1) || (zaloMac === expectedMac2);
+
+            if (!isValid) {
                 console.log(`[Zalo - CẢNH BÁO] Sai chữ ký Zalo Signature!`);
-                // Có thể bỏ comment dòng dưới nếu muốn chặn request không hợp lệ
-                // return res.status(403).json({ status: 'error', message: 'Invalid Zalo Signature' });
+                console.log(`  - Zalo MAC nhận được: ${zaloMac}`);
+                console.log(`  - MAC tính toán (HMAC Body): ${expectedMac1}`);
+            } else {
+                console.log(`[Zalo] Xác thực chữ ký Zalo Signature THÀNH CÔNG!`);
             }
         }
     }
