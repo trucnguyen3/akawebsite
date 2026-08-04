@@ -97,40 +97,33 @@ app.post('/webhook-appsflyer', (req, res) => {
 app.post('/webhook-zalo', (req, res) => {
     console.log(`[Zalo] Nhận event webhook từ IP: ${req.ip}`);
 
-    // OPTIONAL: Kiểm tra chữ ký bảo mật từ Zalo (Signature Verification)
     if (ZALO_APP_SECRET) {
-        // 1. Lấy header chữ ký từ Zalo (Dạng: "mac=75d40fb4bdbc84ca...")
+        // 1. Lấy header chữ ký từ Zalo (Dạng: "mac=73949037...")
         const rawSignature = req.headers['x-zevent-signature'] || req.body.mac || "";
-        
-        // 2. Tách bỏ tiền tố "mac=" nếu có
         const zaloMac = rawSignature.startsWith("mac=") ? rawSignature.replace("mac=", "") : rawSignature;
 
         if (zaloMac) {
-            const { app_id, timestamp } = req.body;
-            const bodyStr = JSON.stringify(req.body);
+            const { app_id, data, timestamp } = req.body;
 
-            // Cách 1: Hash raw body chuẩn HMAC-SHA256 với Secret Key
-            const expectedMac1 = crypto
-                .createHmac('sha256', ZALO_APP_SECRET)
-                .update(bodyStr)
-                .digest('hex');
+            // Chuyển data thành String nếu Zalo gửi data dạng Object
+            const dataStr = (typeof data === 'object' && data !== null) ? JSON.stringify(data) : (data || '');
 
-            // Cách 2: Chuỗi Hash kết hợp theo chuẩn Zalo (app_id + body + timestamp + secret)
-            const combinedData = `${app_id || ''}${bodyStr}${timestamp || ''}${ZALO_APP_SECRET}`;
-            const expectedMac2 = crypto
+            // Chuỗi dữ liệu chuẩn hóa theo công thức Zalo: app_id + data + timestamp + app_secret
+            const rawChecksum = `${app_id || ''}${dataStr}${timestamp || ''}${ZALO_APP_SECRET}`;
+
+            // Tính SHA256 (Hash tiêu chuẩn, không dùng HMAC)
+            const expectedMac = crypto
                 .createHash('sha256')
-                .update(combinedData)
+                .update(rawChecksum)
                 .digest('hex');
 
-            // Kiểm tra xem khớp 1 trong 2 cách
-            const isValid = (zaloMac === expectedMac1) || (zaloMac === expectedMac2);
-
-            if (!isValid) {
+            if (zaloMac !== expectedMac) {
                 console.log(`[Zalo - CẢNH BÁO] Sai chữ ký Zalo Signature!`);
-                console.log(`  - Zalo MAC nhận được: ${zaloMac}`);
-                console.log(`  - MAC tính toán (HMAC Body): ${expectedMac1}`);
+                console.log(`   - Zalo MAC nhận được: ${zaloMac}`);
+                console.log(`   - MAC tính toán đúng: ${expectedMac}`);
+                console.log(`   - Raw Checksum Input: ${rawChecksum}`);
             } else {
-                console.log(`[Zalo] Xác thực chữ ký Zalo Signature THÀNH CÔNG!`);
+                console.log(`[Zalo] ✅ Xác thực chữ ký Zalo Signature THÀNH CÔNG!`);
             }
         }
     }
