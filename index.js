@@ -5,6 +5,7 @@ const app = express();
 const path = require('path');
 const http = require('http'); 
 const { Server } = require('socket.io'); 
+const crypto = require('crypto'); // Cần thiết để verify Zalo Signature
 
 const port = 6595;
 const host = '0.0.0.0'; 
@@ -22,6 +23,7 @@ app.use(express.static('public'));
 const WEBHOOK_SECRET_TOKEN = process.env.WEBHOOK_TOKEN || "SkyPremium_Secret_Token_2026"; 
 const WEBHOOK_USER = process.env.WEBHOOK_USER || "skypra_partner";
 const WEBHOOK_PASS = process.env.WEBHOOK_PASS || "SecurePassword2026!";
+const ZALO_APP_SECRET = process.env.ZALO_APP_SECRET || ""; // Điền App Secret từ Zalo Developer Portal nếu muốn verify signature
 
 // Mảng chung để gom tất cả lịch sử webhook hiển thị trên giao diện Center
 let webhookPayloads = []; 
@@ -81,14 +83,40 @@ app.post('/webhook', (req, res) => {
 app.post('/webhook-appsflyer', (req, res) => {
     console.log(`[AppsFlyer] Nhận push API event từ IP: ${req.ip}`);
 
-    // In ra dữ liệu JSON của AppsFlyer gửi sang
-    //console.log(`[AppsFlyer] Nhận push API event:`, req.body);
-
     // Đẩy thẳng vào bộ xử lý dữ liệu mà không cần thông qua bất kỳ vòng kiểm tra token nào
     processAndEmitWebhook(req, "APPSFLYER");
 
-    // Phản hồi mã 200 OK để server AppsFlyer biết đã nhận thông tin thành công, tránh việc hệ thống gửi lại (retry) dữ liệu
+    // Phản hồi mã 200 OK để server AppsFlyer biết đã nhận thông tin thành công
     res.status(200).json({ status: 'success', message: 'AppsFlyer push data received successfully without authentication' });
+});
+
+
+// =================================================================
+// 3. ENDPOINT WEBHOOK ZALO (HỖ TRỢ ZALO OA / FORM / MINI APP EVENTS)
+// =================================================================
+app.post('/webhook-zalo', (req, res) => {
+    console.log(`[Zalo] Nhận event webhook từ IP: ${req.ip}`);
+
+    // OPTIONAL: Kiểm tra chữ ký bảo mật từ Zalo (Signature Verification)
+    if (ZALO_APP_SECRET) {
+        const zaloMac = req.headers['x-zevent-signature'] || req.body.mac;
+        if (zaloMac) {
+            const rawData = JSON.stringify(req.body);
+            const expectedMac = crypto.createHmac('sha256', ZALO_APP_SECRET).update(rawData).digest('hex');
+            
+            if (zaloMac !== expectedMac) {
+                console.log(`[Zalo - CẢNH BÁO] Sai chữ ký Zalo Signature!`);
+                // Có thể bỏ comment dòng dưới nếu muốn chặn request không hợp lệ
+                // return res.status(403).json({ status: 'error', message: 'Invalid Zalo Signature' });
+            }
+        }
+    }
+
+    // Đẩy dữ liệu vào hệ thống hiển thị Realtime Webhook Center
+    processAndEmitWebhook(req, "ZALO");
+
+    // BẮT BỤC: Phản hồi 200 OK ngay cho Zalo
+    res.status(200).json({ status: 'success', message: 'Zalo webhook received successfully' });
 });
 
 
@@ -98,7 +126,7 @@ app.post('/webhook-appsflyer', (req, res) => {
 function processAndEmitWebhook(req, type) {
     const safeHeaders = { ...req.headers };
     
-    // Luôn luôn xóa thông tin nhạy cảm của hệ thống trước khi đưa ra màn hình hiển thị công cộng
+    // Luôn xóa thông tin nhạy cảm của hệ thống trước khi hiển thị ra giao diện
     delete safeHeaders['authorization'];
     delete safeHeaders['x-webhook-token'];
     delete safeHeaders['cookie'];
@@ -109,8 +137,8 @@ function processAndEmitWebhook(req, type) {
         headers: safeHeaders,
         body: req.body,
         query: req.query,
-        // Đánh dấu nhãn (Method) trực quan để giao diện phân biệt được nguồn dữ liệu đến từ đâu
-        method: type === "APPSFLYER" ? "APPSFLYER" : req.method
+        // Phân loại nguồn dữ liệu đến để giao diện Webhook Center hiển thị nhãn phù hợp
+        method: type === "APPSFLYER" ? "APPSFLYER" : (type === "ZALO" ? "ZALO" : req.method)
     };
 
     webhookPayloads.unshift(newPayload);
@@ -128,4 +156,5 @@ server.listen(port, host, () => {
     console.log(`🚀 Node.js đang chạy:`);
     console.log(`   - Cổng bảo mật (Bearer & Basic): https://uat1.akadigital.net/webhook`);
     console.log(`   - Cổng công cộng cho AppsFlyer: https://uat1.akadigital.net/webhook-appsflyer`);
+    console.log(`   - Cổng công cộng cho Zalo:      https://uat1.akadigital.net/webhook-zalo`);
 });
