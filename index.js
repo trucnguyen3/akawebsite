@@ -92,53 +92,22 @@ app.post('/webhook-appsflyer', (req, res) => {
 
 
 // =================================================================
-// 3. ENDPOINT WEBHOOK ZALO (CẬP NHẬT KIỂM TRA CHỮ KÝ ĐA PHƯƠNG THỨC)
+// 3. ENDPOINT WEBHOOK ZALO (HỖ TRỢ ZALO OA / FORM / MINI APP EVENTS)
 // =================================================================
 app.post('/webhook-zalo', (req, res) => {
     console.log(`[Zalo] Nhận event webhook từ IP: ${req.ip}`);
 
+    // OPTIONAL: Kiểm tra chữ ký bảo mật từ Zalo (Signature Verification)
     if (ZALO_APP_SECRET) {
-        // 1. Lấy header chữ ký từ Zalo (Dạng: "mac=2000a53f...")
-        const rawSignature = req.headers['x-zevent-signature'] || req.body.mac || "";
-        const zaloMac = rawSignature.startsWith("mac=") ? rawSignature.replace("mac=", "") : rawSignature;
-
+        const zaloMac = req.headers['x-zevent-signature'] || req.body.mac;
         if (zaloMac) {
-            const { app_id, timestamp, data } = req.body;
+            const rawData = JSON.stringify(req.body);
+            const expectedMac = crypto.createHmac('sha256', ZALO_APP_SECRET).update(rawData).digest('hex');
             
-            // Lấy timestamp từ body hoặc header x-zevent-timestamp nếu có
-            const ts = timestamp || req.headers['x-zevent-timestamp'] || '';
-
-            // Phương án 1: HMAC SHA-256 trên Raw Body String
-            const rawBodyStr = JSON.stringify(req.body);
-            const macHmacBody = crypto
-                .createHmac('sha256', ZALO_APP_SECRET)
-                .update(rawBodyStr)
-                .digest('hex');
-
-            // Phương án 2: SHA-256 (app_id + data_str + timestamp + app_secret)
-            const dataStr = (typeof data === 'object' && data !== null) ? JSON.stringify(data) : (data || '');
-            const rawChecksumCombo = `${app_id || ''}${dataStr}${ts}${ZALO_APP_SECRET}`;
-            const macCombo = crypto
-                .createHash('sha256')
-                .update(rawChecksumCombo)
-                .digest('hex');
-
-            // Phương án 3: HMAC SHA-256 (app_id + timestamp + body) - Dành cho nút Test Webhook
-            const macHmacAppTs = crypto
-                .createHmac('sha256', ZALO_APP_SECRET)
-                .update(`${app_id || ''}${ts}${rawBodyStr}`)
-                .digest('hex');
-
-            // So sánh với 1 trong các phương án
-            const isValid = (zaloMac === macHmacBody) || (zaloMac === macCombo) || (zaloMac === macHmacAppTs);
-
-            if (!isValid) {
+            if (zaloMac !== expectedMac) {
                 console.log(`[Zalo - CẢNH BÁO] Sai chữ ký Zalo Signature!`);
-                console.log(`   - Zalo MAC nhận được: ${zaloMac}`);
-                console.log(`   - MAC PA1 (HMAC Body): ${macHmacBody}`);
-                console.log(`   - MAC PA2 (SHA256 Combo): ${macCombo}`);
-            } else {
-                console.log(`[Zalo] ✅ Xác thực chữ ký Zalo Signature THÀNH CÔNG!`);
+                // Có thể bỏ comment dòng dưới nếu muốn chặn request không hợp lệ
+                // return res.status(403).json({ status: 'error', message: 'Invalid Zalo Signature' });
             }
         }
     }
