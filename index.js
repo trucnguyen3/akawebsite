@@ -23,7 +23,7 @@ app.use(express.static('public'));
 const WEBHOOK_SECRET_TOKEN = process.env.WEBHOOK_TOKEN || "SkyPremium_Secret_Token_2026"; 
 const WEBHOOK_USER = process.env.WEBHOOK_USER || "skypra_partner";
 const WEBHOOK_PASS = process.env.WEBHOOK_PASS || "SecurePassword2026!";
-const ZALO_APP_SECRET = process.env.ZALO_APP_SECRET || "b8on5Fu78DzJlk7bgOwQ"; // Điền App Secret từ Zalo Developer Portal nếu muốn verify signature
+const ZALO_APP_SECRET = process.env.ZALO_APP_SECRET || "lmaoez@1234!"; // Điền App Secret từ Zalo Developer Portal nếu muốn verify signature
 
 // Mảng chung để gom tất cả lịch sử webhook hiển thị trên giao diện Center
 let webhookPayloads = []; 
