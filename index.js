@@ -23,7 +23,10 @@ app.use(express.static('public'));
 const WEBHOOK_SECRET_TOKEN = process.env.WEBHOOK_TOKEN || "SkyPremium_Secret_Token_2026"; 
 const WEBHOOK_USER = process.env.WEBHOOK_USER || "skypra_partner";
 const WEBHOOK_PASS = process.env.WEBHOOK_PASS || "SecurePassword2026!";
-const ZALO_APP_SECRET = process.env.ZALO_APP_SECRET || "lmaoez@1234!"; // Điền App Secret từ Zalo Developer Portal nếu muốn verify signature
+
+const ZALO_APP_ID = process.env.ZALO_APP_ID || "1234"; // 🔥 Đã sửa: Lấy đúng ZALO_APP_ID
+const ZALO_APP_SECRET = process.env.ZALO_APP_SECRET || "lmaoez@1234!"; 
+const ZALO_CODE_VERIFIER = process.env.ZALO_CODE_VERIFIER || ""; // Dùng nếu bạn cài Code Challenge (PKCE)
 
 // Mảng chung để gom tất cả lịch sử webhook hiển thị trên giao diện Center
 let webhookPayloads = []; 
@@ -92,7 +95,7 @@ app.post('/webhook-appsflyer', (req, res) => {
 
 
 // =================================================================
-// 3. ENDPOINT WEBHOOK ZALO (HỖ TRỢ ZALO OA / FORM / MINI APP EVENTS)
+// 3. ENDPOINT WEBHOOK ZALO & OAUTH CALLBACK
 // =================================================================
 app.post('/webhook-zalo', (req, res) => {
     console.log(`[Zalo] Nhận event webhook từ IP: ${req.ip}`);
@@ -106,17 +109,74 @@ app.post('/webhook-zalo', (req, res) => {
             
             if (zaloMac !== expectedMac) {
                 console.log(`[Zalo - CẢNH BÁO] Sai chữ ký Zalo Signature!`);
-                // Có thể bỏ comment dòng dưới nếu muốn chặn request không hợp lệ
-                // return res.status(403).json({ status: 'error', message: 'Invalid Zalo Signature' });
             }
         }
     }
 
-    // Đẩy dữ liệu vào hệ thống hiển thị Realtime Webhook Center
     processAndEmitWebhook(req, "ZALO");
-
-    // BẮT BỤC: Phản hồi 200 OK ngay cho Zalo
     res.status(200).json({ status: 'success', message: 'Zalo webhook received successfully' });
+});
+
+// ROUTE ĐÓN CALLBACK ĐỔI ACCESS TOKEN TỪ ZALO OAUTH V4
+app.get('/zalo/callback', async (req, res) => {
+    const { code, oa_id } = req.query;
+
+    if (!code) {
+        return res.status(400).send('❌ Không tìm thấy authorization code từ Zalo!');
+    }
+
+    console.log(`[Zalo OAuth] Nhận được code: ${code} cho OA ID: ${oa_id}`);
+
+    try {
+        // Chuẩn bị payload lấy Access Token
+        const params = new URLSearchParams({
+            code: code,
+            app_id: ZALO_APP_ID,
+            grant_type: 'authorization_code'
+        });
+
+        // Nếu có cài đặt PKCE Code Verifier
+        if (ZALO_CODE_VERIFIER) {
+            params.append('code_verifier', ZALO_CODE_VERIFIER);
+        }
+
+        const response = await axios.post(
+            'https://oauth.zaloapp.com/v4/oa/access_token',
+            params,
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'secret_key': ZALO_APP_SECRET
+                }
+            }
+        );
+
+        const { access_token, refresh_token, expires_in, error, message } = response.data;
+
+        if (error) {
+            console.error('[Zalo OAuth Error]', response.data);
+            return res.status(400).json({ status: 'error', message, details: response.data });
+        }
+
+        console.log('✅ LẤY TOKEN ZALO OA THÀNH CÔNG!');
+        console.log('Access Token:', access_token);
+        console.log('Refresh Token:', refresh_token);
+
+        // Trả về giao diện HTML phản hồi trực tiếp cho Admin
+        res.send(`
+            <div style="font-family: Arial, sans-serif; padding: 30px; line-height: 1.6;">
+                <h2 style="color: #4CAF50;">✅ Kết nối Zalo OA với App thành công!</h2>
+                <p><b>OA ID:</b> ${oa_id}</p>
+                <p><b>Thời hạn Access Token:</b> ${expires_in} giây</p>
+                <hr>
+                <p>App của bạn đã có đủ quyền tương tác API và nhận Webhook Events từ OA này.</p>
+            </div>
+        `);
+
+    } catch (err) {
+        console.error('[Zalo OAuth Exception]', err.response?.data || err.message);
+        res.status(500).send('Lỗi trong quá trình trao đổi token với Zalo OAuth API.');
+    }
 });
 
 
