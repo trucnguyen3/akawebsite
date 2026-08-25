@@ -29,6 +29,9 @@ const ZALO_APP_ID = process.env.ZALO_APP_ID || "1234"; // 🔥 Đã sửa: Lấy
 const ZALO_APP_SECRET = process.env.ZALO_APP_SECRET || "lmaoez@1234!"; 
 const ZALO_CODE_VERIFIER = process.env.ZALO_CODE_VERIFIER || ""; // Dùng nếu bạn cài Code Challenge (PKCE)
 
+const WEBHOOK_CT_USER = process.env.WEBHOOK_CT_USER || "skypra_partner";
+const WEBHOOK_CT_PASS = process.env.WEBHOOK_CT_PASS || "SecurePassword2026!";
+
 // Mảng chung để gom tất cả lịch sử webhook hiển thị trên giao diện Center
 let webhookPayloads = []; 
 
@@ -123,8 +126,7 @@ app.post('/webhook-zalo', (req, res) => {
 // =================================================================
 app.post('/webhook-clevertap', (req, res) => {
     // 1. Khai báo thông tin xác thực mong muốn
-    const AUTH_USER = 'aka_clevertap';
-    const AUTH_PASS = 'Lmaoez1234';
+    //.env
 
     // 2. Lấy header Authorization từ request
     const authHeader = req.headers.authorization;
@@ -140,7 +142,7 @@ app.post('/webhook-clevertap', (req, res) => {
     const [username, password] = credentials.split(':');
 
     // 4. Kiểm tra Username & Password
-    if (username !== AUTH_USER || password !== AUTH_PASS) {
+    if (username !== WEBHOOK_CT_USER || password !== WEBHOOK_CT_PASS) {
         console.warn(`[CleverTap] Sai thông tin xác thực từ IP: ${req.ip}`);
         return res.status(401).json({ status: 'error', message: 'Unauthorized: Invalid credentials' });
     }
