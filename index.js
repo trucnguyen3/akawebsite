@@ -127,6 +127,7 @@ app.post('/webhook-zalo', (req, res) => {
 app.post('/webhook-clevertap', (req, res) => {
     // 1. Khai báo thông tin xác thực mong muốn
     //.env
+    console.log("CT Data: ", req)
 
     // 2. Lấy header Authorization từ request
     const authHeader = req.headers.authorization;
