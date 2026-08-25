@@ -122,13 +122,34 @@ app.post('/webhook-zalo', (req, res) => {
 // 4. ENDPOINT WEBHOOK CleverTap (HOÀN TOÀN KHÔNG CẦN AUTHEN)
 // =================================================================
 app.post('/webhook-clevertap', (req, res) => {
-    console.log(`[CleverTap] Nhận webhook event từ IP: ${req.ip}`);
+    // 1. Khai báo thông tin xác thực mong muốn
+    const AUTH_USER = 'aka_clevertap';
+    const AUTH_PASS = 'Lmaoez1234';
 
-    // Đẩy thẳng vào bộ xử lý dữ liệu mà không cần thông qua bất kỳ vòng kiểm tra token nào
+    // 2. Lấy header Authorization từ request
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
+        console.warn(`[CleverTap] Từ chối truy cập (Thiếu Auth Header) từ IP: ${req.ip}`);
+        return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing Authentication Header' });
+    }
+
+    // 3. Giải mã chuỗi Base64
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [username, password] = credentials.split(':');
+
+    // 4. Kiểm tra Username & Password
+    if (username !== AUTH_USER || password !== AUTH_PASS) {
+        console.warn(`[CleverTap] Sai thông tin xác thực từ IP: ${req.ip}`);
+        return res.status(401).json({ status: 'error', message: 'Unauthorized: Invalid credentials' });
+    }
+
+    // 5. Xác thực thành công -> Xử lý dữ liệu
+    console.log(`[CleverTap] Xác thực thành công. Nhận webhook event từ IP: ${req.ip}`);
     processAndEmitWebhook(req, "CLEVERTAP");
 
-    // Phản hồi mã 200 OK để server AppsFlyer biết đã nhận thông tin thành công
-    res.status(200).json({ status: 'success', message: 'CleverTap push data received successfully without authentication' });
+    return res.status(200).json({ status: 'success', message: 'CleverTap push data received successfully' });
 });
 
 // ROUTE ĐÓN CALLBACK ĐỔI ACCESS TOKEN TỪ ZALO OAUTH V4
