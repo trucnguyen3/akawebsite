@@ -118,6 +118,19 @@ app.post('/webhook-zalo', (req, res) => {
     res.status(200).json({ status: 'success', message: 'Zalo webhook received successfully' });
 });
 
+// =================================================================
+// 4. ENDPOINT WEBHOOK CleverTap (HOÀN TOÀN KHÔNG CẦN AUTHEN)
+// =================================================================
+app.post('/webhook-clevertap', (req, res) => {
+    console.log(`[CleverTap] Nhận webhook event từ IP: ${req.ip}`);
+
+    // Đẩy thẳng vào bộ xử lý dữ liệu mà không cần thông qua bất kỳ vòng kiểm tra token nào
+    processAndEmitWebhook(req, "CLEVERTAP");
+
+    // Phản hồi mã 200 OK để server AppsFlyer biết đã nhận thông tin thành công
+    res.status(200).json({ status: 'success', message: 'CleverTap push data received successfully without authentication' });
+});
+
 // ROUTE ĐÓN CALLBACK ĐỔI ACCESS TOKEN TỪ ZALO OAUTH V4
 app.get('/zalo/callback', async (req, res) => {
     const { code, oa_id } = req.query;
