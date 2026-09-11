@@ -93,7 +93,7 @@ app.post('/webhook-appsflyer', (req, res) => {
     console.log(`[AppsFlyer] IP: ${req.ip}`);
     console.log(`[AppsFlyer] Headers nhận được:`, req.headers); // <-- Thêm dòng này để kiểm tra
 
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers['X-af-v2-token'];
     console.log(`[AppsFlyer] Header authorization là:`, authHeader);
 
     if (!authHeader || authHeader !== APPSFLYER_PUSH_TOKEN) {
