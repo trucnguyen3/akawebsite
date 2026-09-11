@@ -32,6 +32,8 @@ const ZALO_CODE_VERIFIER = process.env.ZALO_CODE_VERIFIER || ""; // Dùng nếu 
 const WEBHOOK_CT_USER = process.env.WEBHOOK_CT_USER || "skypra_partner";
 const WEBHOOK_CT_PASS = process.env.WEBHOOK_CT_PASS || "SecurePassword2026!";
 
+const APPSFLYER_PUSH_TOKEN = process.env.APPSFLYER_PUSH_TOKEN || 'SecurePassword2026!';
+
 // Mảng chung để gom tất cả lịch sử webhook hiển thị trên giao diện Center
 let webhookPayloads = []; 
 
@@ -90,11 +92,19 @@ app.post('/webhook', (req, res) => {
 app.post('/webhook-appsflyer', (req, res) => {
     console.log(`[AppsFlyer] Nhận push API event từ IP: ${req.ip}`);
 
-    // Đẩy thẳng vào bộ xử lý dữ liệu mà không cần thông qua bất kỳ vòng kiểm tra token nào
+    // Lấy token từ header "authorization" do AppsFlyer gửi sang
+    const authHeader = req.headers['authorization'];
+
+    // Kiểm tra token có khớp với "Lmaoez" không
+    if (!authHeader || authHeader !== APPSFLYER_PUSH_TOKEN) {
+        console.warn(`[AppsFlyer] Token không hợp lệ từ IP: ${req.ip}`);
+        return res.status(401).json({ status: 'error', message: 'Unauthorized: Invalid token' });
+    }
+
+    // Đúng token thì tiếp tục xử lý
     processAndEmitWebhook(req, "APPSFLYER");
 
-    // Phản hồi mã 200 OK để server AppsFlyer biết đã nhận thông tin thành công
-    res.status(200).json({ status: 'success', message: 'AppsFlyer push data received successfully without authentication' });
+    res.status(200).json({ status: 'success', message: 'AppsFlyer push data received successfully' });
 });
 
 
