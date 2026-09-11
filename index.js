@@ -94,7 +94,7 @@ app.post('/webhook-appsflyer', (req, res) => {
     console.log(`[AppsFlyer] Headers nhận được:`, req.headers);
 
     // Lấy token từ header "authorization" do AppsFlyer gửi sang
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers['X-af-v2-token'];
 
     // Kiểm tra token có khớp với "Lmaoez" không
     if (!authHeader || authHeader !== APPSFLYER_PUSH_TOKEN) {
