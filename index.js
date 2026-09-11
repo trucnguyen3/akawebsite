@@ -91,17 +91,21 @@ app.post('/webhook', (req, res) => {
 // =================================================================
 app.post('/webhook-appsflyer', (req, res) => {
     console.log(`[AppsFlyer] IP: ${req.ip}`);
-    console.log(`[AppsFlyer] Headers nhận được:`, req.headers); // <-- Thêm dòng này để kiểm tra
+    console.log(`[AppsFlyer] Headers nhận được:`, req.headers);
 
-    const authHeader = req.headers['X-af-v2-token'];
-    console.log(`[AppsFlyer] Header authorization là:`, authHeader);
+    // Lấy token từ header "authorization" do AppsFlyer gửi sang
+    const authHeader = req.headers['authorization'];
 
+    // Kiểm tra token có khớp với "Lmaoez" không
     if (!authHeader || authHeader !== APPSFLYER_PUSH_TOKEN) {
-        return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+        console.warn(`[AppsFlyer] Token không hợp lệ từ IP: ${req.ip}`);
+        return res.status(401).json({ status: 'error', message: 'Unauthorized: Invalid token' });
     }
 
+    // Đúng token thì tiếp tục xử lý
     processAndEmitWebhook(req, "APPSFLYER");
-    res.status(200).json({ status: 'success' });
+
+    res.status(200).json({ status: 'success', message: 'AppsFlyer push data received successfully' });
 });
 
 
