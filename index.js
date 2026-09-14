@@ -257,6 +257,9 @@ app.post('/oauth/token', (req, res) => {
     });
 });
 
+// =================================================================
+// TẠO WEBHOOK OA2.0
+// =================================================================
 app.post('/clevertap-webhook-v2', (req, res) => {
     const authHeader = req.headers['authorization'];
 
