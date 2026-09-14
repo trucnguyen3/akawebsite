@@ -237,6 +237,7 @@ app.get('/zalo/callback', async (req, res) => {
 // XỬ LÍ BEARER TOKEN CLEVERTAP WEBHOOK OA2.0
 // =================================================================
 app.post('/oauth/token', (req, res) => {
+    console.log("[CleverTap] request token thành công!", req.body)
     const { grant_type, client_id, client_secret } = req.body;
 
     // Validate grant type and client credentials
@@ -261,6 +262,7 @@ app.post('/oauth/token', (req, res) => {
 // TẠO WEBHOOK OA2.0
 // =================================================================
 app.post('/clevertap-webhook-v2', (req, res) => {
+    console.log("[CleverTap] request webhook thành công!", req.body)
     const authHeader = req.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
