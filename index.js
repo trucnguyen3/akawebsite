@@ -247,7 +247,7 @@ app.post('/oauth/token', (req, res) => {
         return res.status(200).json({
             access_token: DUMMY_ACCESS_TOKEN,
             token_type: 'Bearer',
-            expires_in: 3600 // Token lifetime in seconds
+            expires_in: 60 // Token lifetime in seconds
         });
     }
 
