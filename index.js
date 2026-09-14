@@ -34,6 +34,10 @@ const WEBHOOK_CT_PASS = process.env.WEBHOOK_CT_PASS || "SecurePassword2026!";
 
 const APPSFLYER_PUSH_TOKEN = process.env.APPSFLYER_PUSH_TOKEN || 'SecurePassword2026!';
 
+const CLIENT_ID = 'aka_ct';
+const CLIENT_SECRET = 'aka_banking_ct';
+const DUMMY_ACCESS_TOKEN = 'Lmaoez';
+
 // Mảng chung để gom tất cả lịch sử webhook hiển thị trên giao diện Center
 let webhookPayloads = []; 
 
@@ -226,6 +230,53 @@ app.get('/zalo/callback', async (req, res) => {
         console.error('[Zalo OAuth Exception]', err.response?.data || err.message);
         res.status(500).send('Lỗi trong quá trình trao đổi token với Zalo OAuth API.');
     }
+});
+
+
+// =================================================================
+// XỬ LÍ BEARER TOKEN CLEVERTAP WEBHOOK OA2.0
+// =================================================================
+app.post('/oauth/token', (req, res) => {
+    const { grant_type, client_id, client_secret } = req.body;
+
+    // Validate grant type and client credentials
+    if (grant_type === 'client_credentials' && 
+        client_id === CLIENT_ID && 
+        client_secret === CLIENT_SECRET) {
+        
+        return res.status(200).json({
+            access_token: DUMMY_ACCESS_TOKEN,
+            token_type: 'Bearer',
+            expires_in: 3600 // Token lifetime in seconds
+        });
+    }
+
+    return res.status(401).json({
+        error: 'invalid_client',
+        error_description: 'Client authentication failed'
+    });
+});
+
+app.post('/clevertap-webhook-v2', (req, res) => {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Missing or malformed authorization token' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    // Validate the token
+    if (token !== DUMMY_ACCESS_TOKEN) {
+        return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+
+    // Process the CleverTap payload securely
+    const eventData = req.body;
+    console.log('Received CleverTap Webhook Event:', JSON.stringify(eventData, null, 2));
+
+    // Acknowledge receipt immediately (CleverTap expects a 2xx response)
+    return res.status(200).json({ status: 'success', message: 'Webhook processed' });
 });
 
 
