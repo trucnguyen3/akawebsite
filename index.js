@@ -96,7 +96,7 @@ app.post('/webhook', (req, res) => {
 app.post('/webhook-appsflyer', (req, res) => {
     console.log(`[AppsFlyer] IP: ${req.ip}`);
     console.log(`[AppsFlyer] Headers:`, req.headers);
-    console.log(`[AppsFlyer] Request:`, req);
+    console.log(`[AppsFlyer] Request:`, req.body);
     console.log(`[AppsFlyer] Response:`, res);
 
     // Lấy token từ header "authorization" do AppsFlyer gửi sang
