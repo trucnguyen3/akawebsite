@@ -32,7 +32,7 @@ const ZALO_CODE_VERIFIER = process.env.ZALO_CODE_VERIFIER || ""; // Dùng nếu 
 const WEBHOOK_CT_USER = process.env.WEBHOOK_CT_USER || "skypra_partner";
 const WEBHOOK_CT_PASS = process.env.WEBHOOK_CT_PASS || "SecurePassword2026!";
 
-const APPSFLYER_PUSH_TOKEN = process.env.APPSFLYER_PUSH_TOKEN || 'SecurePassword2026!';
+const APPSFLYER_PUSHAPI_TOKEN = process.env.APPSFLYER_PUSHAPI_TOKEN || 'SecurePassword2026!';
 
 const CLIENT_ID = 'aka_ct';
 const CLIENT_SECRET = 'aka_banking_ct';
@@ -103,7 +103,7 @@ app.post('/webhook-appsflyer', (req, res) => {
     const authHeader = req.headers['x-af-v2-token'];
 
     // Kiểm tra token có khớp với "Lmaoez" không
-    if (!authHeader || authHeader !== APPSFLYER_PUSH_TOKEN) {
+    if (!authHeader || authHeader !== APPSFLYER_PUSHAPI_TOKEN) {
         console.warn(`[AppsFlyer] Token không hợp lệ từ IP: ${req.ip}`);
         return res.status(401).json({ status: 'error', message: 'Unauthorized: Invalid token' });
     }
