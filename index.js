@@ -313,6 +313,42 @@ function processAndEmitWebhook(req, type) {
     io.emit('new-webhook', newPayload);
 }
 
+// =================================================================
+// HÀM XỬ LÝ XÓA TÀI KHOẢN
+// =================================================================
+app.get('/delete-account', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'delete-account.html'));
+});
+
+app.post('/api/request-delete-account', (req, res) => {
+    const { accountInfo, reason } = req.body;
+
+    if (!accountInfo) {
+        return res.status(400).json({ status: 'error', message: 'Vui lòng cung cấp thông tin tài khoản.' });
+    }
+
+    console.log(`[YÊU CẦU XÓA TÀI KHOẢN] Account: ${accountInfo} | Lý do: ${reason || 'Không có'} | IP: ${req.ip}`);
+
+    // Tùy chọn: Đẩy event trực tiếp lên giao diện Webhook Center để bạn quản lý realtime
+    const deleteRequestPayload = {
+        type: "ACCOUNT_DELETE_REQUEST",
+        accountInfo: accountInfo,
+        reason: reason,
+        requestedAt: new Date().toISOString()
+    };
+    
+    // Đẩy tín hiệu qua socket lên trang webhook-center nếu muốn theo dõi
+    io.emit('new-webhook', {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        headers: req.headers,
+        body: deleteRequestPayload,
+        method: "DELETE_REQ"
+    });
+
+    res.status(200).json({ status: 'success', message: 'Yêu cầu xóa tài khoản đã được ghi nhận thành công.' });
+});
+
 app.get('/api/webhooks', (req, res) => {
     res.json(webhookPayloads);
 });

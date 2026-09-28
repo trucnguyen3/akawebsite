@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yêu Cầu Xóa Tài Khoản</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 480px;
+            padding: 32px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #1e293b;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-danger {
+            width: 100%;
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-top: 16px;
+            display: none;
+            text-align: center;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h2>Yêu Cầu Xóa Tài Khoản</h2>
+        <p>Nếu bạn muốn xóa tài khoản và toàn bộ dữ liệu liên quan, vui lòng điền thông tin bên dưới. Yêu cầu sẽ được xử
+            lý trong vòng 24-48 giờ.</p>
+
+        <form id="deleteForm">
+            <div class="form-group">
+                <label for="email">Email hoặc Số điện thoại đăng ký (*)</label>
+                <input type="text" id="accountInfo" name="accountInfo" placeholder="nhanguyen@example.com / 0901234567"
+                    required>
+            </div>
+            <div class="form-group">
+                <label for="reason">Lý do xóa tài khoản (Không bắt buộc)</label>
+                <textarea id="reason" name="reason" rows="3"
+                    placeholder="Cho chúng tôi biết lý do bạn muốn rời đi..."></textarea>
+            </div>
+            <button type="submit" class="btn-danger" id="submitBtn">Xác Nhận Xóa Tài Khoản</button>
+        </form>
+
+        <div id="alertSuccess" class="alert alert-success">Yêu cầu xóa tài khoản đã được ghi nhận. Chúng tôi sẽ liên
+            hệ/xác nhận qua email của bạn!</div>
+        <div id="alertError" class="alert alert-error">Đã có lỗi xảy ra. Vui lòng thử lại sau!</div>
+    </div>
+
+    <script>
+        document.getElementById('deleteForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const alertSuccess = document.getElementById('alertSuccess');
+            const alertError = document.getElementById('alertError');
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Đang gửi yêu cầu...';
+            alertSuccess.style.display = 'none';
+            alertError.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/request-delete-account', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        accountInfo: document.getElementById('accountInfo').value,
+                        reason: document.getElementById('reason').value
+                    })
+                });
+
+                if (response.ok) {
+                    alertSuccess.style.display = 'block';
+                    document.getElementById('deleteForm').reset();
+                } else {
+                    alertError.style.display = 'block';
+                }
+            } catch (err) {
+                alertError.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Xác Nhận Xóa Tài Khoản';
+            }
+        });
+    </script>
+
+</body>
+
+</html>
