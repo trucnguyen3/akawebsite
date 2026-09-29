@@ -32,22 +32,6 @@ const dbPool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/chatbot_db',
 });
 
-app.use(session({
-    store: new pgSession({
-        pool: dbPool,
-        tableName: 'user_sessions',
-        createTableIfMissing: true
-    }),
-    secret: process.env.SESSION_SECRET || 'skypremium_super_secret_key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production'
-    }
-}));
-
 // ĐỌC CẤU HÌNH BẢO MẬT CHO CỔNG WEBHOOK CHÍNH
 const WEBHOOK_SECRET_TOKEN = process.env.WEBHOOK_TOKEN || "SkyPremium_Secret_Token_2026"; 
 const WEBHOOK_USER = process.env.WEBHOOK_USER || "skypra_partner";
