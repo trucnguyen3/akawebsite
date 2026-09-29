@@ -993,6 +993,9 @@
         }
 
         async function submitSignup() {
+            if (e) e.preventDefault();
+            console.log("Submit Signup Triggered!");
+
             const email = document.getElementById('signup-email').value;
             const mobile = document.getElementById('signup-mobile').value;
             const password = document.getElementById('signup-password').value;
