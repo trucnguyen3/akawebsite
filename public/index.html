@@ -1173,9 +1173,9 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    credentials: 'include', // 🌟 TỰ ĐỘNG ĐÈN COOKIE SESSION LÊN BACKEND
                     body: JSON.stringify({
-                        userId: "user_123", // Thay bằng ID người dùng thực tế nếu có
-                        question: userMsg   // Gửi trường 'question' thay cho 'message'
+                        question: userMsg // Không cần gửi userId từ client nữa
                     })
                 });
 
@@ -1183,15 +1183,12 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                // 1. Chuyển đổi response thành JSON
                 const responseData = await response.json();
 
-                // 2. Kiểm tra cấu trúc responseData.data.answer
                 if (responseData && responseData.data && responseData.data.answer) {
-                    // 3. Sử dụng đúng tên biến responseData
                     renderMessage(responseData.data.answer, 'bot');
                 } else {
-                    renderMessage("Không nhận được phản hồi hợp lệ từ hệ thống.", 'bot');
+                    renderMessage("Không nhận me phản hồi hợp lệ từ hệ thống.", 'bot');
                 }
 
             } catch (error) {

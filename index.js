@@ -323,7 +323,8 @@ async function processChatbotRequest(userId, question) {
 // =================================================================
 app.post('/api/chat', async (req, res) => {
     try {
-        const { userId, question } = req.body;
+        const userId = req.session?.user?.email || 'guest';
+        const { question } = req.body;
 
         if (!userId || !question) {
             return res.status(400).json({ 
