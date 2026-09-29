@@ -35,19 +35,17 @@ const dbPool = new Pool({
 app.set('trust proxy', 1);
 
 app.use(session({
-    store: new pgSession({
-        pool: dbPool,
-        tableName: 'user_sessions',
-        createTableIfMissing: true
-    }),
-    secret: process.env.SESSION_SECRET || 'skypremium_super_secret_key',
+    store: new pgSession({ pool: dbPool, tableName: 'user_sessions' }),
+    secret: process.env.SESSION_SECRET || 'Lmaoez',
     resave: false,
     saveUninitialized: false,
+    name: 'connect.sid',
     cookie: {
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
+        maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
-        secure: true, // Đặt là true vì domain dùng https://
-        sameSite: 'lax'
+        secure: true,
+        sameSite: 'lax', // Hoặc 'none' nếu gọi cross-domain hoàn toàn
+        domain: '.akadigital.net' // 🌟 Cho phép tất cả subdomain chia sẻ cookie này
     }
 }));
 
