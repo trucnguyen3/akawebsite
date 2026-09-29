@@ -18,6 +18,8 @@ const io = new Server(server, {
     cors: { origin: "*", methods: ["GET", "POST"] }
 });
 
+const { GoogleGenAI } = require('@google/genai');
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public')); 
@@ -39,6 +41,13 @@ const APPSFLYER_PUSHAPI_TOKEN = process.env.APPSFLYER_PUSHAPI_TOKEN || 'SecurePa
 const CLIENT_ID = 'aka_ct';
 const CLIENT_SECRET = 'aka_banking_ct';
 const DUMMY_ACCESS_TOKEN = 'Lmaoez';
+
+// =================================================================
+// CẤU HÌNH GOOGLE GENAI CLIENT MỚI
+// =================================================================
+const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || 'Lmaoez'
+});
 
 // =================================================================
 // CẤU HÌNH REDIS & DATABASE (POSTGRESQL) CHO CHATBOT
@@ -90,9 +99,52 @@ function generateCacheKey(question) {
 }
 
 // Giả lập hoặc tích hợp AI API (OpenAI/Gemini/v.v.)
+const COMPANY_FAQ = [
+    {
+        keywords: ['địa chỉ', 'ở đâu', 'trụ sở', 'văn phòng'],
+        answer: 'Địa chỉ công ty SkyPremium / AKA Digital: 236/26C Điện Biên Phủ, Phường 17, Quận Bình Thạnh, TP. Hồ Chí Minh.'
+    },
+    {
+        keywords: ['gói dịch vụ', 'dịch vụ'],
+        answer: 'SkyPremium cung cấp các đặc quyền VIP cao cấp bao gồm: Đặt vé máy bay/khách sạn ưu đãi, ẩm thực sang trọng và hỗ trợ lifestyle 24/7.'
+    },
+    {
+        keywords: ['ưu đãi', 'khuyến mãi'],
+        answer: 'Hiện tại SkyPremium đang có chương trình ưu đãi giảm 20% phí gia hạn cho thành viên đăng ký gói Membership Năm!'
+    }
+];
+
+function findFAQAnswer(question) {
+    const q = question.toLowerCase();
+    for (const item of COMPANY_FAQ) {
+        if (item.keywords.some(kw => q.includes(kw))) {
+            return item.answer;
+        }
+    }
+    return null;
+}
+
+// 2. Cập nhật hàm gọi AI bằng ai.models.generateContent
 async function fetchAIAnswer(question) {
-    // TODO: Thay thế bằng call API thực tế đến Gemini / OpenAI SDK
-    return `[Bot Auto-Response] Trả lời cho câu hỏi: "${question}"`;
+    // Kiểm tra trong FAQ trước
+    const faqAnswer = findFAQAnswer(question);
+    if (faqAnswer) {
+        return faqAnswer;
+    }
+
+    // Gọi Gemini AI thông qua SDK mới
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Bạn là trợ lý ảo SkyPremium Assistant. Hãy trả lời ngắn gọn, lịch sự câu hỏi sau của khách hàng: "${question}"`
+        });
+
+        // Trả về văn bản câu trả lời
+        return response.text;
+    } catch (error) {
+        console.error("❌ Gemini AI Error:", error);
+        return "Xin lỗi, hiện tại tôi đang gặp khó khăn khi xử lý câu hỏi này. Vui lòng thử lại sau!";
+    }
 }
 
 // Lưu log hỏi đáp vào Database
@@ -189,6 +241,18 @@ app.get('/api/chat/history/:userId', async (req, res) => {
     } catch (err) {
         console.error('❌ Get History Error:', err);
         return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+});
+
+app.post('/api/chat/clear-cache', async (req, res) => {
+    try {
+        const keys = await redis.keys('chatbot:cache:*');
+        if (keys.length > 0) {
+            await redis.del(keys);
+        }
+        return res.status(200).json({ status: 'success', message: 'Đã xóa toàn bộ Redis Cache Chatbot!' });
+    } catch (err) {
+        return res.status(500).json({ status: 'error', message: err.message });
     }
 });
 
