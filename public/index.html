@@ -1084,11 +1084,13 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                let responseData = response.data
+                // 1. Chuyển đổi response thành JSON
+                const responseData = await response.json();
 
-                // Hiển thị câu trả lời từ field 'answer' trong JSON phản hồi
-                if (responseData && responseData.answer) {
-                    renderMessage(data.answer, 'bot');
+                // 2. Kiểm tra cấu trúc responseData.data.answer
+                if (responseData && responseData.data && responseData.data.answer) {
+                    // 3. Sử dụng đúng tên biến responseData
+                    renderMessage(responseData.data.answer, 'bot');
                 } else {
                     renderMessage("Không nhận được phản hồi hợp lệ từ hệ thống.", 'bot');
                 }
