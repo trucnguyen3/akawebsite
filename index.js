@@ -7,6 +7,8 @@ const http = require('http');
 const { Server } = require('socket.io'); 
 const crypto = require('crypto'); // Cần thiết để verify Zalo Signature
 const axios = require('axios');
+const Redis = require('ioredis');
+const { Pool } = require('pg');
 
 const port = 6595;
 const host = '0.0.0.0'; 
@@ -38,8 +40,157 @@ const CLIENT_ID = 'aka_ct';
 const CLIENT_SECRET = 'aka_banking_ct';
 const DUMMY_ACCESS_TOKEN = 'Lmaoez';
 
+// =================================================================
+// CẤU HÌNH REDIS & DATABASE (POSTGRESQL) CHO CHATBOT
+// =================================================================
+const redis = new Redis({
+    host: process.env.REDIS_HOST || '127.0.0.1',
+    port: process.env.REDIS_PORT || 6379,
+});
+
+redis.on('connect', () => console.log('✅ Redis connected successfully'));
+redis.on('error', (err) => console.error('❌ Redis Connection Error:', err));
+
+const dbPool = new Pool({
+    connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/chatbot_db',
+});
+
+const initChatbotDb = async () => {
+    try {
+        const createTableQuery = `
+            CREATE TABLE IF NOT EXISTS chatbot_history (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(100) NOT NULL,
+                question TEXT NOT NULL,
+                answer TEXT NOT NULL,
+                is_cached BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `;
+        await dbPool.query(createTableQuery);
+        console.log('✅ Database chatbot_history table is ready');
+    } catch (err) {
+        console.error('❌ Database Initialization Error:', err.message);
+    }
+};
+initChatbotDb();
+
 // Mảng chung để gom tất cả lịch sử webhook hiển thị trên giao diện Center
 let webhookPayloads = []; 
+
+// =================================================================
+// HELPER & LOGIC CHATBOT (REDIS CACHE + DB STORAGE)
+// =================================================================
+
+// Chuẩn hóa câu hỏi thành hash MD5 để làm Key trong Redis
+function generateCacheKey(question) {
+    const normalized = question.trim().toLowerCase();
+    const hash = crypto.createHash('md5').update(normalized).digest('hex');
+    return `chatbot:cache:${hash}`;
+}
+
+// Giả lập hoặc tích hợp AI API (OpenAI/Gemini/v.v.)
+async function fetchAIAnswer(question) {
+    // TODO: Thay thế bằng call API thực tế đến Gemini / OpenAI SDK
+    return `[Bot Auto-Response] Trả lời cho câu hỏi: "${question}"`;
+}
+
+// Lưu log hỏi đáp vào Database
+async function saveChatToDB(userId, question, answer, isCached) {
+    try {
+        const query = `
+            INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
+            VALUES ($1, $2, $3, $4)
+        `;
+        await dbPool.query(query, [userId, question, answer, isCached]);
+    } catch (err) {
+        console.error('❌ Error saving chat to DB:', err.message);
+    }
+}
+
+// Function chính xử lý logic Chatbot
+async function processChatbotRequest(userId, question) {
+    const cacheKey = generateCacheKey(question);
+
+    // 1. Kiểm tra cache từ Redis
+    try {
+        const cachedAnswer = await redis.get(cacheKey);
+        if (cachedAnswer) {
+            console.log(`⚡ [Redis Cache Hit] Key: ${cacheKey}`);
+            // Ghi log vào DB (Asynchronous)
+            saveChatToDB(userId, question, cachedAnswer, true);
+            return { answer: cachedAnswer, source: 'cache' };
+        }
+    } catch (err) {
+        console.error('⚠️ Redis Get Error:', err.message);
+    }
+
+    // 2. Cache Miss: Gọi AI Service
+    console.log(`🤖 [Cache Miss] Fetching response from AI Engine...`);
+    const answer = await fetchAIAnswer(question);
+
+    // 3. Cache câu trả lời vào Redis (TTL 3600 giây = 1 giờ)
+    try {
+        await redis.set(cacheKey, answer, 'EX', 3600);
+    } catch (err) {
+        console.error('⚠️ Redis Set Error:', err.message);
+    }
+
+    // 4. Lưu câu hỏi + câu trả lời vào PostgreSQL
+    saveChatToDB(userId, question, answer, false);
+
+    return { answer, source: 'ai_engine' };
+}
+
+// =================================================================
+// ENDPOINT CHATBOT API
+// =================================================================
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { userId, question } = req.body;
+
+        if (!userId || !question) {
+            return res.status(400).json({ 
+                status: 'error', 
+                message: 'userId và question không được để trống.' 
+            });
+        }
+
+        const result = await processChatbotRequest(userId, question);
+
+        return res.status(200).json({
+            status: 'success',
+            data: {
+                userId,
+                question,
+                answer: result.answer,
+                source: result.source
+            }
+        });
+    } catch (err) {
+        console.error('❌ Chatbot Endpoint Error:', err);
+        return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+});
+
+// Endpoint lấy lịch sử trò chuyện của User từ Database
+app.get('/api/chat/history/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const query = `
+            SELECT id, question, answer, is_cached, created_at 
+            FROM chatbot_history 
+            WHERE user_id = $1 
+            ORDER BY created_at DESC 
+            LIMIT 50
+        `;
+        const { rows } = await dbPool.query(query, [userId]);
+        return res.status(200).json({ status: 'success', history: rows });
+    } catch (err) {
+        console.error('❌ Get History Error:', err);
+        return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+    }
+});
 
 // --- CÁC ROUTE GIAO DIỆN ---
 app.get('/download', (req, res) => {
@@ -354,8 +505,13 @@ app.get('/api/webhooks', (req, res) => {
 });
 
 server.listen(port, host, () => {
-    console.log(`🚀 Node.js đang chạy:`);
-    console.log(`   - Cổng bảo mật (Bearer & Basic): https://uat1.akadigital.net/webhook`);
-    console.log(`   - Cổng công cộng cho AppsFlyer: https://uat1.akadigital.net/webhook-appsflyer`);
-    console.log(`   - Cổng công cộng cho Zalo:      https://uat1.akadigital.net/webhook-zalo`);
+    console.log(`🚀 Node.js đang chạy trên cổng ${port}:`);
+    console.log(`   - Chatbot API:       POST /api/chat`);
+    console.log(`   - Chatbot History:   GET /api/chat/history/:userId`);
+    console.log(`   - Main Webhook:      POST /webhook`);
+    console.log(`   - AppsFlyer Push:     POST /webhook-appsflyer`);
+    console.log(`   - Zalo Webhook:       POST /webhook-zalo`);
+    console.log(`   - CleverTap Basic:    POST /webhook-clevertap`);
+    console.log(`   - CleverTap OAuth:    POST /oauth/token & /clevertap-webhook-v2`);
+    console.log(`   - Webhook Center UI:  GET /webhook-center`);
 });
