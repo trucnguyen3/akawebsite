@@ -32,6 +32,8 @@ const dbPool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/chatbot_db',
 });
 
+app.set('trust proxy', 1);
+
 app.use(session({
     store: new pgSession({
         pool: dbPool,
@@ -44,7 +46,8 @@ app.use(session({
     cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production'
+        secure: true, // Đặt là true vì domain dùng https://
+        sameSite: 'lax'
     }
 }));
 
@@ -116,41 +119,40 @@ initDb();
 
 // 1. Đăng ký tài khoản
 app.post('/api/auth/signup', async (req, res) => {
+    const { email, password, mobile } = req.body;
+
     try {
-        const { email, password, mobile } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({ status: 'error', message: 'Email và mật khẩu là bắt buộc.' });
-        }
-
-        // Kiểm tra email tồn tại
-        const existingUser = await dbPool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
-        if (existingUser.rows.length > 0) {
-            return res.status(400).json({ status: 'error', message: 'Email này đã được đăng ký!' });
-        }
-
-        // Hash mật khẩu
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // Lưu vào DB
-        const newUser = await dbPool.query(
-            'INSERT INTO users (email, password_hash, mobile) VALUES ($1, $2, $3) RETURNING id, email, mobile',
-            [email.toLowerCase(), hashedPassword, mobile || '']
+        // ... (Logic mã hóa password và lưu vào DB của bạn) ...
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const result = await dbPool.query(
+            'INSERT INTO users (email, password, mobile) VALUES ($1, $2, $3) RETURNING id, email, mobile',
+            [email, hashedPassword, mobile]
         );
 
-        const user = newUser.rows[0];
+        const newUser = result.rows[0];
 
-        // Lưu thông tin vào Session
-        req.session.user = { id: user.id, email: user.email, mobile: user.mobile };
+        // 🌟 TỰ ĐỘNG ĐĂNG NHẬP: Gán thông tin user vào Session ngay lập tức
+        req.session.user = {
+            id: newUser.id,
+            email: newUser.email,
+            mobile: newUser.mobile
+        };
 
-        return res.status(201).json({
-            status: 'success',
-            message: 'Đăng ký thành công!',
-            data: req.session.user
+        // Lưu Session vào PostgreSQL
+        req.session.save((err) => {
+            if (err) {
+                return res.status(500).json({ status: 'error', message: 'Lỗi khởi tạo phiên đăng nhập' });
+            }
+            return res.json({
+                status: 'success',
+                message: 'Đăng ký thành công!',
+                data: req.session.user
+            });
         });
+
     } catch (err) {
-        console.error('❌ Signup Error:', err);
-        return res.status(500).json({ status: 'error', message: 'Lỗi hệ thống khi đăng ký.' });
+        console.error(err);
+        return res.status(400).json({ status: 'error', message: 'Email đã tồn tại hoặc dữ liệu không hợp lệ' });
     }
 });
 

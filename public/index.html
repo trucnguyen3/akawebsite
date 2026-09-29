@@ -750,7 +750,10 @@
 
         async function checkSession() {
             try {
-                const res = await fetch('https://uat1.akadigital.net/api/auth/me');
+                const res = await fetch('https://uat1.akadigital.net/api/auth/me', {
+                    method: 'GET',
+                    credentials: 'include' // BẮT BUỘC: Gửi cookie session lên server
+                });
                 const data = await res.json();
                 if (data.status === 'success') {
                     renderUI(data.data);
@@ -954,7 +957,12 @@
 
         // 3. Hàm xử lý Logout
         async function handleLogout() {
-            await fetch('https://uat1.akadigital.net/api/auth/logout', { method: 'POST' });
+            try {
+                await fetch('https://uat1.akadigital.net/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (e) { }
             renderUI(null);
         }
 
@@ -968,6 +976,7 @@
                 const res = await fetch('https://uat1.akadigital.net/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', // Gửi & Nhận Cookie Session
                     body: JSON.stringify({ email, password })
                 });
                 const result = await res.json();
@@ -994,13 +1003,14 @@
                 const res = await fetch('https://uat1.akadigital.net/api/auth/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', // 🌟 BẮT BUỘC: Để trình duyệt nhận Cookie Session sau khi Đăng ký
                     body: JSON.stringify({ email, password, mobile })
                 });
                 const result = await res.json();
 
                 if (result.status === 'success') {
                     closeAuth();
-                    renderUI(result.data);
+                    renderUI(result.data); // Hiển thị trạng thái đã đăng nhập ngay lập tức
                 } else {
                     alert(result.message);
                 }
