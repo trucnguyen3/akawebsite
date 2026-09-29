@@ -28,6 +28,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public')); 
 
+const dbPool = new Pool({
+    connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/chatbot_db',
+});
+
 app.use(session({
     store: new pgSession({
         pool: dbPool,
@@ -79,10 +83,6 @@ const redis = new Redis({
 
 redis.on('connect', () => console.log('✅ Redis connected successfully'));
 redis.on('error', (err) => console.error('❌ Redis Connection Error:', err));
-
-const dbPool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/chatbot_db',
-});
 
 const initDb = async () => {
     try {
