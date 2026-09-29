@@ -374,6 +374,35 @@
         .send-btn:hover {
             background-color: var(--sp-gold-hover);
         }
+
+        /* Hiệu ứng xoay tròn */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Thẻ hiển thị thông báo trạng thái bên dưới nút */
+        .status-loading {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #007bff;
+            /* Tùy chỉnh màu sắc phù hợp với giao diện Sky Premium */
+            text-align: center;
+            font-weight: 500;
+        }
     </style>
 
     <script src='//cdnt.netcoresmartech.com/smartechclient.js'></script>
@@ -1001,11 +1030,24 @@
 
             if (!email || !password) return alert("Vui lòng điền Email và Mật khẩu!");
 
-            // Build payload: Nếu mobile rỗng thì không gửi hoặc truyền null/loại bỏ tùy backend
-            const payload = { email, password };
-            if (mobile) payload.mobile = mobile;
+            // Lấy nút submit & element hiển thị trạng thái
+            const submitBtn = document.getElementById('signup-btn');
+            const statusText = document.getElementById('signup-status');
+
+            // 1. KÍCH HOẠT TRẠNG THÁI LOADING
+            if (submitBtn) {
+                submitBtn.disabled = true; // Chống user spam click
+                submitBtn.innerHTML = `<span class="spinner"></span> Đang xử lý...`;
+            }
+            if (statusText) {
+                statusText.style.display = 'block';
+                statusText.innerText = "Đang chờ duyệt tài khoản...";
+            }
 
             try {
+                const payload = { email, password };
+                if (mobile) payload.mobile = mobile;
+
                 const res = await fetch('https://uat1.akadigital.net/api/auth/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1015,19 +1057,24 @@
 
                 const result = await res.json();
 
-                // Log chi tiết response để xem backend trả về message gì khi 400
-                console.log("Backend Response:", res.status, result);
-
                 if (res.ok && result.status === 'success') {
                     closeAuth();
                     renderUI(result.data);
                 } else {
-                    // Hiển thị thông báo chi tiết từ backend trả về (thường chứa lý do lỗi validation)
-                    alert(result.message || result.error || JSON.stringify(result));
+                    alert(result.message || result.error || "Đăng ký không thành công!");
                 }
             } catch (err) {
-                console.error("Fetch error:", err);
+                console.error("Signup error:", err);
                 alert("Lỗi đăng ký, vui lòng thử lại sau!");
+            } finally {
+                // 2. KHÔI PHỤC TRẠNG THÁI NÚT KHI HOÀN THÀNH (DÙ THÀNH CÔNG HAY LỖI)
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = "Đăng ký";
+                }
+                if (statusText) {
+                    statusText.style.display = 'none';
+                }
             }
         }
 
@@ -1238,10 +1285,17 @@
                             <input type="password" id="signup-password" placeholder="••••••••"
                                 class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
                         </div>
-                        <button onclick="submitSignup()"
+
+                        <!-- Đã thêm id="signup-btn" vào button -->
+                        <button onclick="submitSignup()" id="signup-btn"
                             class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg shadow-slate-200 hover:bg-blue-600 transition">
                             Tạo tài khoản
                         </button>
+
+                        <!-- Thêm thẻ hiển thị trạng thái chờ duyệt -->
+                        <div id="signup-status"
+                            class="status-loading text-center text-sm font-medium text-blue-600 pt-1"
+                            style="display: none;"></div>
                     </div>
                     <p class="text-center mt-8 text-sm text-slate-500">Đã có tài khoản? <a
                             href="javascript:toggleAuth('login')" class="text-blue-600 font-bold">Đăng nhập</a></p>
