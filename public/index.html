@@ -91,6 +91,289 @@
         .auth-gradient {
             background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
         }
+
+        :root {
+            --sp-primary: #0A192F;
+            /* Xanh Navy sang trọng */
+            --sp-gold: #D4AF37;
+            /* Vàng kim SkyPremium */
+            --sp-gold-hover: #B59328;
+            --sp-bg-chat: #F8F9FA;
+            --sp-user-msg: #0A192F;
+            --sp-bot-msg: #FFFFFF;
+            --sp-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 1. Nút bong bóng kích hoạt Chat (Floating Trigger) */
+        .chat-trigger {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--sp-primary), #1E3A8A);
+            color: var(--sp-gold);
+            border: 2px solid var(--sp-gold);
+            box-shadow: var(--sp-shadow);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 9999;
+        }
+
+        .chat-trigger:hover {
+            transform: scale(1.08);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .chat-trigger .badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background-color: #10B981;
+            /* Chấm xanh Online */
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        /* 2. Cửa sổ Chat (Chat Container) */
+        .chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 380px;
+            max-width: calc(100vw - 40px);
+            height: 560px;
+            max-height: calc(100vh - 120px);
+            background-color: var(--sp-bg-chat);
+            border-radius: 16px;
+            box-shadow: var(--sp-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 9999;
+        }
+
+        .chat-window.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        /* 3. Chat Header */
+        .chat-header {
+            background-color: var(--sp-primary);
+            color: #fff;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--sp-gold);
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--sp-gold);
+            color: var(--sp-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .chat-title h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .chat-title p {
+            font-size: 11px;
+            color: #10B981;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chat-title p::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #10B981;
+            border-radius: 50%;
+        }
+
+        .chat-close-btn {
+            background: none;
+            border: none;
+            color: #9CA3AF;
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .chat-close-btn:hover {
+            color: #fff;
+        }
+
+        /* 4. Chat Body (Khung tin nhắn) */
+        .chat-body {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ĐỊnh dạng bong bóng tin nhắn */
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .msg-content {
+            padding: 12px 14px;
+            border-radius: 14px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .message.bot .msg-content {
+            background-color: var(--sp-bot-msg);
+            color: #333;
+            border-bottom-left-radius: 2px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .message.user .msg-content {
+            background-color: var(--sp-user-msg);
+            color: #fff;
+            border-bottom-right-radius: 2px;
+        }
+
+        .msg-time {
+            font-size: 10px;
+            color: #9CA3AF;
+            margin-top: 4px;
+        }
+
+        .message.bot .msg-time {
+            align-self: flex-start;
+        }
+
+        .message.user .msg-time {
+            align-self: flex-end;
+        }
+
+        /* Gợi ý nhanh (Quick Chips) */
+        .quick-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .chip {
+            background-color: #fff;
+            border: 1px solid var(--sp-gold);
+            color: var(--sp-primary);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip:hover {
+            background-color: var(--sp-gold);
+            color: #fff;
+        }
+
+        /* 5. Chat Input */
+        .chat-footer {
+            padding: 12px 16px;
+            background-color: #fff;
+            border-top: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1px solid #E5E7EB;
+            border-radius: 20px;
+            padding: 10px 14px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--sp-gold);
+        }
+
+        .send-btn {
+            background-color: var(--sp-gold);
+            color: #fff;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .send-btn:hover {
+            background-color: var(--sp-gold-hover);
+        }
     </style>
 
     <script src='//cdnt.netcoresmartech.com/smartechclient.js'></script>
@@ -102,6 +385,58 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5HNVZVH3" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
+
+    <!-- =========================================================
+       HTML CHATBOT WIDGET
+       ========================================================= -->
+
+    <!-- Nút tròn bật Chat -->
+    <button class="chat-trigger" id="chatTrigger" aria-label="Open Chat">
+        <i class="fa-solid fa-comments"></i>
+        <span class="badge"></span>
+    </button>
+
+    <!-- Cửa sổ khung Chat -->
+    <div class="chat-window" id="chatWindow">
+
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="chat-avatar">SP</div>
+                <div class="chat-title">
+                    <h4>SkyPremium Assistant</h4>
+                    <p>Sẵn sàng hỗ trợ</p>
+                </div>
+            </div>
+            <button class="chat-close-btn" id="chatCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Nội dung trò chuyện -->
+        <div class="chat-body" id="chatBody">
+            <!-- Tin nhắn chào mừng ban đầu -->
+            <div class="message bot">
+                <div class="msg-content">
+                    Xin chào! 👋 Cảm ơn bạn đã ghé thăm **SkyPremium**. Tôi có thể giúp gì cho bạn hôm nay?
+                </div>
+                <span class="msg-time">Vừa xong</span>
+
+                <!-- Các gợi ý trả lời nhanh -->
+                <div class="quick-suggestions">
+                    <div class="chip" onclick="sendQuickMsg('Tìm hiểu dịch vụ SkyPremium')">Gói dịch vụ</div>
+                    <div class="chip" onclick="sendQuickMsg('Chương trình ưu đãi mới nhất')">Ưu đãi</div>
+                    <div class="chip" onclick="sendQuickMsg('Liên hệ tư vấn viên')">Tư vấn viên</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ô nhập tin nhắn -->
+        <div class="chat-footer">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Nhập câu hỏi của bạn..."
+                onkeypress="handleKeyPress(event)">
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()"><i
+                    class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
 
     <header
         class="fixed w-full z-50 transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-slate-200">
@@ -662,6 +997,99 @@
             } catch (err) {
                 console.log('Lỗi:', err);
             }
+        }
+
+        const chatTrigger = document.getElementById('chatTrigger');
+        const chatWindow = document.getElementById('chatWindow');
+        const chatCloseBtn = document.getElementById('chatCloseBtn');
+        const chatInput = document.getElementById('chatInput');
+        const chatBody = document.getElementById('chatBody');
+
+        // Bật/Tắt cửa sổ Chat
+        chatTrigger.addEventListener('click', () => {
+            chatWindow.classList.toggle('active');
+        });
+
+        chatCloseBtn.addEventListener('click', () => {
+            chatWindow.classList.remove('active');
+        });
+
+        // Lấy thời gian hiện tại (HH:MM)
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        }
+
+        // Tự động cuộn xuống tin nhắn mới nhất
+        function scrollToBottom() {
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // Hàm gửi tin nhắn người dùng
+        function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Render tin nhắn của User
+            renderMessage(text, 'user');
+            chatInput.value = '';
+            scrollToBottom();
+
+            // Giả lập gọi API Bot phản hồi sau 1 giây
+            setTimeout(() => {
+                botReply(text);
+            }, 1000);
+        }
+
+        // Xử lý nút Enter
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Gửi tin nhắn từ Gợi ý nhanh (Quick Chips)
+        function sendQuickMsg(text) {
+            chatInput.value = text;
+            sendMessage();
+        }
+
+        // Render HTML tin nhắn
+        function renderMessage(text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+
+            msgDiv.innerHTML = `
+        <div class="msg-content">${escapeHTML(text)}</div>
+        <span class="msg-time">${getCurrentTime()}</span>
+      `;
+            chatBody.appendChild(msgDiv);
+        }
+
+        // Giả lập trả lời của Chatbot (Cần thay thế bằng fetch API tới Backend thật)
+        async function botReply(userMsg) {
+            try {
+                const response = await fetch('https://uat1.akadigital.net/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userMsg, userId: "user_123" })
+                });
+
+                const data = await response.json();
+                renderMessage(data.reply, 'bot');
+            } catch (error) {
+                renderMessage("Rất tiếc, đã có lỗi kết nối. Vui lòng thử lại sau!", 'bot');
+            }
+            scrollToBottom();
+        }
+
+        // Tránh lỗ hổng XSS cơ bản
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g,
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
         }
     </script>
 
