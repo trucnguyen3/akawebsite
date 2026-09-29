@@ -842,14 +842,12 @@
             banner.classList.remove('show-consent');
             banner.classList.add('hidden-consent');
         }
+        */
 
-        // Hàm chấp nhận (Có thể lưu vào localStorage để ghi nhớ)
         function acceptConsent() {
-            alert("Cảm ơn! Lựa chọn của bạn đã được ghi nhận.");
-            localStorage.setItem('user-consent-given', 'true');
+            localStorage.setItem('user-consent', 'accepted');
             closeConsent();
         }
-        */
 
         function createFavicon() {
             const canvas = document.createElement('canvas');
@@ -959,9 +957,6 @@
             await fetch('https://uat1.akadigital.net/api/auth/logout', { method: 'POST' });
             renderUI(null);
         }
-
-        // Chạy kiểm tra UI ngay khi load trang
-        document.addEventListener('DOMContentLoaded', renderUI);
 
         async function submitLogin() {
             const email = document.getElementById('login-email').value;
