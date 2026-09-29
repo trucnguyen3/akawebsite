@@ -994,30 +994,39 @@
 
         async function submitSignup(e) {
             if (e) e.preventDefault();
-            console.log("Submit Signup Triggered!");
 
-            const email = document.getElementById('signup-email').value;
-            const mobile = document.getElementById('signup-mobile').value;
+            const email = document.getElementById('signup-email').value.trim();
+            const mobile = document.getElementById('signup-mobile').value.trim();
             const password = document.getElementById('signup-password').value;
 
             if (!email || !password) return alert("Vui lòng điền Email và Mật khẩu!");
+
+            // Build payload: Nếu mobile rỗng thì không gửi hoặc truyền null/loại bỏ tùy backend
+            const payload = { email, password };
+            if (mobile) payload.mobile = mobile;
 
             try {
                 const res = await fetch('https://uat1.akadigital.net/api/auth/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include', // 🌟 BẮT BUỘC: Để trình duyệt nhận Cookie Session sau khi Đăng ký
-                    body: JSON.stringify({ email, password, mobile })
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
                 });
+
                 const result = await res.json();
 
-                if (result.status === 'success') {
+                // Log chi tiết response để xem backend trả về message gì khi 400
+                console.log("Backend Response:", res.status, result);
+
+                if (res.ok && result.status === 'success') {
                     closeAuth();
-                    renderUI(result.data); // Hiển thị trạng thái đã đăng nhập ngay lập tức
+                    renderUI(result.data);
                 } else {
-                    alert(result.message);
+                    // Hiển thị thông báo chi tiết từ backend trả về (thường chứa lý do lỗi validation)
+                    alert(result.message || result.error || JSON.stringify(result));
                 }
             } catch (err) {
+                console.error("Fetch error:", err);
                 alert("Lỗi đăng ký, vui lòng thử lại sau!");
             }
         }
