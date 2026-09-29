@@ -1084,12 +1084,10 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const data = await response.json();
-
-                console.log(data.data)
+                let responseData = response.data
 
                 // Hiển thị câu trả lời từ field 'answer' trong JSON phản hồi
-                if (data && data.answer) {
+                if (responseData && responseData.answer) {
                     renderMessage(data.answer, 'bot');
                 } else {
                     renderMessage("Không nhận được phản hồi hợp lệ từ hệ thống.", 'bot');
