@@ -1086,6 +1086,8 @@
 
                 const data = await response.json();
 
+                console.log(data.data)
+
                 // Hiển thị câu trả lời từ field 'answer' trong JSON phản hồi
                 if (data && data.answer) {
                     renderMessage(data.answer, 'bot');
