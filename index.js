@@ -125,7 +125,7 @@ app.post('/api/auth/signup', async (req, res) => {
         // ... (Logic mã hóa password và lưu vào DB của bạn) ...
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await dbPool.query(
-            'INSERT INTO users (email, password, mobile) VALUES ($1, $2, $3) RETURNING id, email, mobile',
+            'INSERT INTO users (email, password_hash, mobile) VALUES ($1, $2, $3) RETURNING id, email, mobile',
             [email, hashedPassword, mobile]
         );
 
