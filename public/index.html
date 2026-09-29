@@ -1074,14 +1074,30 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ question: userMsg, userId: "user_123" })
+                    body: JSON.stringify({
+                        userId: "user_123", // Thay bằng ID người dùng thực tế nếu có
+                        question: userMsg   // Gửi trường 'question' thay cho 'message'
+                    })
                 });
 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
-                renderMessage(data.reply, 'bot');
+
+                // Hiển thị câu trả lời từ field 'answer' trong JSON phản hồi
+                if (data && data.answer) {
+                    renderMessage(data.answer, 'bot');
+                } else {
+                    renderMessage("Không nhận được phản hồi hợp lệ từ hệ thống.", 'bot');
+                }
+
             } catch (error) {
+                console.error('Fetch error:', error);
                 renderMessage("Rất tiếc, đã có lỗi kết nối. Vui lòng thử lại sau!", 'bot');
             }
+
             scrollToBottom();
         }
 
