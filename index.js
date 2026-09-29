@@ -20,9 +20,29 @@ const io = new Server(server, {
 
 const { GoogleGenAI } = require('@google/genai');
 
+const bcrypt = require('bcrypt');
+const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public')); 
+
+app.use(session({
+    store: new pgSession({
+        pool: dbPool,
+        tableName: 'user_sessions',
+        createTableIfMissing: true
+    }),
+    secret: process.env.SESSION_SECRET || 'skypremium_super_secret_key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production'
+    }
+}));
 
 // ĐỌC CẤU HÌNH BẢO MẬT CHO CỔNG WEBHOOK CHÍNH
 const WEBHOOK_SECRET_TOKEN = process.env.WEBHOOK_TOKEN || "SkyPremium_Secret_Token_2026"; 
@@ -64,9 +84,16 @@ const dbPool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/chatbot_db',
 });
 
-const initChatbotDb = async () => {
+const initDb = async () => {
     try {
-        const createTableQuery = `
+        await dbPool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                mobile VARCHAR(20),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
             CREATE TABLE IF NOT EXISTS chatbot_history (
                 id SERIAL PRIMARY KEY,
                 user_id VARCHAR(100) NOT NULL,
@@ -75,14 +102,111 @@ const initChatbotDb = async () => {
                 is_cached BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `;
-        await dbPool.query(createTableQuery);
-        console.log('✅ Database chatbot_history table is ready');
+        `);
+        console.log('✅ Bảng Database đã sẵn sàng');
     } catch (err) {
-        console.error('❌ Database Initialization Error:', err.message);
+        console.error('❌ Lỗi khởi tạo Database:', err.message);
     }
 };
-initChatbotDb();
+initDb();
+
+// =================================================================
+// ENDPOINTS AUTHENTICATION & SESSION
+// =================================================================
+
+// 1. Đăng ký tài khoản
+app.post('/api/auth/signup', async (req, res) => {
+    try {
+        const { email, password, mobile } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ status: 'error', message: 'Email và mật khẩu là bắt buộc.' });
+        }
+
+        // Kiểm tra email tồn tại
+        const existingUser = await dbPool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ status: 'error', message: 'Email này đã được đăng ký!' });
+        }
+
+        // Hash mật khẩu
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Lưu vào DB
+        const newUser = await dbPool.query(
+            'INSERT INTO users (email, password_hash, mobile) VALUES ($1, $2, $3) RETURNING id, email, mobile',
+            [email.toLowerCase(), hashedPassword, mobile || '']
+        );
+
+        const user = newUser.rows[0];
+
+        // Lưu thông tin vào Session
+        req.session.user = { id: user.id, email: user.email, mobile: user.mobile };
+
+        return res.status(201).json({
+            status: 'success',
+            message: 'Đăng ký thành công!',
+            data: req.session.user
+        });
+    } catch (err) {
+        console.error('❌ Signup Error:', err);
+        return res.status(500).json({ status: 'error', message: 'Lỗi hệ thống khi đăng ký.' });
+    }
+});
+
+// 2. Đăng nhập
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ status: 'error', message: 'Vui lòng nhập Email và Mật khẩu.' });
+        }
+
+        const result = await dbPool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
+        if (result.rows.length === 0) {
+            return res.status(400).json({ status: 'error', message: 'Email hoặc mật khẩu không chính xác.' });
+        }
+
+        const user = result.rows[0];
+
+        // Kiểm tra mật khẩu
+        const match = await bcrypt.compare(password, user.password_hash);
+        if (!match) {
+            return res.status(400).json({ status: 'error', message: 'Email hoặc mật khẩu không chính xác.' });
+        }
+
+        // Lưu session
+        req.session.user = { id: user.id, email: user.email, mobile: user.mobile };
+
+        return res.status(200).json({
+            status: 'success',
+            message: 'Đăng nhập thành công!',
+            data: req.session.user
+        });
+    } catch (err) {
+        console.error('❌ Login Error:', err);
+        return res.status(500).json({ status: 'error', message: 'Lỗi hệ thống khi đăng nhập.' });
+    }
+});
+
+// 3. Lấy thông tin phiên hiện tại (Session Check)
+app.get('/api/auth/me', (req, res) => {
+    if (req.session && req.session.user) {
+        return res.status(200).json({ status: 'success', data: req.session.user });
+    }
+    return res.status(401).json({ status: 'unauthorized', message: 'Chưa đăng nhập' });
+});
+
+// 4. Đăng xuất
+app.post('/api/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ status: 'error', message: 'Không thể đăng xuất.' });
+        }
+        res.clearCookie('connect.sid');
+        return res.status(200).json({ status: 'success', message: 'Đăng xuất thành công!' });
+    });
+});
 
 // Mảng chung để gom tất cả lịch sử webhook hiển thị trên giao diện Center
 let webhookPayloads = []; 

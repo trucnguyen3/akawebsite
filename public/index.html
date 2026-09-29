@@ -746,6 +746,22 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', checkSession);
+
+        async function checkSession() {
+            try {
+                const res = await fetch('https://uat1.akadigital.net/api/auth/me');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    renderUI(data.data);
+                } else {
+                    renderUI(null);
+                }
+            } catch (err) {
+                renderUI(null);
+            }
+        }
+
         // Xử lý đóng banner consent
         function closeConsent() {
             const banner = document.getElementById('consent-banner');
@@ -915,68 +931,87 @@
         }
 
         // 2. Hàm cập nhật giao diện dựa trên trạng thái đăng nhập
-        function renderUI() {
-            const userData = JSON.parse(localStorage.getItem('sky_user'));
-            const authButtons = document.getElementById('auth-buttons'); // Cần đặt ID này cho div chứa nút Login/Signup
-            const userProfile = document.getElementById('user-profile'); // Cần tạo div này để hiện thông tin user
+        function renderUI(user) {
+            const authButtons = document.getElementById('auth-buttons');
+            const userProfile = document.getElementById('user-profile');
 
-            if (userData) {
-                // Đã đăng nhập: Ẩn nút cũ, hiện thông tin user
+            if (user) {
                 authButtons.classList.add('hidden');
                 userProfile.classList.remove('hidden');
                 userProfile.innerHTML = `
-                <div class="flex items-center gap-4">
-                    <div class="text-right hidden md:block">
-                        <p class="text-xs font-bold text-blue-900">${userData.email}</p>
-                        <p class="text-[10px] text-slate-500">${userData.mobile || 'Thành viên Premium'}</p>
-                    </div>
-                    <button onclick="handleLogout()" class="px-4 py-2 text-xs font-bold bg-slate-100 text-slate-600 rounded-full hover:bg-red-50 hover:text-red-500 transition">
-                        Đăng xuất
-                    </button>
-                </div>
-            `;
+        <div class="flex items-center gap-4">
+            <div class="text-right hidden md:block">
+                <p class="text-xs font-bold text-blue-900">${user.email}</p>
+                <p class="text-[10px] text-slate-500">${user.mobile || 'Thành viên Premium'}</p>
+            </div>
+            <button onclick="handleLogout()" class="px-4 py-2 text-xs font-bold bg-slate-100 text-slate-600 rounded-full hover:bg-red-50 hover:text-red-500 transition">
+                Đăng xuất
+            </button>
+        </div>`;
             } else {
-                // Chưa đăng nhập: Hiện lại nút Login/Signup
                 authButtons.classList.remove('hidden');
                 userProfile.classList.add('hidden');
             }
         }
 
         // 3. Hàm xử lý Logout
-        function handleLogout() {
-            // Có nên clear localStorage không? Xem giải thích bên dưới
-            localStorage.removeItem('sky_user');
-
-            // Reload hoặc render lại UI
-            window.location.reload();
+        async function handleLogout() {
+            await fetch('https://uat1.akadigital.net/api/auth/logout', { method: 'POST' });
+            renderUI(null);
         }
 
         // Chạy kiểm tra UI ngay khi load trang
         document.addEventListener('DOMContentLoaded', renderUI);
 
-        function submitLogin() {
+        async function submitLogin() {
             const email = document.getElementById('login-email').value;
-            if (!email) return alert("Vui lòng nhập email");
+            const password = document.getElementById('login-password').value;
 
-            // Giả lập dữ liệu trả về từ server
-            const mockUser = {
-                email: email,
-                mobile: "Khách hàng thân thiết"
-            };
-            handleAuthSuccess(mockUser);
+            if (!email || !password) return alert("Vui lòng điền Email và Mật khẩu!");
+
+            try {
+                const res = await fetch('https://uat1.akadigital.net/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    closeAuth();
+                    renderUI(result.data);
+                } else {
+                    alert(result.message);
+                }
+            } catch (err) {
+                alert("Lỗi đăng nhập, vui lòng thử lại sau!");
+            }
         }
 
-        function submitSignup() {
+        async function submitSignup() {
             const email = document.getElementById('signup-email').value;
             const mobile = document.getElementById('signup-mobile').value;
+            const password = document.getElementById('signup-password').value;
 
-            if (!email || !mobile) return alert("Vui lòng điền đủ thông tin");
+            if (!email || !password) return alert("Vui lòng điền Email và Mật khẩu!");
 
-            const mockUser = {
-                email: email,
-                mobile: mobile
-            };
-            handleAuthSuccess(mockUser);
+            try {
+                const res = await fetch('https://uat1.akadigital.net/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, mobile })
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    closeAuth();
+                    renderUI(result.data);
+                } else {
+                    alert(result.message);
+                }
+            } catch (err) {
+                alert("Lỗi đăng ký, vui lòng thử lại sau!");
+            }
         }
 
         async function handleShare() {
@@ -1152,6 +1187,11 @@
                             <input type="email" id="login-email" placeholder="example@gmail.com"
                                 class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
                         </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Mật khẩu</label>
+                            <input type="password" id="login-password" placeholder="••••••••"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
+                        </div>
                         <button onclick="submitLogin()"
                             class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition">
                             Đăng nhập ngay
@@ -1174,6 +1214,11 @@
                         <div>
                             <label class="text-xs font-bold text-slate-400 uppercase ml-1">Số điện thoại</label>
                             <input type="tel" id="signup-mobile" placeholder="090 123 4567"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Mật khẩu</label>
+                            <input type="password" id="signup-password" placeholder="••••••••"
                                 class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
                         </div>
                         <button onclick="submitSignup()"
