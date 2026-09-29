@@ -993,7 +993,7 @@
             const mobile = document.getElementById('signup-mobile').value;
             const password = document.getElementById('signup-password').value;
 
-            if (!email || !password) return alert("Vui lòng điền Email và Mật khẩu!");
+            if (!email || !password) return alert("Vui lòng điền Email và Mật khẩu");
 
             try {
                 const res = await fetch('https://uat1.akadigital.net/api/auth/signup', {
