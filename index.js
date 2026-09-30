@@ -117,14 +117,18 @@ initDb();
 
 // 1. Đăng ký tài khoản
 app.post('/api/auth/signup', async (req, res) => {
-    const { email, password, mobile } = req.body;
+    const { fullName, email, password, mobile } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ status: 'error', message: 'Vui lòng nhập Email và Mật khẩu.' });
+    }
 
     try {
         // ... (Logic mã hóa password và lưu vào DB của bạn) ...
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await dbPool.query(
-            'INSERT INTO users (email, password_hash, mobile) VALUES ($1, $2, $3) RETURNING id, email, mobile',
-            [email, hashedPassword, mobile]
+            'INSERT INTO users (full_name, email, password_hash, mobile) VALUES ($1, $2, $3, $4) RETURNING id, full_name, email, mobile',
+            [fullName, email.toLowerCase(), hashedPassword, mobile || null]
         );
 
         const newUser = result.rows[0];
@@ -132,6 +136,7 @@ app.post('/api/auth/signup', async (req, res) => {
         // 🌟 TỰ ĐỘNG ĐĂNG NHẬP: Gán thông tin user vào Session ngay lập tức
         req.session.user = {
             id: newUser.id,
+            fullName: newUser.full_name,
             email: newUser.email,
             mobile: newUser.mobile
         };
@@ -176,7 +181,12 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         // Lưu session
-        req.session.user = { id: user.id, email: user.email, mobile: user.mobile };
+        req.session.user = {
+            id: user.id,
+            fullName: user.full_name,
+            email: user.email,
+            mobile: user.mobile
+        };
 
         return res.status(200).json({
             status: 'success',
@@ -660,33 +670,42 @@ app.get('/delete-account', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'delete-account.html'));
 });
 
-app.post('/api/request-delete-account', (req, res) => {
-    const { accountInfo, reason } = req.body;
+app.delete('/api/auth/delete-account', async (req, res) => {
+    try {
+        // Kiểm tra xem người dùng đã đăng nhập chưa
+        if (!req.session || !req.session.user) {
+            return res.status(401).json({ status: 'error', message: 'Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn.' });
+        }
 
-    if (!accountInfo) {
-        return res.status(400).json({ status: 'error', message: 'Vui lòng cung cấp thông tin tài khoản.' });
+        const userId = req.session.user.id;
+
+        // Xóa user khỏi bảng users trong PostgreSQL
+        const deleteResult = await dbPool.query('DELETE FROM users WHERE id = $1 RETURNING id', [userId]);
+
+        if (deleteResult.rows.length === 0) {
+            return res.status(404).json({ status: 'error', message: 'Tài khoản không tồn tại hoặc đã bị xóa.' });
+        }
+
+        // Hủy session đăng nhập
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('❌ Session Destroy Error:', err);
+                return res.status(500).json({ status: 'error', message: 'Đã xóa tài khoản nhưng lỗi khi hủy phiên đăng nhập.' });
+            }
+
+            // Xóa cookie session ở phía client
+            res.clearCookie('connect.sid'); // Thay 'connect.sid' bằng tên cookie session của bạn nếu có tùy chỉnh
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'Tài khoản đã được xóa vĩnh viễn khỏi hệ thống.'
+            });
+        });
+
+    } catch (err) {
+        console.error('❌ Delete Account Error:', err);
+        return res.status(500).json({ status: 'error', message: 'Lỗi hệ thống khi xóa tài khoản.' });
     }
-
-    console.log(`[YÊU CẦU XÓA TÀI KHOẢN] Account: ${accountInfo} | Lý do: ${reason || 'Không có'} | IP: ${req.ip}`);
-
-    // Tùy chọn: Đẩy event trực tiếp lên giao diện Webhook Center để bạn quản lý realtime
-    const deleteRequestPayload = {
-        type: "ACCOUNT_DELETE_REQUEST",
-        accountInfo: accountInfo,
-        reason: reason,
-        requestedAt: new Date().toISOString()
-    };
-    
-    // Đẩy tín hiệu qua socket lên trang webhook-center nếu muốn theo dõi
-    io.emit('new-webhook', {
-        id: Date.now(),
-        timestamp: new Date().toISOString(),
-        headers: req.headers,
-        body: deleteRequestPayload,
-        method: "DELETE_REQ"
-    });
-
-    res.status(200).json({ status: 'success', message: 'Yêu cầu xóa tài khoản đã được ghi nhận thành công.' });
 });
 
 app.get('/api/webhooks', (req, res) => {

@@ -118,13 +118,12 @@
 
     <div class="card">
         <h2>Yêu Cầu Xóa Tài Khoản</h2>
-        <p>Nếu bạn muốn xóa tài khoản và toàn bộ dữ liệu liên quan, vui lòng điền thông tin bên dưới. Yêu cầu sẽ được xử
-            lý trong vòng 24-48 giờ.</p>
+        <p>Nếu bạn muốn xóa tài khoản và toàn bộ dữ liệu liên quan, vui lòng nhập Email hoặc Số điện thoại bên dưới.</p>
 
         <form id="deleteForm">
             <div class="form-group">
-                <label for="email">Email hoặc Số điện thoại đăng ký (*)</label>
-                <input type="text" id="accountInfo" name="accountInfo" placeholder="nhanguyen@example.com / 0901234567"
+                <label for="accountInfo">Email hoặc Số điện thoại đăng ký (*)</label>
+                <input type="text" id="accountInfo" name="accountInfo" placeholder="nhanguyen@example.com / 0326733834"
                     required>
             </div>
             <div class="form-group">
@@ -135,9 +134,8 @@
             <button type="submit" class="btn-danger" id="submitBtn">Xác Nhận Xóa Tài Khoản</button>
         </form>
 
-        <div id="alertSuccess" class="alert alert-success">Yêu cầu xóa tài khoản đã được ghi nhận. Chúng tôi sẽ liên
-            hệ/xác nhận qua email của bạn!</div>
-        <div id="alertError" class="alert alert-error">Đã có lỗi xảy ra. Vui lòng thử lại sau!</div>
+        <div id="alertSuccess" class="alert alert-success"></div>
+        <div id="alertError" class="alert alert-error"></div>
     </div>
 
     <script>
@@ -148,27 +146,32 @@
             const alertError = document.getElementById('alertError');
 
             submitBtn.disabled = true;
-            submitBtn.innerText = 'Đang gửi yêu cầu...';
+            submitBtn.innerText = 'Đang xử lý...';
             alertSuccess.style.display = 'none';
             alertError.style.display = 'none';
 
             try {
-                const response = await fetch('/api/request-delete-account', {
+                const response = await fetch('https://uat1.akadigital.net/api/auth/request-delete-account', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        accountInfo: document.getElementById('accountInfo').value,
-                        reason: document.getElementById('reason').value
+                        accountInfo: document.getElementById('accountInfo').value.trim(),
+                        reason: document.getElementById('reason').value.trim()
                     })
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    alertSuccess.innerText = result.message;
                     alertSuccess.style.display = 'block';
                     document.getElementById('deleteForm').reset();
                 } else {
+                    alertError.innerText = result.message || 'Đã có lỗi xảy ra. Vui lòng thử lại sau!';
                     alertError.style.display = 'block';
                 }
             } catch (err) {
+                alertError.innerText = 'Lỗi kết nối tới máy chủ. Vui lòng thử lại!';
                 alertError.style.display = 'block';
             } finally {
                 submitBtn.disabled = false;
