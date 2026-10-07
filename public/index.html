@@ -403,6 +403,49 @@
             text-align: center;
             font-weight: 500;
         }
+
+        /* Container của message đang gõ */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 14px;
+            background-color: #f0f0f0;
+            border-radius: 16px;
+            width: fit-content;
+        }
+
+        /* 3 chấm tròn */
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background-color: #888;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+                opacity: 0.3;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
     </style>
 
     <script src='//cdnt.netcoresmartech.com/smartechclient.js'></script>
@@ -1126,19 +1169,66 @@
         }
 
         // Hàm gửi tin nhắn người dùng
-        function sendMessage() {
-            const text = chatInput.value.trim();
-            if (!text) return;
+        async function sendMessage(userText, action = null) {
+            const chatBox = document.getElementById('chat-box');
 
-            // Render tin nhắn của User
-            renderMessage(text, 'user');
-            chatInput.value = '';
-            scrollToBottom();
+            // 1. Render tin nhắn của User vào UI (nếu có gõ text)
+            if (userText) {
+                appendMessage('user', userText);
+            }
 
-            // Giả lập gọi API Bot phản hồi sau 1 giây
-            setTimeout(() => {
-                botReply(text);
-            }, 1000);
+            // 2. TẠO VÀ HIỆN TYPING INDICATOR ("Bot đang soạn tin...")
+            const loadingId = 'loading-' + Date.now();
+            const loadingHTML = `
+        <div class="typing-indicator" id="${loadingId}">
+            <span></span><span></span><span></span>
+        </div>
+    `;
+            chatBox.insertAdjacentHTML('beforeend', `<div class="msg-row bot-row">${loadingHTML}</div>`);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                // 3. Gọi API Backend (Timeout 15s nếu API bị treo)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userText, action: action }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                // Xóa indicator sau khi nhận kết quả
+                document.getElementById(loadingId)?.remove();
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // 4. Render câu trả lời của Bot
+                appendMessage('bot', data.reply, data.options);
+
+            } catch (error) {
+                // Xóa indicator nếu gặp lỗi
+                document.getElementById(loadingId)?.remove();
+
+                console.error('Chat Error:', error);
+
+                // 5. HIỆN THÔNG BÁO SỰ CỐ KẾT NỐI + NÚT THỬ LẠI
+                let errorMsg = '⚠️ Hệ thống đang gặp sự cố kết nối. Bạn vui lòng kiểm tra lại mạng hoặc thử lại sau nhé!';
+                if (error.name === 'AbortError') {
+                    errorMsg = '⏳ Kết nối phản hồi quá lâu (Timeout). Bạn thử gửi lại câu hỏi xem sao nhé!';
+                }
+
+                appendMessage('system-error', errorMsg, [
+                    { label: '🔄 Thử lại', action: 'RETRY_LAST_MSG', payload: userText }
+                ]);
+            }
         }
 
         // Xử lý nút Enter
