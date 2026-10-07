@@ -561,7 +561,8 @@
                 <div class="quick-suggestions">
                     <div class="chip" onclick="sendQuickMsg('Tìm hiểu dịch vụ SkyPremium')">Gói dịch vụ</div>
                     <div class="chip" onclick="sendQuickMsg('Chương trình ưu đãi mới nhất')">Ưu đãi</div>
-                    <div class="chip" onclick="sendQuickMsg('Gửi yêu cầu hỗ trợ')">🎧 Yêu cầu hỗ trợ</div>
+                    <!-- Bấm nút này sẽ gửi thẳng action TRIGGER_SUPPORT_FORM -->
+                    <div class="chip" onclick="sendQuickMsg('', 'TRIGGER_SUPPORT_FORM')">🎧 Yêu cầu hỗ trợ ngay</div>
                 </div>
             </div>
         </div>

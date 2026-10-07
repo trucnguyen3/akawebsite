@@ -356,16 +356,37 @@ app.post('/api/chat', async (req, res) => {
         const inputMessage = (question || '').trim();
         const inputLower = inputMessage.toLowerCase();
 
-        // Từ khóa kích hoạt Form hỗ trợ
-        const triggerKeywords = ['hỗ trợ', 'support', 'tư vấn', 'liên hệ', 'gặp nhân viên', '/support', '/help'];
-        const isTriggerSupport = action === 'TRIGGER_SUPPORT_FORM' || triggerKeywords.some(kw => inputLower.includes(kw));
-
         // ----------------------------------------------------
         // A. LUỒNG SUPPORT LEAD FORM (FSM)
         // ----------------------------------------------------
         
         // Step 0: Kích hoạt Form
-        if (isTriggerSupport && flow.step === 'IDLE') {
+        if (action === 'TRIGGER_SUPPORT_FORM' || action === 'CONNECT_SUPPORT') {
+            // Reset hoàn toàn FSM state để né mọi xung đột kẹt Session cũ
+            req.session.supportFlow = { step: 'IDLE', data: {} };
+
+            return res.status(200).json({
+                status: 'success',
+                data: {
+                    userId,
+                    question: 'Yêu cầu hỗ trợ',
+                    answer: '🎧 **Đội ngũ CSKH SkyPremium luôn sẵn sàng 24/7:**\n\n' +
+                            '• Hotline VIP: **1900 1234**\n' +
+                            '• Email: support@skypremium.vn\n' +
+                            '• Thời gian phản hồi trung bình: < 5 phút.',
+                    source: 'static_support',
+                    options: [
+                        { label: '📝 Để lại thông tin tư vấn', action: 'START_LEAD_FORM' },
+                        { label: 'Chat qua Zalo OA', action: 'ZALO_OA' }
+                    ]
+                }
+            });
+        }
+
+        const triggerKeywords = ['/support', '/help', 'de lai thong tin', 'để lại thông tin'];
+        const isStartForm = action === 'START_LEAD_FORM' || triggerKeywords.some(kw => inputLower.includes(kw));
+
+        if (isStartForm) {
             flow.step = 'AWAITING_NAME';
             flow.data = {
                 userId: userId,
