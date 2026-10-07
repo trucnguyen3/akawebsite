@@ -820,6 +820,31 @@
     <script>
         document.addEventListener('DOMContentLoaded', checkSession);
 
+        // 1. Định nghĩa hàm appendMessage hiển thị tin nhắn + nút bấm
+        function appendMessage(sender, text, options = []) {
+            const chatBox = document.getElementById('chatWindow');
+            if (!chatBox) return;
+
+            const msgRow = document.createElement('div');
+            msgRow.className = `msg-row ${sender}-row`;
+
+            let html = `<div class="msg-bubble ${sender}-bubble">${text.replace(/\n/g, '<br>')}</div>`;
+
+            // Nếu có options/buttons (như Yes/No confirm) -> Render nút bấm
+            if (options && options.length > 0) {
+                html += `<div class="msg-options">`;
+                options.forEach(opt => {
+                    const payloadAttr = opt.payload ? `data-payload="${opt.payload}"` : '';
+                    html += `<button class="chat-option-btn" onclick="sendQuickMsg('', '${opt.action}')" ${payloadAttr}>${opt.label}</button>`;
+                });
+                html += `</div>`;
+            }
+
+            msgRow.innerHTML = html;
+            chatBox.appendChild(msgRow);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
         async function checkSession() {
             try {
                 const res = await fetch('https://uat1.akadigital.net/api/auth/me', {

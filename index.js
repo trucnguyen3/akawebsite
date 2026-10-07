@@ -340,10 +340,10 @@ app.post('/api/chat', async (req, res) => {
         
         const { question, action } = req.body;
 
-        if (!question && !action) {
+        if (!userId || (!question && !action)) {
             return res.status(400).json({ 
                 status: 'error', 
-                message: 'question hoặc action không được để trống.' 
+                message: 'userId và (question hoặc action) không được để trống.' 
             });
         }
 
