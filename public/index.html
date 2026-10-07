@@ -137,7 +137,6 @@
             width: 12px;
             height: 12px;
             background-color: #10B981;
-            /* Chấm xanh Online */
             border-radius: 50%;
             border: 2px solid #fff;
         }
@@ -394,14 +393,54 @@
             }
         }
 
-        /* Thẻ hiển thị thông báo trạng thái bên dưới nút */
         .status-loading {
             margin-top: 10px;
             font-size: 14px;
             color: #007bff;
-            /* Tùy chỉnh màu sắc phù hợp với giao diện Sky Premium */
             text-align: center;
             font-weight: 500;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 14px;
+            background-color: #f0f0f0;
+            border-radius: 16px;
+            width: fit-content;
+        }
+
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background-color: #888;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+                opacity: 0.3;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
     </style>
 
@@ -427,7 +466,6 @@
 
     <!-- Cửa sổ khung Chat -->
     <div class="chat-window" id="chatWindow">
-
         <!-- Header -->
         <div class="chat-header">
             <div class="chat-header-info">
@@ -442,18 +480,14 @@
 
         <!-- Nội dung trò chuyện -->
         <div class="chat-body" id="chatBody">
-            <!-- Tin nhắn chào mừng ban đầu -->
-            <div class="message bot">
-                <div class="msg-content">
-                    Xin chào! 👋 Cảm ơn bạn đã ghé thăm **SkyPremium**. Tôi có thể giúp gì cho bạn hôm nay?
+            <div class="msg-row bot-row">
+                <div class="msg-bubble bot-bubble">
+                    Xin chào! 👋 Cảm ơn bạn đã ghé thăm <b>SkyPremium</b>. Tôi có thể giúp gì cho bạn hôm nay?
                 </div>
-                <span class="msg-time">Vừa xong</span>
-
-                <!-- Các gợi ý trả lời nhanh -->
                 <div class="quick-suggestions">
                     <div class="chip" onclick="sendQuickMsg('Tìm hiểu dịch vụ SkyPremium')">Gói dịch vụ</div>
                     <div class="chip" onclick="sendQuickMsg('Chương trình ưu đãi mới nhất')">Ưu đãi</div>
-                    <div class="chip" onclick="sendQuickMsg('Liên hệ tư vấn viên')">Tư vấn viên</div>
+                    <div class="chip" onclick="sendQuickMsg('Gửi yêu cầu hỗ trợ')">🎧 Yêu cầu hỗ trợ</div>
                 </div>
             </div>
         </div>
@@ -462,7 +496,7 @@
         <div class="chat-footer">
             <input type="text" class="chat-input" id="chatInput" placeholder="Nhập câu hỏi của bạn..."
                 onkeypress="handleKeyPress(event)">
-            <button class="send-btn" id="sendBtn" onclick="sendMessage()"><i
+            <button class="send-btn" id="sendBtn" onclick="handleSendClick()"><i
                     class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
