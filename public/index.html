@@ -42,10 +42,12 @@
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
         }
 
+        /* Ép ẩn tuyệt đối */
         .hidden-auth {
             display: none !important;
         }
 
+        /* Chỉ hiển thị khi có class này */
         .show-auth {
             display: flex !important;
             animation: fadeIn 0.3s ease-out forwards;
@@ -63,10 +65,12 @@
             }
         }
 
+        /* Lớp ẩn mặc định */
         #consent-banner.hidden-consent {
             display: none !important;
         }
 
+        /* Hiệu ứng trượt lên khi hiện */
         #consent-banner.show-consent {
             display: block !important;
             animation: slideUp 0.4s ease-out forwards;
@@ -90,7 +94,9 @@
 
         :root {
             --sp-primary: #0A192F;
+            /* Xanh Navy sang trọng */
             --sp-gold: #D4AF37;
+            /* Vàng kim SkyPremium */
             --sp-gold-hover: #B59328;
             --sp-bg-chat: #F8F9FA;
             --sp-user-msg: #0A192F;
@@ -98,7 +104,7 @@
             --sp-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
 
-        /* 1. Floating Trigger Button */
+        /* 1. Nút bong bóng kích hoạt Chat (Floating Trigger) */
         .chat-trigger {
             position: fixed;
             bottom: 25px;
@@ -131,11 +137,12 @@
             width: 12px;
             height: 12px;
             background-color: #10B981;
+            /* Chấm xanh Online */
             border-radius: 50%;
             border: 2px solid #fff;
         }
 
-        /* 2. Chat Window Container */
+        /* 2. Cửa sổ Chat (Chat Container) */
         .chat-window {
             position: fixed;
             bottom: 100px;
@@ -163,7 +170,7 @@
             transform: translateY(0) scale(1);
         }
 
-        /* 3. Header */
+        /* 3. Chat Header */
         .chat-header {
             background-color: var(--sp-primary);
             color: #fff;
@@ -229,7 +236,7 @@
             color: #fff;
         }
 
-        /* 4. Chat Body & Messages */
+        /* 4. Chat Body (Khung tin nhắn) */
         .chat-body {
             flex: 1;
             padding: 16px;
@@ -239,74 +246,70 @@
             gap: 12px;
         }
 
-        .msg-row {
+        /* ĐỊnh dạng bong bóng tin nhắn */
+        .message {
             display: flex;
             flex-direction: column;
-            margin-bottom: 4px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
         }
 
-        .msg-row.user-row {
-            align-items: flex-end;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .msg-row.bot-row,
-        .msg-row.system-error-row {
-            align-items: flex-start;
+        .message.bot {
+            align-self: flex-start;
         }
 
-        .msg-bubble {
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .msg-content {
             padding: 12px 14px;
             border-radius: 14px;
             font-size: 13.5px;
             line-height: 1.5;
             word-break: break-word;
-            max-width: 85%;
         }
 
-        .user-bubble {
-            background-color: var(--sp-user-msg);
-            color: #fff;
-            border-bottom-right-radius: 2px;
-        }
-
-        .bot-bubble {
+        .message.bot .msg-content {
             background-color: var(--sp-bot-msg);
             color: #333;
             border-bottom-left-radius: 2px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
 
-        .system-error-bubble {
-            background-color: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #f87171;
-            border-radius: 12px;
-        }
-
-        .msg-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
-        }
-
-        .chat-option-btn {
-            background-color: #fff;
-            border: 1px solid var(--sp-gold);
-            color: var(--sp-primary);
-            padding: 6px 12px;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .chat-option-btn:hover {
-            background-color: var(--sp-gold);
+        .message.user .msg-content {
+            background-color: var(--sp-user-msg);
             color: #fff;
+            border-bottom-right-radius: 2px;
         }
 
+        .msg-time {
+            font-size: 10px;
+            color: #9CA3AF;
+            margin-top: 4px;
+        }
+
+        .message.bot .msg-time {
+            align-self: flex-start;
+        }
+
+        .message.user .msg-time {
+            align-self: flex-end;
+        }
+
+        /* Gợi ý nhanh (Quick Chips) */
         .quick-suggestions {
             display: flex;
             flex-wrap: wrap;
@@ -330,7 +333,7 @@
             color: #fff;
         }
 
-        /* 5. Input Footer */
+        /* 5. Chat Input */
         .chat-footer {
             padding: 12px 16px;
             background-color: #fff;
@@ -372,6 +375,7 @@
             background-color: var(--sp-gold-hover);
         }
 
+        /* Hiệu ứng xoay tròn */
         .spinner {
             width: 18px;
             height: 18px;
@@ -390,54 +394,14 @@
             }
         }
 
+        /* Thẻ hiển thị thông báo trạng thái bên dưới nút */
         .status-loading {
             margin-top: 10px;
             font-size: 14px;
             color: #007bff;
+            /* Tùy chỉnh màu sắc phù hợp với giao diện Sky Premium */
             text-align: center;
             font-weight: 500;
-        }
-
-        /* Typing indicator */
-        .typing-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 10px 14px;
-            background-color: #f0f0f0;
-            border-radius: 16px;
-            width: fit-content;
-        }
-
-        .typing-indicator span {
-            width: 6px;
-            height: 6px;
-            background-color: #888;
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out both;
-        }
-
-        .typing-indicator span:nth-child(1) {
-            animation-delay: -0.32s;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: -0.16s;
-        }
-
-        @keyframes typing {
-
-            0%,
-            80%,
-            100% {
-                transform: scale(0);
-                opacity: 0.3;
-            }
-
-            40% {
-                transform: scale(1);
-                opacity: 1;
-            }
         }
     </style>
 
@@ -449,6 +413,11 @@
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5HNVZVH3" height="0" width="0"
             style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <!-- =========================================================
+       HTML CHATBOT WIDGET
+       ========================================================= -->
 
     <!-- Nút tròn bật Chat -->
     <button class="chat-trigger" id="chatTrigger" aria-label="Open Chat">
@@ -458,6 +427,7 @@
 
     <!-- Cửa sổ khung Chat -->
     <div class="chat-window" id="chatWindow">
+
         <!-- Header -->
         <div class="chat-header">
             <div class="chat-header-info">
@@ -472,14 +442,18 @@
 
         <!-- Nội dung trò chuyện -->
         <div class="chat-body" id="chatBody">
-            <div class="msg-row bot-row">
-                <div class="msg-bubble bot-bubble">
-                    Xin chào! 👋 Cảm ơn bạn đã ghé thăm <b>SkyPremium</b>. Tôi có thể giúp gì cho bạn hôm nay?
+            <!-- Tin nhắn chào mừng ban đầu -->
+            <div class="message bot">
+                <div class="msg-content">
+                    Xin chào! 👋 Cảm ơn bạn đã ghé thăm **SkyPremium**. Tôi có thể giúp gì cho bạn hôm nay?
                 </div>
+                <span class="msg-time">Vừa xong</span>
+
+                <!-- Các gợi ý trả lời nhanh -->
                 <div class="quick-suggestions">
                     <div class="chip" onclick="sendQuickMsg('Tìm hiểu dịch vụ SkyPremium')">Gói dịch vụ</div>
                     <div class="chip" onclick="sendQuickMsg('Chương trình ưu đãi mới nhất')">Ưu đãi</div>
-                    <div class="chip" onclick="sendQuickMsg('Gửi yêu cầu hỗ trợ')">🎧 Yêu cầu hỗ trợ</div>
+                    <div class="chip" onclick="sendQuickMsg('Liên hệ tư vấn viên')">Tư vấn viên</div>
                 </div>
             </div>
         </div>
@@ -488,7 +462,7 @@
         <div class="chat-footer">
             <input type="text" class="chat-input" id="chatInput" placeholder="Nhập câu hỏi của bạn..."
                 onkeypress="handleKeyPress(event)">
-            <button class="send-btn" id="sendBtn" onclick="handleSendClick()"><i
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()"><i
                     class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
@@ -518,7 +492,8 @@
                         Đăng ký
                     </button>
                 </div>
-                <div id="user-profile" class="hidden"></div>
+                <div id="user-profile" class="hidden">
+                </div>
             </div>
         </div>
     </header>
@@ -608,6 +583,7 @@
                             <span class="text-2xl font-black text-slate-800 leading-none">09:45</span>
                             <p class="text-sm font-bold text-slate-400 mt-1 uppercase">HAN</p>
                         </div>
+
                         <div class="flex-1 flex flex-col items-center">
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">1h
                                 30m</span>
@@ -620,6 +596,7 @@
                             </div>
                             <span class="text-xs font-semibold text-slate-500 mt-2">Bay thẳng</span>
                         </div>
+
                         <div class="text-center">
                             <span class="text-2xl font-black text-slate-800 leading-none">11:15</span>
                             <p class="text-sm font-bold text-slate-400 mt-1 uppercase">DAD</p>
@@ -636,73 +613,173 @@
                     </div>
                 </div>
             </div>
+
+            <div
+                class="flight-card bg-white p-6 rounded-[1.5rem] border border-slate-100 transition-all duration-300 opacity-90">
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="flex items-center gap-4 min-w-[180px]">
+                        <div
+                            class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center text-red-500 font-black italic">
+                            VJ</div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 uppercase tracking-tight">Vietjet Air</h4>
+                            <span class="text-xs font-medium text-slate-400 italic">VJ-512 • Eco</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex items-center justify-between gap-4 w-full text-center">
+                        <div>
+                            <span class="text-2xl font-black text-slate-800 leading-none">20:15</span>
+                            <p class="text-sm font-bold text-slate-400 mt-1 uppercase">HAN</p>
+                        </div>
+                        <div class="flex-1 flex flex-col items-center">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">1h
+                                25m</span>
+                            <div class="w-full flex items-center">
+                                <div class="w-2 h-2 rounded-full border-2 border-blue-500 bg-white"></div>
+                                <div class="flex-1 h-[2px] border-t-2 border-slate-100"></div>
+                                <i class="fas fa-plane text-slate-300 mx-2 text-sm"></i>
+                                <div class="flex-1 h-[2px] border-t-2 border-slate-100"></div>
+                                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-2xl font-black text-slate-800 leading-none">21:40</span>
+                            <p class="text-sm font-bold text-slate-400 mt-1 uppercase">DAD</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end min-w-[150px] border-l border-slate-100 pl-8">
+                        <span class="text-2xl font-black text-blue-600 tracking-tight">950.000đ</span>
+                        <button
+                            class="mt-4 w-full py-3 px-6 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-slate-200">
+                            Chọn chuyến
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
     <footer class="bg-slate-900 text-slate-300 pt-16 pb-8 border-t border-slate-800">
-        <div class="container mx-auto px-6 text-center text-xs text-slate-500">
-            <p>© 2026 SkyPremium Inc. All rights reserved.</p>
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-1">
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="bg-blue-600 p-1.5 rounded-lg text-xs">
+                            <i class="fas fa-paper-plane text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white tracking-tight">SkyPremium</span>
+                    </div>
+                    <p class="text-sm leading-relaxed text-slate-400">
+                        Nền tảng đặt vé máy bay hàng đầu với công nghệ tối ưu hóa giá vé theo thời gian thực. Trải
+                        nghiệm
+                        hành trình đẳng cấp từ những bước đầu tiên.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-6 uppercase text-xs tracking-widest">Khám phá</h4>
+                    <ul class="space-y-4 text-sm">
+                        <li><a href="#" class="hover:text-blue-400 transition">Điểm đến phổ biến</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Ưu đãi độc quyền</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Hướng dẫn đặt vé</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-6 uppercase text-xs tracking-widest">Hỗ trợ</h4>
+                    <ul class="space-y-4 text-sm">
+                        <li><a href="#" class="hover:text-blue-400 transition">Trung tâm trợ giúp</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Chính sách hoàn tiền</a></li>
+                        <li><a href="#" class="hover:text-blue-400 transition">Tình trạng chuyến bay</a></li>
+                        <li> <!-- javascript:Didomi.preferences.show() -->
+                            <a href="#" class="text-blue-400 hover:underline flex items-center gap-2">
+                                <i class="fas fa-cookie-bite"></i> Thiết lập Cookie
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-6 uppercase text-xs tracking-widest">Kết nối</h4>
+                    <div class="flex gap-4 mb-6">
+                        <a href="#"
+                            class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 transition">
+                            <i class="fab fa-facebook-f text-white text-sm"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 transition">
+                            <i class="fab fa-linkedin-in text-white text-sm"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 transition">
+                            <i class="fab fa-app-store-ios text-white text-sm"></i>
+                        </a>
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        Hệ thống bảo mật bởi <span class="text-blue-500 font-bold">CloudArmor</span>
+                    </div><br />
+                    <div class="text-xs text-slate-500 mt-4 flex gap-2">
+                        <a href="https://uat1.akadigital.net/download" class="flex-1" style="text-decoration: none;">
+                            <button
+                                class="w-full py-3 px-6 bg-blue-600 text-white border border-blue-600 hover:bg-white hover:text-blue-600 rounded-xl text-sm font-bold transition-all shadow-blue-200">
+                                Tải app tại đây
+                            </button>
+                        </a>
+
+                        <button onclick="handleShare()"
+                            class="w-12 h-12 flex items-center justify-center bg-slate-100 text-slate-600 border border-slate-200 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
+                            title="Chia sẻ">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-500">
+                <div class="flex gap-6">
+                    <a href="#" class="hover:underline">Điều khoản sử dụng</a>
+                    <a href="#" class="hover:underline">Chính sách bảo mật</a>
+                    <a href="#" class="hover:underline">Quyền riêng tư</a>
+                </div>
+                <p>© 2026 SkyPremium Inc. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
-    <!-- Auth Modal -->
-    <div id="auth-modal"
-        class="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-sm items-center justify-center hidden-auth px-4">
-        <div class="bg-white w-full max-w-4xl min-h-[550px] rounded-[2.5rem] overflow-hidden shadow-2xl flex relative">
-            <button onclick="closeAuth()"
-                class="absolute top-6 right-6 z-10 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition">
-                <i class="fas fa-times"></i>
-            </button>
-            <div
-                class="hidden md:flex md:w-1/2 auth-gradient p-12 flex-col justify-between text-white relative overflow-hidden">
-                <div class="z-10">
-                    <div class="flex items-center gap-2 mb-8">
-                        <i class="fas fa-paper-plane text-2xl"></i>
-                        <span class="text-2xl font-bold tracking-tighter">SkyPremium</span>
-                    </div>
-                    <h2 id="auth-title-left" class="text-4xl font-extrabold leading-tight mb-4">Chào mừng bạn quay trở
-                        lại!</h2>
-                    <p id="auth-desc-left" class="text-blue-100">Đăng nhập để quản lý chuyến bay và nhận ưu đãi riêng
-                        biệt cho thành viên.</p>
+    <div id="consent-banner" class="fixed bottom-6 left-6 right-6 md:left-auto md:max-w-md z-[100] hidden-consent">
+        <div class="glass p-6 rounded-2xl shadow-2xl border border-slate-200">
+            <div class="flex items-start gap-4 mb-4">
+                <div class="bg-blue-100 p-3 rounded-xl text-blue-600">
+                    <i class="fas fa-shield-alt text-xl"></i>
+                </div>
+                <div>
+                    <h5 class="font-bold text-slate-800 mb-1">Cài đặt quyền riêng tư</h5>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        Bạn có thể cho phép chúng tôi sử dụng cookie để tối ưu hóa trải nghiệm tìm kiếm chuyến bay của
+                        bạn.
+                    </p>
                 </div>
             </div>
-            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                <div id="login-form">
-                    <h3 class="text-2xl font-bold text-slate-800 mb-2">Đăng nhập</h3>
-                    <div class="space-y-4">
-                        <input type="email" id="login-email" placeholder="Email"
-                            class="w-full bg-slate-50 border p-4 rounded-2xl outline-none">
-                        <input type="password" id="login-password" placeholder="Mật khẩu"
-                            class="w-full bg-slate-50 border p-4 rounded-2xl outline-none">
-                        <button onclick="submitLogin()"
-                            class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold">Đăng nhập ngay</button>
-                    </div>
-                </div>
-                <div id="signup-form" class="hidden">
-                    <h3 class="text-2xl font-bold text-slate-800 mb-2">Đăng ký</h3>
-                    <div class="space-y-4">
-                        <input type="email" id="signup-email" placeholder="Email"
-                            class="w-full bg-slate-50 border p-4 rounded-2xl outline-none">
-                        <input type="tel" id="signup-mobile" placeholder="Số điện thoại"
-                            class="w-full bg-slate-50 border p-4 rounded-2xl outline-none">
-                        <input type="password" id="signup-password" placeholder="Mật khẩu"
-                            class="w-full bg-slate-50 border p-4 rounded-2xl outline-none">
-                        <button onclick="submitSignup()" id="signup-btn"
-                            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold">Tạo tài khoản</button>
-                    </div>
-                </div>
+            <div class="flex gap-3">
+                <button onclick="closeConsent()"
+                    class="flex-1 py-2.5 text-xs font-bold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition">
+                    Từ chối
+                </button>
+                <button onclick="acceptConsent()"
+                    class="flex-1 py-2.5 text-xs font-bold bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition">
+                    Chấp nhận
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT CHÍNH VẬN HÀNH CHATBOT -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             checkSession();
             initChatEvents();
         });
 
-        // 1. Mở/Đóng Khung Chat
         function initChatEvents() {
             const chatTrigger = document.getElementById('chatTrigger');
             const chatWindow = document.getElementById('chatWindow');
@@ -721,7 +798,6 @@
             }
         }
 
-        // 2. Render Tin nhắn & Buttons Options vào Chat Body
         function appendMessage(sender, text, options = []) {
             const chatBody = document.getElementById('chatBody');
             if (!chatBody) return;
@@ -745,7 +821,352 @@
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
-        // 3. Hàm gửi tin nhắn API chính
+        async function checkSession() {
+            try {
+                const res = await fetch('https://uat1.akadigital.net/api/auth/me', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    renderUI(data.data);
+                } else {
+                    renderUI(null);
+                }
+            } catch (err) {
+                renderUI(null);
+            }
+        }
+
+        // Xử lý đóng banner consent
+        function closeConsent() {
+            const banner = document.getElementById('consent-banner');
+            banner.classList.add('translate-y-[200%]');
+            // Logic lưu preference vào localStorage có thể thêm ở đây
+            localStorage.setItem('user-consent', 'accepted');
+        }
+
+        // Tự động ẩn nếu đã accept trước đó
+        window.onload = () => {
+            if (localStorage.getItem('user-consent')) {
+                document.getElementById('consent-banner').style.display = 'none';
+            }
+        }
+
+        // Hàm mở Modal và ép hiển thị đúng Form
+        function toggleAuth(type) {
+            const modal = document.getElementById('auth-modal');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+
+            modal.classList.remove('hidden-auth');
+            modal.classList.add('show-auth');
+            document.body.style.overflow = 'hidden';
+
+            if (type === 'signup') {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+            } else {
+                signupForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            }
+        }
+
+        // Hàm đóng Modal
+        function closeAuth() {
+            const modal = document.getElementById('auth-modal');
+            modal.classList.replace('show-auth', 'hidden-auth');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Cập nhật nội dung text bên cột trái (tùy chọn)
+        function updateSideContent(type) {
+            const title = document.getElementById('auth-title-left');
+            const desc = document.getElementById('auth-desc-left');
+            if (type === 'signup') {
+                title.innerText = "Tham gia SkyPremium";
+                desc.innerText = "Tận hưởng đặc quyền tích lũy dặm bay và ưu đãi sớm.";
+            } else {
+                title.innerText = "Chào mừng quay trở lại!";
+                desc.innerText = "Đăng nhập để quản lý chuyến bay của bạn.";
+            }
+        }
+
+        // Đóng khi bấm ra ngoài vùng Modal
+        window.onclick = function (event) {
+            const modal = document.getElementById('auth-modal');
+            if (event.target == modal) {
+                closeAuth();
+            }
+        }
+
+        /*
+        // Hàm mở banner khi bấm nút ở Footer
+        function showConsentBanner() {
+            const banner = document.getElementById('consent-banner');
+            banner.classList.remove('hidden-consent');
+            banner.classList.add('show-consent');
+        }
+
+        // Hàm đóng banner (Khi từ chối hoặc bấm nút đóng)
+        function closeConsent() {
+            const banner = document.getElementById('consent-banner');
+            banner.classList.remove('show-consent');
+            banner.classList.add('hidden-consent');
+        }
+        */
+
+        function acceptConsent() {
+            localStorage.setItem('user-consent', 'accepted');
+            closeConsent();
+        }
+
+        function createFavicon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+
+            // Cấu hình icon: Font family, size, màu sắc
+            ctx.font = '24px "Font Awesome 6 Free"';
+            ctx.fontWeight = '900'; // Dùng Solid icon
+            ctx.fillStyle = '#1d4ed8'; // Màu xanh Royal Blue (giống màu thương hiệu)
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Mã Unicode cho icon "paper-plane" (F1D8)
+            const iconUnicode = '\uf1d8';
+            ctx.fillText(iconUnicode, 16, 16);
+
+            // Gắn vào thẻ link favicon
+            const link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/png';
+            link.href = canvas.toDataURL('image/png');
+            document.getElementsByTagName('head')[0].appendChild(link);
+        }
+
+        // Chạy hàm ngay khi load xong
+        window.addEventListener('load', createFavicon);
+
+        function OptanonWrapper() {
+            // 1. Lấy danh sách các nhóm cookie đã được đồng ý
+            // Ví dụ: ",C0001,C0002,C0004,"
+            var consentGroups = window.OnetrustActiveGroups;
+
+            // 2. Kiểm tra các nhóm cụ thể (Ví dụ C0004 là Targeting/Marketing)
+            var isMarketingAccepted = consentGroups.includes('C0004');
+            var isPerformanceAccepted = consentGroups.includes('C0002');
+
+            // 3. Gửi dữ liệu sang Netcore Smartech
+            if (typeof smartech !== 'undefined') {
+                smartech('contact', '1', {
+                    'pk^email': JSON.parse(localStorage.getItem('sky_user')), // Định danh người dùng (nếu có)
+                    'CONSENT_PURPOSE_A': "",
+                    'CONSENT_DOCUMENT_A': "",
+                    'CONSENT_TIME_A': "",
+                    'CONSENT_PURPOSE_B': "",
+                    'CONSENT_DOCUMENT_B': "",
+                    'CONSENT_TIME_B': ""
+                });
+                console.log("Update to Netcore profile");
+            }
+
+            window.addEventListener('OneTrustGroupsUpdated', function (event) {
+                var updatedGroups = event.detail; // Chứa danh sách nhóm mới nhất
+
+                if (typeof smartech !== 'undefined') {
+                    smartech('dispatch', 'Consent_Update', {
+                        'groups': updatedGroups,
+                        'timestamp': new Date().toISOString()
+                    });
+
+                    console.log("Update to Netcore event");
+                }
+            });
+        }
+
+        window.addEventListener('OneTrustGroupsUpdated', function (event) {
+            console.log("OneTrust load successfully");
+        });
+
+        // 1. Giả lập hàm xử lý khi Submit Form (Bạn sẽ gọi hàm này khi API trả về thành công)
+        function handleAuthSuccess(userData) {
+            // Lưu thông tin vào localStorage (chuyển object thành string)
+            localStorage.setItem('sky_user', JSON.stringify(userData));
+
+            // Đóng modal và cập nhật giao diện
+            closeAuth();
+            renderUI();
+        }
+
+        // 2. Hàm cập nhật giao diện dựa trên trạng thái đăng nhập
+        function renderUI(user) {
+            const authButtons = document.getElementById('auth-buttons');
+            const userProfile = document.getElementById('user-profile');
+
+            if (user) {
+                authButtons?.classList.add('hidden');
+                userProfile?.classList.remove('hidden');
+                if (userProfile) {
+                    userProfile.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="text-right hidden md:block">
+                            <p class="text-xs font-bold text-blue-900">${user.email}</p>
+                            <p class="text-[10px] text-slate-500">${user.mobile || 'Thành viên Premium'}</p>
+                        </div>
+                        <button onclick="handleLogout()" class="px-4 py-2 text-xs font-bold bg-slate-100 text-slate-600 rounded-full hover:bg-red-50 hover:text-red-500 transition">
+                            Đăng xuất
+                        </button>
+                    </div>`;
+                }
+            } else {
+                authButtons?.classList.remove('hidden');
+                userProfile?.classList.add('hidden');
+            }
+        }
+        // 3. Hàm xử lý Logout
+        async function handleLogout() {
+            try {
+                await fetch('https://uat1.akadigital.net/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (e) { }
+            renderUI(null);
+        }
+
+        async function submitLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) return alert("Vui lòng điền Email và Mật khẩu!");
+
+            try {
+                const res = await fetch('https://uat1.akadigital.net/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    closeAuth();
+                    renderUI(result.data);
+                } else {
+                    alert(result.message);
+                }
+            } catch (err) {
+                alert("Lỗi đăng nhập, vui lòng thử lại sau!");
+            }
+        }
+
+        async function submitSignup(e) {
+            if (e) e.preventDefault();
+
+            const fullname = document.getElementById('fullname').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const mobile = document.getElementById('signup-mobile').value.trim();
+            const password = document.getElementById('signup-password').value;
+
+            if (!email || !password) return alert("Vui lòng điền Email và Mật khẩu!");
+
+            // Lấy nút submit & element hiển thị trạng thái
+            const submitBtn = document.getElementById('signup-btn');
+            const statusText = document.getElementById('signup-status');
+
+            // 1. KÍCH HOẠT TRẠNG THÁI LOADING
+            if (submitBtn) {
+                submitBtn.disabled = true; // Chống user spam click
+                submitBtn.innerHTML = `<span class="spinner"></span> Đang xử lý...`;
+            }
+            if (statusText) {
+                statusText.style.display = 'block';
+                statusText.innerText = "Đang chờ duyệt tài khoản...";
+            }
+
+            try {
+                const payload = { email, password };
+                if (mobile) payload.mobile = mobile;
+
+                const res = await fetch('https://uat1.akadigital.net/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+
+                if (res.ok && result.status === 'success') {
+                    closeAuth();
+                    renderUI(result.data);
+                } else {
+                    alert(result.message || result.error || "Đăng ký không thành công!");
+                }
+            } catch (err) {
+                console.error("Signup error:", err);
+                alert("Lỗi đăng ký, vui lòng thử lại sau!");
+            } finally {
+                // 2. KHÔI PHỤC TRẠNG THÁI NÚT KHI HOÀN THÀNH (DÙ THÀNH CÔNG HAY LỖI)
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = "Đăng ký";
+                }
+                if (statusText) {
+                    statusText.style.display = 'none';
+                }
+            }
+        }
+
+        async function handleShare() {
+            const shareUrl = 'https://uat1.akadigital.net/download';
+
+            try {
+                if (navigator.share) {
+                    // CHỈ SHARE URL - Bỏ title và text
+                    // Khi chỉ có URL, Zalo sẽ buộc phải dùng trình Crawler để lấy 
+                    // Thumbnail từ AppsFlyer mà bạn đã setup ở Bước 1.
+                    await navigator.share({
+                        url: shareUrl
+                    });
+                    console.log('Chia sẻ thành công!');
+                } else {
+                    navigator.clipboard.writeText(shareUrl);
+                }
+            } catch (err) {
+                console.log('Lỗi:', err);
+            }
+        }
+
+        const chatTrigger = document.getElementById('chatTrigger');
+        const chatWindow = document.getElementById('chatWindow');
+        const chatCloseBtn = document.getElementById('chatCloseBtn');
+        const chatInput = document.getElementById('chatInput');
+        const chatBody = document.getElementById('chatBody');
+
+        // Bật/Tắt cửa sổ Chat
+        chatTrigger.addEventListener('click', () => {
+            chatWindow.classList.toggle('active');
+        });
+
+        chatCloseBtn.addEventListener('click', () => {
+            chatWindow.classList.remove('active');
+        });
+
+        // Lấy thời gian hiện tại (HH:MM)
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        }
+
+        // Tự động cuộn xuống tin nhắn mới nhất
+        function scrollToBottom() {
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // Hàm gửi tin nhắn người dùng
         async function sendMessage(userText = '', action = null) {
             const chatBody = document.getElementById('chatBody');
             const chatInput = document.getElementById('chatInput');
@@ -803,7 +1224,7 @@
                 ]);
             }
         }
-
+        // Xử lý nút Enter
         function handleSendClick() {
             const chatInput = document.getElementById('chatInput');
             const text = chatInput ? chatInput.value.trim() : '';
@@ -820,136 +1241,158 @@
             }
         }
 
-        // Auth & Session Logic
-        async function checkSession() {
+        // Render HTML tin nhắn
+        function renderMessage(text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+
+            msgDiv.innerHTML = `
+        <div class="msg-content">${escapeHTML(text)}</div>
+        <span class="msg-time">${getCurrentTime()}</span>
+      `;
+            chatBody.appendChild(msgDiv);
+        }
+
+        // Giả lập trả lời của Chatbot (Cần thay thế bằng fetch API tới Backend thật)
+        async function botReply(userMsg) {
             try {
-                const res = await fetch('https://uat1.akadigital.net/api/auth/me', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                const data = await res.json();
-                if (data.status === 'success') {
-                    renderUI(data.data);
-                } else {
-                    renderUI(null);
-                }
-            } catch (err) {
-                renderUI(null);
-            }
-        }
-
-        function renderUI(user) {
-            const authButtons = document.getElementById('auth-buttons');
-            const userProfile = document.getElementById('user-profile');
-
-            if (user) {
-                authButtons?.classList.add('hidden');
-                userProfile?.classList.remove('hidden');
-                if (userProfile) {
-                    userProfile.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="text-right hidden md:block">
-                            <p class="text-xs font-bold text-blue-900">${user.email}</p>
-                            <p class="text-[10px] text-slate-500">${user.mobile || 'Thành viên Premium'}</p>
-                        </div>
-                        <button onclick="handleLogout()" class="px-4 py-2 text-xs font-bold bg-slate-100 text-slate-600 rounded-full hover:bg-red-50 hover:text-red-500 transition">
-                            Đăng xuất
-                        </button>
-                    </div>`;
-                }
-            } else {
-                authButtons?.classList.remove('hidden');
-                userProfile?.classList.add('hidden');
-            }
-        }
-
-        function toggleAuth(type) {
-            const modal = document.getElementById('auth-modal');
-            const loginForm = document.getElementById('login-form');
-            const signupForm = document.getElementById('signup-form');
-
-            modal.classList.remove('hidden-auth');
-            modal.classList.add('show-auth');
-            document.body.style.overflow = 'hidden';
-
-            if (type === 'signup') {
-                loginForm.classList.add('hidden');
-                signupForm.classList.remove('hidden');
-            } else {
-                signupForm.classList.add('hidden');
-                loginForm.classList.remove('hidden');
-            }
-        }
-
-        function closeAuth() {
-            const modal = document.getElementById('auth-modal');
-            modal.classList.replace('show-auth', 'hidden-auth');
-            document.body.style.overflow = 'auto';
-        }
-
-        async function submitLogin() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            if (!email || !password) return alert("Vui lòng điền Email và Mật khẩu!");
-
-            try {
-                const res = await fetch('https://uat1.akadigital.net/api/auth/login', {
+                const response = await fetch('https://uat1.akadigital.net/api/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ email, password })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include', // 🌟 TỰ ĐỘNG ĐÈN COOKIE SESSION LÊN BACKEND
+                    body: JSON.stringify({
+                        question: userMsg // Không cần gửi userId từ client nữa
+                    })
                 });
-                const result = await res.json();
 
-                if (result.status === 'success') {
-                    closeAuth();
-                    renderUI(result.data);
-                } else {
-                    alert(result.message);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            } catch (err) {
-                alert("Lỗi đăng nhập, vui lòng thử lại sau!");
+
+                const responseData = await response.json();
+
+                if (responseData && responseData.data && responseData.data.answer) {
+                    renderMessage(responseData.data.answer, 'bot');
+                } else {
+                    renderMessage("Không nhận me phản hồi hợp lệ từ hệ thống.", 'bot');
+                }
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                renderMessage("Rất tiếc, đã có lỗi kết nối. Vui lòng thử lại sau!", 'bot');
             }
+
+            scrollToBottom();
         }
 
-        async function submitSignup() {
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value;
-            const mobile = document.getElementById('signup-mobile').value.trim();
-
-            if (!email || !password) return alert("Vui lòng điền Email và Mật khẩu!");
-
-            try {
-                const res = await fetch('https://uat1.akadigital.net/api/auth/signup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ email, password, mobile })
-                });
-
-                const result = await res.json();
-                if (res.ok && result.status === 'success') {
-                    closeAuth();
-                    renderUI(result.data);
-                } else {
-                    alert(result.message || "Đăng ký không thành công!");
-                }
-            } catch (err) {
-                alert("Lỗi đăng ký, vui lòng thử lại sau!");
-            }
-        }
-
-        async function handleLogout() {
-            try {
-                await fetch('https://uat1.akadigital.net/api/auth/logout', {
-                    method: 'POST',
-                    credentials: 'include'
-                });
-            } catch (e) { }
-            renderUI(null);
+        // Tránh lỗ hổng XSS cơ bản
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g,
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
         }
     </script>
+
+    <div id="auth-modal"
+        class="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-sm items-center justify-center hidden-auth px-4">
+        <div class="bg-white w-full max-w-4xl min-h-[550px] rounded-[2.5rem] overflow-hidden shadow-2xl flex relative">
+
+            <button onclick="closeAuth()"
+                class="absolute top-6 right-6 z-10 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div
+                class="hidden md:flex md:w-1/2 auth-gradient p-12 flex-col justify-between text-white relative overflow-hidden">
+                <div class="z-10">
+                    <div class="flex items-center gap-2 mb-8">
+                        <i class="fas fa-paper-plane text-2xl"></i>
+                        <span class="text-2xl font-bold tracking-tighter">SkyPremium</span>
+                    </div>
+                    <h2 id="auth-title-left" class="text-4xl font-extrabold leading-tight mb-4">Chào mừng bạn quay trở
+                        lại!
+                    </h2>
+                    <p id="auth-desc-left" class="text-blue-100">Đăng nhập để quản lý chuyến bay và nhận ưu đãi riêng
+                        biệt
+                        cho thành viên.</p>
+                </div>
+
+                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="z-10 border-t border-white/20 pt-8 text-xs text-blue-200">
+                    © 2026 SkyPremium Global. Hỗ trợ 24/7.
+                </div>
+            </div>
+
+            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+                <div id="login-form">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-2">Đăng nhập</h3>
+                    <p class="text-sm text-slate-500 mb-8">Nhập thông tin để tiếp tục</p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Email</label>
+                            <input type="email" id="login-email" placeholder="example@gmail.com"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Mật khẩu</label>
+                            <input type="password" id="login-password" placeholder="••••••••"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
+                        </div>
+                        <button onclick="submitLogin()"
+                            class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition">
+                            Đăng nhập ngay
+                        </button>
+                    </div>
+                    <p class="text-center mt-8 text-sm text-slate-500">Chưa có tài khoản? <a
+                            href="javascript:toggleAuth('signup')" class="text-blue-600 font-bold">Đăng ký</a></p>
+                </div>
+
+                <div id="signup-form" class="hidden">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-2">Đăng ký thành viên</h3>
+                    <p class="text-sm text-slate-500 mb-8">Bắt đầu hành trình đẳng cấp cùng SkyPremium</p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Email</label>
+                            <input type="text" id="fullname" placeholder="lmaoez"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Email</label>
+                            <input type="email" id="signup-email" placeholder="example@gmail.com"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Số điện thoại</label>
+                            <input type="tel" id="signup-mobile" placeholder="090 123 4567"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">Mật khẩu</label>
+                            <input type="password" id="signup-password" placeholder="••••••••"
+                                class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl outline-none focus:border-blue-500 transition">
+                        </div>
+
+                        <!-- Đã thêm id="signup-btn" vào button -->
+                        <button onclick="submitSignup()" id="signup-btn"
+                            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg shadow-slate-200 hover:bg-blue-600 transition">
+                            Tạo tài khoản
+                        </button>
+
+                        <!-- Thêm thẻ hiển thị trạng thái chờ duyệt -->
+                        <div id="signup-status"
+                            class="status-loading text-center text-sm font-medium text-blue-600 pt-1"
+                            style="display: none;"></div>
+                    </div>
+                    <p class="text-center mt-8 text-sm text-slate-500">Đã có tài khoản? <a
+                            href="javascript:toggleAuth('login')" class="text-blue-600 font-bold">Đăng nhập</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

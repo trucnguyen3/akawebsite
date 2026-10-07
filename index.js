@@ -469,7 +469,7 @@ app.post('/api/chat', async (req, res) => {
                     RETURNING id;
                 `;
                 const values = [flow.data.userId, flow.data.fullName, flow.data.email, flow.data.mobile];
-                await db.query(query, values); // 'db' là instance PostgreSQL của ông
+                await dbPool.query(query, values);
 
                 // Reset state
                 req.session.supportFlow = { step: 'IDLE', data: {} };
