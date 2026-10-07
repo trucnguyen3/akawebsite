@@ -269,7 +269,7 @@ async function fetchAIAnswer(question) {
     // Gọi Gemini AI thông qua SDK mới
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-1.5-flash',
             contents: `Bạn là trợ lý ảo SkyPremium Assistant. Hãy trả lời ngắn gọn, lịch sự câu hỏi sau của khách hàng: "${question}"`
         });
 

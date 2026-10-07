@@ -442,6 +442,80 @@
                 opacity: 1;
             }
         }
+
+        .msg-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .msg-row.user-row {
+            align-items: flex-end;
+        }
+
+        /* Bot chat bên trái */
+        .msg-row.bot-row,
+        .msg-row.system-error-row {
+            align-items: flex-start;
+        }
+
+        .msg-bubble {
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            max-width: 80%;
+            word-break: break-word;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .user-bubble {
+            background-color: #0A192F;
+            color: #FFFFFF;
+            border-bottom-right-radius: 2px;
+        }
+
+        /* Kiểu dáng tin nhắn BOT (Bên trái - Màu trắng) */
+        .bot-bubble {
+            background-color: #FFFFFF;
+            color: #1F2937;
+            border: 1px solid #E5E7EB;
+            border-bottom-left-radius: 2px;
+        }
+
+        /* Tin nhắn báo lỗi hệ thống */
+        .system-error-bubble {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #F87171;
+            border-radius: 12px;
+        }
+
+        .msg-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+            align-self: flex-start;
+        }
+
+        .chat-option-btn {
+            background-color: #FFFFFF;
+            border: 1px solid #D4AF37;
+            color: #0A192F;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chat-option-btn:hover {
+            background-color: #D4AF37;
+            color: #FFFFFF;
+        }
     </style>
 
     <script src='//cdnt.netcoresmartech.com/smartechclient.js'></script>
@@ -839,10 +913,12 @@
             if (!chatBody) return;
 
             const msgRow = document.createElement('div');
+            // sender sẽ là 'user', 'bot', hoặc 'system-error'
             msgRow.className = `msg-row ${sender}-row`;
 
             let html = `<div class="msg-bubble ${sender}-bubble">${escapeHTML(text).replace(/\n/g, '<br>')}</div>`;
 
+            // Nếu bot trả về các nút chọn (Options / Quick Replies)
             if (options && options.length > 0) {
                 html += `<div class="msg-options">`;
                 options.forEach(opt => {
