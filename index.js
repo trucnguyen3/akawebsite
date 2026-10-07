@@ -331,33 +331,122 @@ async function processChatbotRequest(userId, question) {
 // =================================================================
 // ENDPOINT CHATBOT API
 // =================================================================
+// Middleware / Router xử lý tin nhắn tới từ Chatbot UI
 app.post('/api/chat', async (req, res) => {
-    try {
-        const userId = req.session?.user?.email || 'guest';
-        const { question } = req.body;
+    const { message, action } = req.body; // action: 'TRIGGER_SUPPORT_FORM', 'CONFIRM_YES', 'CONFIRM_NO', v.v.
+    const session = req.session;
+    const currentUser = session.user; // Trả về thông tin user nếu đã login
+    const userId = currentUser ? currentUser.id : session.guestId;
 
-        if (!userId || !question) {
-            return res.status(400).json({ 
-                status: 'error', 
-                message: 'userId và question không được để trống.' 
+    // Khởi tạo state support_flow nếu chưa có
+    if (!session.supportFlow) {
+        session.supportFlow = { step: 'IDLE', data: {} };
+    }
+
+    const flow = session.supportFlow;
+
+    // 1. Kích hoạt Form Support
+    if (action === 'TRIGGER_SUPPORT_FORM' || message?.toLowerCase().includes('hỗ trợ')) {
+        flow.step = 'AWAITING_NAME';
+        flow.data = {
+            userId: userId,
+            email: currentUser ? currentUser.email : null // Lấy sẵn email nếu đã login
+        };
+
+        return res.json({
+            reply: 'Bạn vui lòng cho Support Team biết Họ và Tên của bạn nhé:'
+        });
+    }
+
+    // 2. Các bước nhập thông tin
+    if (flow.step === 'AWAITING_NAME') {
+        flow.data.fullName = message.trim();
+
+        // Nếu đã có email từ session (đã login) -> Chuyển sang hỏi Mobile luôn
+        if (flow.data.email) {
+            flow.step = 'AWAITING_MOBILE';
+            return res.json({
+                reply: `Cảm ơn ${flow.data.fullName}. Cho mình xin Số điện thoại liên hệ của bạn nhé:`
+            });
+        } else {
+            flow.step = 'AWAITING_EMAIL';
+            return res.json({
+                reply: `Cảm ơn ${flow.data.fullName}. Cho mình xin Địa chỉ Email của bạn:`
             });
         }
-
-        const result = await processChatbotRequest(userId, question);
-
-        return res.status(200).json({
-            status: 'success',
-            data: {
-                userId,
-                question,
-                answer: result.answer,
-                source: result.source
-            }
-        });
-    } catch (err) {
-        console.error('❌ Chatbot Endpoint Error:', err);
-        return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
     }
+
+    if (flow.step === 'AWAITING_EMAIL') {
+        // Có thể validate email đơn giản ở đây
+        flow.data.email = message.trim();
+        flow.step = 'AWAITING_MOBILE';
+        return res.json({
+            reply: 'Cảm ơn bạn. Cho mình xin thêm Số điện thoại liên hệ nhé:'
+        });
+    }
+
+    if (flow.step === 'AWAITING_MOBILE') {
+        flow.data.mobile = message.trim();
+        flow.step = 'AWAITING_CONFIRMATION';
+
+        // Gửi tin nhắn Confirm thông tin
+        const summaryMsg = `Vui lòng xác nhận lại thông tin yêu cầu hỗ trợ:
+- Họ tên: ${flow.data.fullName}
+- Email: ${flow.data.email}
+- Số điện thoại: ${flow.data.mobile}
+- User ID / Session ID: ${flow.data.userId}
+
+Thông tin trên đã chính xác chưa bạn?`;
+
+        return res.json({
+            reply: summaryMsg,
+            options: [
+                { label: 'Yes (Chính xác)', action: 'CONFIRM_YES' },
+                { label: 'No (Nhập lại)', action: 'CONFIRM_NO' }
+            ]
+        });
+    }
+
+    // 3. Xử lý Confirm Yes / No
+    if (flow.step === 'AWAITING_CONFIRMATION') {
+        if (action === 'CONFIRM_YES' || message?.toLowerCase() === 'yes' || message?.toLowerCase() === 'có') {
+            try {
+                // Lưu vào Database PostgreSQL
+                const query = `
+                    INSERT INTO lead_form (user_id, full_name, email, mobile, status)
+                    VALUES ($1, $2, $3, $4, 'confirmed')
+                    RETURNING id;
+                `;
+                const values = [flow.data.userId, flow.data.fullName, flow.data.email, flow.data.mobile];
+                await db.query(query, values);
+
+                // Reset state
+                session.supportFlow = { step: 'IDLE', data: {} };
+
+                return res.json({
+                    reply: 'Cảm ơn bạn! Thông tin đã được gửi đến Support Team. Đội ngũ hỗ trợ sẽ liên hệ với bạn trong thời gian sớm nhất.'
+                });
+            } catch (err) {
+                console.error('Lỗi khi lưu lead_form:', err);
+                return res.json({ reply: 'Có lỗi xảy ra khi lưu thông tin. Bạn vui lòng thử lại sau nhé!' });
+            }
+        }
+
+        if (action === 'CONFIRM_NO' || message?.toLowerCase() === 'no' || message?.toLowerCase() === 'không') {
+            // Reset dữ liệu và kêu nhập lại từ đầu
+            flow.step = 'AWAITING_NAME';
+            flow.data = {
+                userId: userId,
+                email: currentUser ? currentUser.email : null
+            };
+
+            return res.json({
+                reply: 'Thông tin chưa chính xác. Chúng ta làm lại nhé!\n\nĐầu tiên, vui lòng nhập lại Họ và Tên của bạn:'
+            });
+        }
+    }
+
+    // Xử lý các tin nhắn Gemini Chatbot bình thường ở dưới...
 });
 
 // Endpoint lấy lịch sử trò chuyện của User từ Database
