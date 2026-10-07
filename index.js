@@ -259,44 +259,26 @@ function findFAQAnswer(question) {
 }
 
 // 2. Cập nhật hàm gọi AI bằng ai.models.generateContent
-async function fetchAIAnswer(question, retries = 2) {
-    // Danh sách model ưu tiên (Nếu model chính bận thì nhảy sang model dự phòng)
-    const modelsToTry = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash'];
-
-    for (const modelName of modelsToTry) {
-        for (let attempt = 0; attempt <= retries; attempt++) {
-            try {
-                const response = await ai.models.generateContent({
-                    model: modelName,
-                    contents: question,
-                });
-
-                if (response && response.text) {
-                    return response.text;
-                }
-            } catch (error) {
-                const is503 = error?.status === 503 || error?.message?.includes('503') || error?.message?.includes('high demand');
-                
-                // Nếu dính lỗi 503 quá tải, đợi 1 giây rồi thử lại
-                if (is503 && attempt < retries) {
-                    console.warn(`⚠️ [Gemini 503] Model ${modelName} đang quá tải. Đang thử lại lần ${attempt + 1}...`);
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1))); // Wait 1s, 2s
-                    continue;
-                }
-
-                // Nếu thử đủ lần vẫn lỗi 503, nhảy sang model tiếp theo trong danh sách
-                if (is503) {
-                    console.warn(`⚠️ [Gemini 503] Model ${modelName} bị bận, chuyển sang model dự phòng...`);
-                    break; 
-                }
-
-                // Nếu là lỗi khác (401, 404...), quăng lỗi ra ngoài luôn
-                throw error;
-            }
-        }
+async function fetchAIAnswer(question) {
+    // Kiểm tra trong FAQ trước
+    const faqAnswer = findFAQAnswer(question);
+    if (faqAnswer) {
+        return faqAnswer;
     }
 
-    throw new Error('Tất cả các model Gemini đều đang quá tải. Vui lòng thử lại sau giây lát!');
+    // Gọi Gemini AI thông qua SDK mới
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Bạn là trợ lý ảo SkyPremium Assistant. Hãy trả lời ngắn gọn, lịch sự câu hỏi sau của khách hàng: "${question}"`
+        });
+
+        // Trả về văn bản câu trả lời
+        return response.text;
+    } catch (error) {
+        console.error("❌ Gemini AI Error:", error);
+        return "Xin lỗi, hiện tại tôi đang gặp khó khăn khi xử lý câu hỏi này. Vui lòng thử lại sau!";
+    }
 }
 
 // Lưu log hỏi đáp vào Database
