@@ -335,19 +335,19 @@ app.post('/api/chat', async (req, res) => {
     try {
         const currentUser = req.session?.user;
         const isLogin = !!currentUser?.email;
-        // Nếu đã login -> lấy email; Nếu chưa login -> lấy guest_id từ session (hoặc tạo tạm)
         const userId = isLogin ? currentUser.email : (req.session?.guestId || 'guest');
         
         const { question, action } = req.body;
 
-        if (!userId || (!question && !action)) {
+        // Chấp nhận request có question HOẶC action
+        if (!question && !action) {
             return res.status(400).json({ 
                 status: 'error', 
-                message: 'userId và (question hoặc action) không được để trống.' 
+                message: 'question hoặc action không được để trống.' 
             });
         }
 
-        // 1. Khởi tạo State Machine cho Support Flow trong Session nếu chưa có
+        // 1. Khởi tạo State Machine cho Lead Form trong Session
         if (!req.session.supportFlow) {
             req.session.supportFlow = { step: 'IDLE', data: {} };
         }
@@ -361,7 +361,7 @@ app.post('/api/chat', async (req, res) => {
         const isTriggerSupport = action === 'TRIGGER_SUPPORT_FORM' || triggerKeywords.some(kw => inputLower.includes(kw));
 
         // ----------------------------------------------------
-        // A. KÍCH HOẠT VÀ XỬ LÝ CÁC BƯỚC FORM SUPPORT
+        // A. LUỒNG SUPPORT LEAD FORM (FSM)
         // ----------------------------------------------------
         
         // Step 0: Kích hoạt Form
@@ -369,7 +369,7 @@ app.post('/api/chat', async (req, res) => {
             flow.step = 'AWAITING_NAME';
             flow.data = {
                 userId: userId,
-                email: isLogin ? currentUser.email : null // Lấy sẵn email nếu đã login
+                email: isLogin ? currentUser.email : null
             };
 
             return res.status(200).json({
@@ -387,8 +387,8 @@ app.post('/api/chat', async (req, res) => {
         if (flow.step === 'AWAITING_NAME') {
             flow.data.fullName = inputMessage;
 
-            // Nếu đã login (có email sẵn) -> Nhảy thẳng sang hỏi SĐT
             if (flow.data.email) {
+                // Đã login -> Chuyển thẳng sang hỏi Số điện thoại
                 flow.step = 'AWAITING_MOBILE';
                 return res.status(200).json({
                     status: 'success',
@@ -400,6 +400,7 @@ app.post('/api/chat', async (req, res) => {
                     }
                 });
             } else {
+                // Chưa login -> Hỏi Email
                 flow.step = 'AWAITING_EMAIL';
                 return res.status(200).json({
                     status: 'success',
@@ -413,7 +414,7 @@ app.post('/api/chat', async (req, res) => {
             }
         }
 
-        // Step 2: Nhập Email (Dành cho Guest chưa login)
+        // Step 2: Nhập Email (Guest)
         if (flow.step === 'AWAITING_EMAIL') {
             flow.data.email = inputMessage;
             flow.step = 'AWAITING_MOBILE';
@@ -428,7 +429,7 @@ app.post('/api/chat', async (req, res) => {
             });
         }
 
-        // Step 3: Nhập SĐT & Hiển thị Xác nhận (Confirm)
+        // Step 3: Nhập SĐT & Yêu cầu Confirm
         if (flow.step === 'AWAITING_MOBILE') {
             flow.data.mobile = inputMessage;
             flow.step = 'AWAITING_CONFIRMATION';
@@ -455,22 +456,22 @@ app.post('/api/chat', async (req, res) => {
             });
         }
 
-        // Step 4: Xử lý Xác nhận Yes / No
+        // Step 4: Xử lý Bấm / Gõ Yes / No
         if (flow.step === 'AWAITING_CONFIRMATION') {
             const isYes = action === 'CONFIRM_YES' || ['yes', 'có', 'dung', 'đúng', 'chính xác'].includes(inputLower);
             const isNo = action === 'CONFIRM_NO' || ['no', 'không', 'sai', 'nhập lại'].includes(inputLower);
 
             if (isYes) {
-                // Lưu vào database PostgreSQL (Bảng lead_form)
+                // Insert vào Postgres bảng lead_form
                 const query = `
                     INSERT INTO lead_form (user_id, full_name, email, mobile, status)
                     VALUES ($1, $2, $3, $4, 'confirmed')
                     RETURNING id;
                 `;
                 const values = [flow.data.userId, flow.data.fullName, flow.data.email, flow.data.mobile];
-                await db.query(query, values); // Thay 'db' bằng biến connection PostgreSQL của ông
+                await db.query(query, values); // 'db' là instance PostgreSQL của ông
 
-                // Reset state về IDLE
+                // Reset state
                 req.session.supportFlow = { step: 'IDLE', data: {} };
 
                 return res.status(200).json({
@@ -485,7 +486,7 @@ app.post('/api/chat', async (req, res) => {
             }
 
             if (isNo) {
-                // Reset thông tin và quay lại từ đầu
+                // Nhập lại từ đầu
                 flow.step = 'AWAITING_NAME';
                 flow.data = {
                     userId: userId,
@@ -505,7 +506,7 @@ app.post('/api/chat', async (req, res) => {
         }
 
         // ----------------------------------------------------
-        // B. LUỒNG CHATBOT AI BÌNH THƯỜNG (GEMINI / CACHE)
+        // B. LUỒNG CHATBOT GEMINI / CACHE BÌNH THƯỜNG
         // ----------------------------------------------------
         const result = await processChatbotRequest(userId, question);
 
