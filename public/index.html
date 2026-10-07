@@ -1194,66 +1194,126 @@
         }
 
         // Hàm gửi tin nhắn người dùng
-        async function sendMessage(userText, action = null) {
-            const chatBox = document.getElementById('chatWindow');
+        async function sendMessage(userText = '', action = null) {
+            const chatBox = document.getElementById('chat-box');
+            if (!chatBox) {
+                console.error("❌ Không tìm thấy id='chat-box'");
+                return;
+            }
 
-            // 1. Render tin nhắn của User vào UI (nếu có gõ text)
+            // Hiển thị tin nhắn người dùng nhập (nếu có text)
             if (userText) {
                 appendMessage('user', userText);
             }
 
-            // 2. TẠO VÀ HIỆN TYPING INDICATOR ("Bot đang soạn tin...")
+            // Render Typing Indicator (Đang soạn tin...)
             const loadingId = 'loading-' + Date.now();
             const loadingHTML = `
-        <div class="typing-indicator" id="${loadingId}">
-            <span></span><span></span><span></span>
+        <div class="msg-row bot-row" id="${loadingId}">
+            <div class="typing-indicator">
+                <span></span><span></span><span></span>
+            </div>
         </div>
     `;
-            chatBox.insertAdjacentHTML('beforeend', `<div class="msg-row bot-row">${loadingHTML}</div>`);
+            chatBox.insertAdjacentHTML('beforeend', loadingHTML);
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
-                // 3. Gọi API Backend (Timeout 15s nếu API bị treo)
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-
+                // Gửi API về Backend (Truyền cả question lẫn action nếu có)
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userText, action: action }),
-                    signal: controller.signal
+                    body: JSON.stringify({
+                        question: userText || '',
+                        action: action
+                    })
                 });
 
-                clearTimeout(timeoutId);
-
-                // Xóa indicator sau khi nhận kết quả
+                // Tắt Typing Indicator
                 document.getElementById(loadingId)?.remove();
 
-                if (!response.ok) {
-                    throw new Error(`HTTP Error status: ${response.status}`);
+                const result = await response.json();
+
+                if (!response.ok || result.status !== 'success') {
+                    throw new Error(result.message || `HTTP status ${response.status}`);
                 }
 
-                const data = await response.json();
-
-                // 4. Render câu trả lời của Bot
-                appendMessage('bot', data.reply, data.options);
+                // Render câu trả lời từ Bot
+                const botData = result.data;
+                appendMessage('bot', botData.answer, botData.options);
 
             } catch (error) {
-                // Xóa indicator nếu gặp lỗi
+                // Tắt Typing Indicator nếu bị lỗi
                 document.getElementById(loadingId)?.remove();
 
                 console.error('Chat Error:', error);
 
-                // 5. HIỆN THÔNG BÁO SỰ CỐ KẾT NỐI + NÚT THỬ LẠI
-                let errorMsg = '⚠️ Hệ thống đang gặp sự cố kết nối. Bạn vui lòng kiểm tra lại mạng hoặc thử lại sau nhé!';
-                if (error.name === 'AbortError') {
-                    errorMsg = '⏳ Kết nối phản hồi quá lâu (Timeout). Bạn thử gửi lại câu hỏi xem sao nhé!';
-                }
-
-                appendMessage('system-error', errorMsg, [
-                    { label: '🔄 Thử lại', action: 'RETRY_LAST_MSG', payload: userText }
+                // Báo lỗi cho user + Nút thử lại
+                appendMessage('system-error', '⚠️ Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại đường truyền hoặc thử lại!', [
+                    { label: '🔄 Thử lại', action: action, payload: userText }
                 ]);
             }
+
+        }
+        const chatBox = document.getElementById('chatWindow');
+
+        // 1. Render tin nhắn của User vào UI (nếu có gõ text)
+        if (userText) {
+            appendMessage('user', userText);
+        }
+
+        // 2. TẠO VÀ HIỆN TYPING INDICATOR ("Bot đang soạn tin...")
+        const loadingId = 'loading-' + Date.now();
+        const loadingHTML = `
+        <div class="typing-indicator" id="${loadingId}">
+            <span></span><span></span><span></span>
+        </div>
+    `;
+        chatBox.insertAdjacentHTML('beforeend', `<div class="msg-row bot-row">${loadingHTML}</div>`);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            // 3. Gọi API Backend (Timeout 15s nếu API bị treo)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userText, action: action }),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            // Xóa indicator sau khi nhận kết quả
+            document.getElementById(loadingId)?.remove();
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // 4. Render câu trả lời của Bot
+            appendMessage('bot', data.reply, data.options);
+
+        } catch (error) {
+            // Xóa indicator nếu gặp lỗi
+            document.getElementById(loadingId)?.remove();
+
+            console.error('Chat Error:', error);
+
+            // 5. HIỆN THÔNG BÁO SỰ CỐ KẾT NỐI + NÚT THỬ LẠI
+            let errorMsg = '⚠️ Hệ thống đang gặp sự cố kết nối. Bạn vui lòng kiểm tra lại mạng hoặc thử lại sau nhé!';
+            if (error.name === 'AbortError') {
+                errorMsg = '⏳ Kết nối phản hồi quá lâu (Timeout). Bạn thử gửi lại câu hỏi xem sao nhé!';
+            }
+
+            appendMessage('system-error', errorMsg, [
+                { label: '🔄 Thử lại', action: 'RETRY_LAST_MSG', payload: userText }
+            ]);
+        }
         }
 
         // Xử lý nút Enter
@@ -1264,9 +1324,8 @@
         }
 
         // Gửi tin nhắn từ Gợi ý nhanh (Quick Chips)
-        function sendQuickMsg(text) {
-            chatInput.value = text;
-            sendMessage();
+        function sendQuickMsg(text, action = null) {
+            sendMessage(text, action);
         }
 
         // Render HTML tin nhắn
