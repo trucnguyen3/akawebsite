@@ -685,12 +685,8 @@ app.post('/webhook-zalo', async (req, res) => {
     if (!zaloUserId) return;
 
     try {
-        // -----------------------------------------------------------------
-        // 1. BẮT TẤT CẢ TƯƠNG TÁC GỬI OUTBOUND TỪ ZALO CHAT FLOW (QUESTION)
-        // Bắt các event: oa_send_text, oa_send_quick_reply, oa_send_template, oa_send_list, user_receive_message,...
-        // -----------------------------------------------------------------
+        // A. TIN NHẮN TỪ BOT ZALO (OA SEND)
         if (eventName.startsWith('oa_send_') || eventName === 'user_receive_message') {
-            // Đối với tin nhắn từ OA gửi ra, recipient.id CHÍNH LÀ USER ID THẬT OF KHÁCH HÀNG
             const targetUserId = event.recipient?.id;
             const zaloQuestion = extractZaloMessageText(event.message);
 
@@ -700,21 +696,17 @@ app.post('/webhook-zalo', async (req, res) => {
                     VALUES ($1, $2, 'PENDING_ANSWER', false)
                 `, [targetUserId, zaloQuestion]);
 
-                console.log(`🤖 [Zalo Chat Flow Question] User: ${targetUserId} | Text: "${zaloQuestion.substring(0, 50)}..."`);
+                console.log(`🤖 [Zalo Question] User: ${targetUserId} | Text: "${zaloQuestion}"`);
             }
         }
 
-        // -----------------------------------------------------------------
-        // 2. BẮT TẤT CẢ PHẢN HỒI TỪ KHÁCH HÀNG (ANSWER)
-        // Bắt các event: user_send_text, user_send_quick_reply, user_submit_form, user_send_image,...
-        // -----------------------------------------------------------------
+        // B. TIN NHẮN TỪ KHÁCH HÀNG (USER SEND)
         if (eventName.startsWith('user_send_') || eventName === 'user_submit_form') {
-            // Đối với tin nhắn từ User gửi lên, sender.id LÀ USER ID THẬT
             const targetUserId = event.sender?.id;
             const userAnswer = extractZaloMessageText(event.message);
 
             if (targetUserId && userAnswer) {
-                // UPDATE vào câu hỏi PENDING gần nhất của chính User đó
+                // 1. Thử UPDATE vào dòng PENDING gần nhất
                 const updateResult = await dbPool.query(`
                     UPDATE chatbot_history 
                     SET answer = $1, is_cached = false 
@@ -726,20 +718,21 @@ app.post('/webhook-zalo', async (req, res) => {
                     RETURNING id;
                 `, [userAnswer, targetUserId]);
 
-                // Fallback nếu User gửi tin nhắn trước khi có event Zalo OA gửi câu hỏi
+                // 2. NẾU KHÔNG CÓ DÒNG PENDING (ví dụ: User bấm "Đăng ký" đầu tiên)
+                // Lưu chính chữ User gõ vào cột question/answer thay vì ghi "[Khách gửi trước]"
                 if (updateResult.rowCount === 0) {
                     await dbPool.query(`
                         INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
-                        VALUES ($1, '[Khách gửi trước]', $2, false)
+                        VALUES ($1, $2, $2, false)
                     `, [targetUserId, userAnswer]);
                 }
 
-                console.log(`📩 [User Answer] User: ${targetUserId} | Answer: "${userAnswer}"`);
+                console.log(`📩 [User Answer] User: ${targetUserId} | Text: "${userAnswer}"`);
             }
         }
 
     } catch (err) {
-        console.error('❌ Lỗi đồng bộ Zalo Chat Flow:', err.message);
+        console.error('❌ Lỗi đồng bộ Zalo Webhook:', err.message);
     }
 });
 
