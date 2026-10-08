@@ -684,19 +684,15 @@ app.post('/webhook-zalo', async (req, res) => {
 
     if (!zaloUserId) return;
 
-try {
+    try {
         // -----------------------------------------------------------------
-        // 1. ZALO CHAT FLOW ĐẶT CÂU HỎI (OA SEND)
+        // 1. BẮT TẤT CẢ TƯƠNG TÁC GỬI OUTBOUND TỪ ZALO CHAT FLOW (QUESTION)
+        // Bắt các event: oa_send_text, oa_send_quick_reply, oa_send_template, oa_send_list, user_receive_message,...
         // -----------------------------------------------------------------
-        if (
-            eventName === 'oa_send_text' || 
-            eventName === 'user_receive_message' ||
-            eventName === 'oa_send_quick_reply' ||
-            eventName === 'oa_send_list'
-        ) {
-            // CRITICAL: Đối với OA Send, recipient.id MỚI LÀ USER ID THẬT!
+        if (eventName.startsWith('oa_send_') || eventName === 'user_receive_message') {
+            // Đối với tin nhắn từ OA gửi ra, recipient.id CHÍNH LÀ USER ID THẬT OF KHÁCH HÀNG
             const targetUserId = event.recipient?.id;
-            const zaloQuestion = event.message?.text?.trim() || event.message?.title || '';
+            const zaloQuestion = extractZaloMessageText(event.message);
 
             if (targetUserId && zaloQuestion) {
                 await dbPool.query(`
@@ -704,21 +700,18 @@ try {
                     VALUES ($1, $2, 'PENDING_ANSWER', false)
                 `, [targetUserId, zaloQuestion]);
 
-                console.log(`🤖 [Zalo Question] User: ${targetUserId} | Question: "${zaloQuestion}"`);
+                console.log(`🤖 [Zalo Chat Flow Question] User: ${targetUserId} | Text: "${zaloQuestion.substring(0, 50)}..."`);
             }
         }
 
         // -----------------------------------------------------------------
-        // 2. USER PHẢN HỒI (USER SEND)
+        // 2. BẮT TẤT CẢ PHẢN HỒI TỪ KHÁCH HÀNG (ANSWER)
+        // Bắt các event: user_send_text, user_send_quick_reply, user_submit_form, user_send_image,...
         // -----------------------------------------------------------------
-        if (
-            eventName === 'user_send_text' || 
-            eventName === 'user_send_quick_reply' ||
-            eventName === 'user_submit_form'
-        ) {
-            // Đối với User Send, sender.id LÀ USER ID THẬT
+        if (eventName.startsWith('user_send_') || eventName === 'user_submit_form') {
+            // Đối với tin nhắn từ User gửi lên, sender.id LÀ USER ID THẬT
             const targetUserId = event.sender?.id;
-            const userAnswer = event.message?.text?.trim() || event.message?.title || '';
+            const userAnswer = extractZaloMessageText(event.message);
 
             if (targetUserId && userAnswer) {
                 // UPDATE vào câu hỏi PENDING gần nhất của chính User đó
@@ -733,7 +726,7 @@ try {
                     RETURNING id;
                 `, [userAnswer, targetUserId]);
 
-                // Fallback nếu User nhắn tin trước khi có câu hỏi PENDING
+                // Fallback nếu User gửi tin nhắn trước khi có event Zalo OA gửi câu hỏi
                 if (updateResult.rowCount === 0) {
                     await dbPool.query(`
                         INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
@@ -893,6 +886,31 @@ async function sendZaloOAMessage(zaloUserId, textMessage) {
     } catch (err) {
         console.error('❌ Lỗi gửi tin nhắn Zalo OA API:', err.response?.data || err.message);
     }
+}
+
+function extractZaloMessageText(messageObj) {
+    if (!messageObj) return '';
+    
+    // 1. Nếu là text thường hoặc quick reply text
+    if (messageObj.text) return messageObj.text.trim();
+    if (messageObj.title) return messageObj.title.trim();
+
+    // 2. Nếu Zalo gửi dạng Elements / Cards / Template (Hỏi tuổi, Confirm SĐT/Email)
+    if (messageObj.elements && Array.isArray(messageObj.elements) && messageObj.elements.length > 0) {
+        const firstElem = messageObj.elements[0];
+        const title = firstElem.title || firstElem.caption || '';
+        const subtitle = firstElem.subtitle || firstElem.description || '';
+        return `${title}\n${subtitle}`.trim();
+    }
+
+    // 3. Nếu gửi dạng đính kèm Attachment
+    if (messageObj.attachments && Array.isArray(messageObj.attachments) && messageObj.attachments.length > 0) {
+        const payload = messageObj.attachments[0]?.payload;
+        if (payload?.text) return payload.text.trim();
+        if (payload?.title) return payload.title.trim();
+    }
+
+    return '';
 }
 
 async function refreshZaloToken() {
