@@ -677,30 +677,44 @@ app.post('/webhook-zalo', (req, res) => {
     const event = req.body;
 
     // Kiểm tra đúng sự kiện User gửi tin nhắn văn bản đến OA
-    if (event && (event.event_name === 'user_send_text' || event.event_name === 'user_send_quick_reply')) {
+    if (event && (
+        event.event_name === 'user_send_text' || 
+        event.event_name === 'user_send_quick_reply' ||
+        event.event_name === 'user_submit_form' // Event khi user gửi Zalo Form
+    )) {
         const zaloUserId = event.sender?.id;
-        const userQuestion = event.message?.text?.trim();
+
+        // 🌟 LẤY CÂU HỎI / NỘI DUNG TRỰC TIẾP TỪ ZALO (KHÔNG DÙNG CÂU HỎI MẶC ĐỊNH CỦA SKYPREMIUM)
+        let userQuestion = '';
+
+        if (event.event_name === 'user_submit_form') {
+            // Nếu là event Zalo Form Submit: Lấy tiêu đề form hoặc dữ liệu form
+            userQuestion = event.message?.title || event.message?.text || 'Gửi Zalo Form thành công';
+        } else {
+            // Tin nhắn văn bản hoặc Quick reply thường
+            userQuestion = event.message?.text?.trim();
+        }
 
         if (zaloUserId && userQuestion) {
-            // Thực hiện xử lý bất đồng bộ (tránh để Zalo Webhook bị timeout)
+            // Xử lý Async để tránh timeout Webhook của Zalo
             (async () => {
-                // BƯỚC 1: Insert câu hỏi vào Postgres, lấy ngay `id` khóa chính
+                // BƯỚC 1: Thêm câu hỏi THẬT từ Zalo vào Postgres và lấy `id` khóa chính
                 const chatId = await createPendingZaloChatRecord(zaloUserId, userQuestion);
 
-                // BƯỚC 2: Xử lý qua bộ lọc Cache/FAQ hoặc Gemini AI
+                // BƯỚC 2: Đưa câu hỏi này qua xử lý AI / FAQ / Lead Logic
                 const result = await processChatbotRequest(zaloUserId, userQuestion);
 
-                // BƯỚC 3: Cập nhật câu trả lời vào đúng bản ghi có `id` tương ứng
+                // BƯỚC 3: Update câu trả lời vào đúng `id` tương ứng
                 if (chatId) {
                     await updateZaloChatAnswer(chatId, result.answer, result.source === 'cache');
                 }
 
-                // BƯỚC 4: Gửi câu trả lời về lại cho user trên Zalo
+                // BƯỚC 4: Bắn tin nhắn phản hồi về Zalo OA
                 await sendZaloOAMessage(zaloUserId, result.answer);
             })();
         }
     }
-    
+
     res.status(200).json({ status: 'success', message: 'Zalo webhook received successfully' });
 });
 
