@@ -659,6 +659,7 @@ const processedZaloMsgIds = new Set();
 
 app.post('/webhook-zalo', async (req, res) => {
     console.log(`[Zalo] Nhận event webhook từ IP: ${req.ip}`);
+    console.log(`[Zalo Event Raw Payload] ${eventName}:`, JSON.stringify(event.message, null, 2));
     res.status(200).json({ status: 'success', message: 'Zalo webhook received successfully' });
 
     // OPTIONAL: Kiểm tra chữ ký bảo mật từ Zalo (Signature Verification)
@@ -679,34 +680,42 @@ app.post('/webhook-zalo', async (req, res) => {
     const event = req.body;
     if (!event) return;
 
-    const eventName = event.event_name;
-    const zaloUserId = event.sender?.id || event.recipient?.id;
-
-    if (!zaloUserId) return;
+    const eventName = event.event_name || '';
 
     try {
-        // A. TIN NHẮN TỪ BOT ZALO (OA SEND)
+        // =================================================================
+        // A. TẤT CẢ TIN NHẮN TỪ BOT ZALO OA GỬI RA (OA SEND / BOT QUESTION)
+        // =================================================================
         if (eventName.startsWith('oa_send_') || eventName === 'user_receive_message') {
             const targetUserId = event.recipient?.id;
             const zaloQuestion = extractZaloMessageText(event.message);
 
             if (targetUserId && zaloQuestion) {
+                // Xóa câu hỏi PENDING cũ chưa được trả lời (nếu có) để tránh kẹt log
+                await dbPool.query(
+                    `DELETE FROM chatbot_history WHERE user_id = $1 AND answer = 'PENDING_ANSWER'`, 
+                    [targetUserId]
+                );
+
+                // Insert câu hỏi PENDING động 100% từ Zalo
                 await dbPool.query(`
                     INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
                     VALUES ($1, $2, 'PENDING_ANSWER', false)
                 `, [targetUserId, zaloQuestion]);
 
-                console.log(`🤖 [Zalo Question] User: ${targetUserId} | Text: "${zaloQuestion}"`);
+                console.log(`🤖 [Zalo Bot Event: ${eventName}] User: ${targetUserId} | Question: "${zaloQuestion.substring(0, 60)}..."`);
             }
         }
 
-        // B. TIN NHẮN TỪ KHÁCH HÀNG (USER SEND)
+        // =================================================================
+        // B. TẤT CẢ TƯƠNG TÁC TỪ KHÁCH HÀNG (USER SEND / USER ANSWER)
+        // =================================================================
         if (eventName.startsWith('user_send_') || eventName === 'user_submit_form') {
             const targetUserId = event.sender?.id;
             const userAnswer = extractZaloMessageText(event.message);
 
             if (targetUserId && userAnswer) {
-                // 1. Thử UPDATE vào dòng PENDING gần nhất
+                // Ghép nối câu trả lời của User vào câu hỏi PENDING gần nhất của Zalo Bot
                 const updateResult = await dbPool.query(`
                     UPDATE chatbot_history 
                     SET answer = $1, is_cached = false 
@@ -718,8 +727,7 @@ app.post('/webhook-zalo', async (req, res) => {
                     RETURNING id;
                 `, [userAnswer, targetUserId]);
 
-                // 2. NẾU KHÔNG CÓ DÒNG PENDING (ví dụ: User bấm "Đăng ký" đầu tiên)
-                // Lưu chính chữ User gõ vào cột question/answer thay vì ghi "[Khách gửi trước]"
+                // Fallback: Nếu User bấm nút khởi đầu mà Zalo chưa kịp bắn event oa_send_*
                 if (updateResult.rowCount === 0) {
                     await dbPool.query(`
                         INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
@@ -727,12 +735,12 @@ app.post('/webhook-zalo', async (req, res) => {
                     `, [targetUserId, userAnswer]);
                 }
 
-                console.log(`📩 [User Answer] User: ${targetUserId} | Text: "${userAnswer}"`);
+                console.log(`📩 [User Event: ${eventName}] User: ${targetUserId} | Answer: "${userAnswer}"`);
             }
         }
 
     } catch (err) {
-        console.error('❌ Lỗi đồng bộ Zalo Webhook:', err.message);
+        console.error('❌ Lỗi xử lý Zalo Webhook:', err.message);
     }
 });
 
@@ -884,23 +892,41 @@ async function sendZaloOAMessage(zaloUserId, textMessage) {
 function extractZaloMessageText(messageObj) {
     if (!messageObj) return '';
     
-    // 1. Nếu là text thường hoặc quick reply text
-    if (messageObj.text) return messageObj.text.trim();
-    if (messageObj.title) return messageObj.title.trim();
-
-    // 2. Nếu Zalo gửi dạng Elements / Cards / Template (Hỏi tuổi, Confirm SĐT/Email)
-    if (messageObj.elements && Array.isArray(messageObj.elements) && messageObj.elements.length > 0) {
-        const firstElem = messageObj.elements[0];
-        const title = firstElem.title || firstElem.caption || '';
-        const subtitle = firstElem.subtitle || firstElem.description || '';
-        return `${title}\n${subtitle}`.trim();
+    // 1. Dạng Text hoặc Quick Reply cơ bản
+    if (typeof messageObj.text === 'string' && messageObj.text.trim()) {
+        return messageObj.text.trim();
+    }
+    if (typeof messageObj.title === 'string' && messageObj.title.trim()) {
+        return messageObj.title.trim();
     }
 
-    // 3. Nếu gửi dạng đính kèm Attachment
-    if (messageObj.attachments && Array.isArray(messageObj.attachments) && messageObj.attachments.length > 0) {
+    // 2. Dạng Template / Card (Ví dụ: Tin nhắn Confirm SĐT, Email, Summary)
+    if (messageObj.template) {
+        const tmpl = messageObj.template;
+        const header = tmpl.header || tmpl.title || '';
+        const body = tmpl.body || tmpl.content || tmpl.description || '';
+        const fullText = `${header}\n${body}`.trim();
+        if (fullText) return fullText;
+    }
+
+    // 3. Dạng Elements / List Cards
+    if (Array.isArray(messageObj.elements) && messageObj.elements.length > 0) {
+        const texts = messageObj.elements.map(elem => {
+            const t = elem.title || elem.caption || '';
+            const st = elem.subtitle || elem.description || '';
+            return `${t} ${st}`.trim();
+        }).filter(Boolean);
+        if (texts.length > 0) return texts.join('\n');
+    }
+
+    // 4. Dạng Payload Attachment
+    if (Array.isArray(messageObj.attachments) && messageObj.attachments.length > 0) {
         const payload = messageObj.attachments[0]?.payload;
-        if (payload?.text) return payload.text.trim();
-        if (payload?.title) return payload.title.trim();
+        if (payload) {
+            if (payload.text) return payload.text.trim();
+            if (payload.title) return payload.title.trim();
+            if (payload.description) return payload.description.trim();
+        }
     }
 
     return '';
