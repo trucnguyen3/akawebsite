@@ -655,8 +655,11 @@ app.post('/webhook-appsflyer', (req, res) => {
 // =================================================================
 // 3. ENDPOINT WEBHOOK ZALO & OAUTH CALLBACK
 // =================================================================
-app.post('/webhook-zalo', (req, res) => {
+const processedZaloMsgIds = new Set();
+
+app.post('/webhook-zalo', async (req, res) => {
     console.log(`[Zalo] Nhận event webhook từ IP: ${req.ip}`);
+    res.status(200).json({ status: 'success', message: 'Zalo webhook received successfully' });
 
     // OPTIONAL: Kiểm tra chữ ký bảo mật từ Zalo (Signature Verification)
     if (ZALO_APP_SECRET) {
@@ -673,49 +676,75 @@ app.post('/webhook-zalo', (req, res) => {
 
     processAndEmitWebhook(req, "ZALO");
 
-    // Lấy thông tin event từ Zalo
     const event = req.body;
+    if (!event) return;
 
-    // Kiểm tra đúng sự kiện User gửi tin nhắn văn bản đến OA
-    if (event && (
-        event.event_name === 'user_send_text' || 
-        event.event_name === 'user_send_quick_reply' ||
-        event.event_name === 'user_submit_form' // Event khi user gửi Zalo Form
-    )) {
-        const zaloUserId = event.sender?.id;
+    const eventName = event.event_name;
+    const zaloUserId = event.sender?.id || event.recipient?.id;
 
-        // 🌟 LẤY CÂU HỎI / NỘI DUNG TRỰC TIẾP TỪ ZALO (KHÔNG DÙNG CÂU HỎI MẶC ĐỊNH CỦA SKYPREMIUM)
-        let userQuestion = '';
+    if (!zaloUserId) return;
 
-        if (event.event_name === 'user_submit_form') {
-            // Nếu là event Zalo Form Submit: Lấy tiêu đề form hoặc dữ liệu form
-            userQuestion = event.message?.title || event.message?.text || 'Gửi Zalo Form thành công';
-        } else {
-            // Tin nhắn văn bản hoặc Quick reply thường
-            userQuestion = event.message?.text?.trim();
+    try {
+        // -----------------------------------------------------------------
+        // 1. BƯỚC 1: ZALO CHAT FLOW ĐẶT CÂU HỎI / GỬI TIN NHẮN (QUESTION)
+        // -----------------------------------------------------------------
+        if (
+            eventName === 'oa_send_text' || 
+            eventName === 'user_receive_message' ||
+            eventName === 'oa_send_quick_reply' ||
+            eventName === 'oa_send_list'
+        ) {
+            const zaloQuestion = event.message?.text?.trim() || event.message?.title || '';
+
+            if (zaloQuestion) {
+                // Tạo bản ghi mới: QUESTION = Tin nhắn từ Zalo, ANSWER = PENDING_ANSWER
+                await dbPool.query(`
+                    INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
+                    VALUES ($1, $2, 'PENDING_ANSWER', false)
+                `, [zaloUserId, zaloQuestion]);
+
+                console.log(`🤖 [Zalo Question] ID: ${zaloUserId} | Question: "${zaloQuestion}"`);
+            }
         }
 
-        if (zaloUserId && userQuestion) {
-            // Xử lý Async để tránh timeout Webhook của Zalo
-            (async () => {
-                // BƯỚC 1: Thêm câu hỏi THẬT từ Zalo vào Postgres và lấy `id` khóa chính
-                const chatId = await createPendingZaloChatRecord(zaloUserId, userQuestion);
+        // -----------------------------------------------------------------
+        // 2. BƯỚC 2: USER PHẢN HỒI / CHỌN NÚT / TRẢ LỜI (ANSWER)
+        // -----------------------------------------------------------------
+        if (
+            eventName === 'user_send_text' || 
+            eventName === 'user_send_quick_reply' ||
+            eventName === 'user_submit_form'
+        ) {
+            const userAnswer = event.message?.text?.trim() || event.message?.title || '';
 
-                // BƯỚC 2: Đưa câu hỏi này qua xử lý AI / FAQ / Lead Logic
-                const result = await processChatbotRequest(zaloUserId, userQuestion);
+            if (userAnswer) {
+                // Tìm dòng QUESTION đang PENDING gần nhất của User này để UPDATE câu trả lời
+                const updateResult = await dbPool.query(`
+                    UPDATE chatbot_history 
+                    SET answer = $1, is_cached = false 
+                    WHERE id = (
+                        SELECT id FROM chatbot_history 
+                        WHERE user_id = $2 AND answer = 'PENDING_ANSWER' 
+                        ORDER BY id DESC LIMIT 1
+                    )
+                    RETURNING id;
+                `, [userAnswer, zaloUserId]);
 
-                // BƯỚC 3: Update câu trả lời vào đúng `id` tương ứng
-                if (chatId) {
-                    await updateZaloChatAnswer(chatId, result.answer, result.source === 'cache');
+                // Fallback: Nếu User chủ động nhắn trước khi Zalo Chat Flow đặt câu hỏi
+                if (updateResult.rowCount === 0) {
+                    await dbPool.query(`
+                        INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
+                        VALUES ($1, '[User Initiated]', $2, false)
+                    `, [zaloUserId, userAnswer]);
                 }
 
-                // BƯỚC 4: Bắn tin nhắn phản hồi về Zalo OA
-                await sendZaloOAMessage(zaloUserId, result.answer);
-            })();
+                console.log(`📩 [User Answer] ID: ${zaloUserId} | Answer: "${userAnswer}"`);
+            }
         }
-    }
 
-    res.status(200).json({ status: 'success', message: 'Zalo webhook received successfully' });
+    } catch (err) {
+        console.error('❌ Lỗi đồng bộ Zalo Chat Flow:', err.message);
+    }
 });
 
 // ROUTE ĐÓN CALLBACK ĐỔI ACCESS TOKEN TỪ ZALO OAUTH V4
