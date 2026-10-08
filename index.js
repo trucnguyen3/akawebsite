@@ -655,7 +655,6 @@ app.post('/webhook-appsflyer', (req, res) => {
 // =================================================================
 // 3. ENDPOINT WEBHOOK ZALO & OAUTH CALLBACK
 // =================================================================
-const processedZaloMsgIds = new Set();
 
 app.post('/webhook-zalo', async (req, res) => {
     console.log(`[Zalo] Nhận event webhook từ IP: ${req.ip}`);
@@ -739,6 +738,10 @@ app.post('/webhook-zalo', async (req, res) => {
                 }
 
                 console.log(`📩 [User Answer] User: ${targetUserId} | Answer: "${userAnswer}"`);
+
+                if (isConfirmAction(userAnswer)) {
+                    await commitLeadFormOnConfirm(targetUserId);
+                }
             }
         }
 
@@ -821,156 +824,80 @@ app.get('/zalo/callback', async (req, res) => {
 // 3. ENDPOINT WEBHOOK ZALO OA (SỬ DỤNG TRỰC TIẾP PK ID ĐỂ MAP CHAT)
 // =================================================================
 
-// Helper 1: Tạo bản ghi câu hỏi Zalo và lấy về id tự tăng
-async function createPendingZaloChatRecord(zaloUserId, question) {
-    try {
-        const query = `
-            INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
-            VALUES ($1, $2, $3, $4)
-            RETURNING id;
-        `;
-        // Ghi nhận câu hỏi trước, answer tạm để PENDING
-        const result = await dbPool.query(query, [zaloUserId, question, 'PENDING_ANSWER', false]);
-        return result.rows[0].id; // Trả về id (ví dụ: 20, 21...)
-    } catch (err) {
-        console.error('❌ Lỗi tạo bản ghi Zalo Chat:', err.message);
-        return null;
-    }
+// Regex kiểm tra SĐT và Email
+const PHONE_REGEX = /(?:84|0)(3|5|7|8|9)[0-9]{8}\b/;
+const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+
+// Helper kiểm tra xem User có vừa bấm nút Xác nhận/Confirm hay không
+function isConfirmAction(text) {
+    const t = text.trim().toLowerCase();
+    return t === 'Confirm';
 }
 
-// Helper 2: Cập nhật câu trả lời theo đúng id
-async function updateZaloChatAnswer(chatId, answer, isCached = false) {
+// Hàm trích xuất SĐT và Email từ lịch sử chat gần nhất để lưu vào lead_form
+async function commitLeadFormOnConfirm(zaloUserId) {
     try {
-        const query = `
-            UPDATE chatbot_history 
-            SET answer = $1, is_cached = $2 
-            WHERE id = $3;
-        `;
-        await dbPool.query(query, [answer, isCached, chatId]);
-    } catch (err) {
-        console.error('❌ Lỗi cập nhật Zalo Chat answer:', err.message);
-    }
-}
+        // 1. Lay 10 tin nhan gan nhat cua user trong chatbot_history
+        const historyRes = await dbPool.query(`
+            SELECT answer FROM chatbot_history 
+            WHERE user_id = $1 AND answer != 'PENDING_ANSWER'
+            ORDER BY id DESC LIMIT 10
+        `, [zaloUserId]);
 
-// Helper 3: Hàm gửi tin nhắn phản hồi qua Zalo OpenAPI (OA)
-async function sendZaloOAMessage(zaloUserId, textMessage) {
-    try {
-        // 1. Ưu tiên lấy Access Token tươi mới từ Redis
-        let zaloAccessToken = await redis.get('zalo:oa:access_token');
+        if (historyRes.rowCount === 0) return;
 
-        // 2. Nếu Redis hết hạn, tự động dùng Refresh Token đổi token mới
-        if (!zaloAccessToken) {
-            zaloAccessToken = await refreshZaloToken();
-        }
+        let extractedPhone = null;
+        let extractedEmail = null;
 
-        // 3. Fallback cuối cùng mới xem biến môi trường
-        if (!zaloAccessToken) {
-            zaloAccessToken = process.env.ZALO_OA_ACCESS_TOKEN || '';
-        }
-
-        if (!zaloAccessToken) {
-            console.warn('⚠️ Chưa cấu hình ZALO_OA_ACCESS_TOKEN để gửi tin nhắn phản hồi!');
-            return;
-        }
-
-        await axios.post(
-            'https://openapi.zalo.me/v2.0/oa/message',
-            {
-                recipient: { user_id: zaloUserId },
-                message: { text: textMessage }
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'access_token': zaloAccessToken
-                }
+        // Quét lịch sử để tìm SĐT và Email gần nhất
+        for (const row of historyRes.rows) {
+            const text = row.answer || '';
+            if (!extractedPhone) {
+                const phoneMatch = text.match(PHONE_REGEX);
+                if (phoneMatch) extractedPhone = phoneMatch[0];
             }
-        );
-        console.log(`✅ Đã gửi tin nhắn Zalo thành công đến user: ${zaloUserId}`);
-    } catch (err) {
-        console.error('❌ Lỗi gửi tin nhắn Zalo OA API:', err.response?.data || err.message);
-    }
-}
-
-function extractZaloMessageText(messageObj) {
-    if (!messageObj) return '';
-    
-    // 1. Text thường hoặc Quick Reply
-    if (typeof messageObj.text === 'string' && messageObj.text.trim()) {
-        return messageObj.text.trim();
-    }
-    if (typeof messageObj.title === 'string' && messageObj.title.trim()) {
-        return messageObj.title.trim();
-    }
-
-    // 2. Template / Card Interactive (Hỏi tuổi, Confirm SĐT/Email)
-    if (messageObj.template) {
-        const tmpl = messageObj.template;
-        const header = tmpl.header || tmpl.title || '';
-        const body = tmpl.body || tmpl.content || tmpl.description || '';
-        const fullText = `${header}\n${body}`.trim();
-        if (fullText) return fullText;
-    }
-
-    // 3. Elements List / Quick Reply list
-    if (Array.isArray(messageObj.elements) && messageObj.elements.length > 0) {
-        const texts = messageObj.elements.map(elem => {
-            const t = elem.title || elem.caption || '';
-            const st = elem.subtitle || elem.description || '';
-            return `${t} ${st}`.trim();
-        }).filter(Boolean);
-        if (texts.length > 0) return texts.join('\n');
-    }
-
-    // 4. Attachments / Payload
-    if (Array.isArray(messageObj.attachments) && messageObj.attachments.length > 0) {
-        const payload = messageObj.attachments[0]?.payload;
-        if (payload) {
-            if (payload.text) return payload.text.trim();
-            if (payload.title) return payload.title.trim();
-            if (payload.description) return payload.description.trim();
-        }
-    }
-
-    return '';
-}
-
-async function refreshZaloToken() {
-    try {
-        const refreshToken = await redis.get('zalo:oa:refresh_token');
-        if (!refreshToken) return null;
-
-        const params = new URLSearchParams({
-            refresh_token: refreshToken,
-            app_id: ZALO_APP_ID,
-            grant_type: 'refresh_token'
-        });
-
-        const response = await axios.post(
-            'https://oauth.zaloapp.com/v4/oa/access_token',
-            params,
-            {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'secret_key': ZALO_APP_SECRET
-                }
+            if (!extractedEmail) {
+                const emailMatch = text.match(EMAIL_REGEX);
+                if (emailMatch) extractedEmail = emailMatch[0];
             }
+            if (extractedPhone && extractedEmail) break;
+        }
+
+        // Nếu không thu thập được thông tin nào thì bỏ qua
+        if (!extractedPhone && !extractedEmail) return;
+
+        // 2. UPSERT vao bang lead_form
+        const existingLead = await dbPool.query(
+            `SELECT id FROM lead_form WHERE user_id = $1 LIMIT 1`,
+            [zaloUserId]
         );
 
-        const { access_token, refresh_token: newRefreshToken, expires_in } = response.data;
+        if (existingLead.rowCount > 0) {
+            // Update thông tin mới nếu đã có record
+            await dbPool.query(`
+                UPDATE lead_form 
+                SET mobile = COALESCE($1, mobile),
+                    email = COALESCE($2, email),
+                    status = 'confirmed',
+                    updated_at = NOW()
+                WHERE user_id = $3
+            `, [extractedPhone, extractedEmail, zaloUserId]);
 
-        if (access_token) {
-            await redis.set('zalo:oa:access_token', access_token, 'EX', expires_in - 300);
-            if (newRefreshToken) {
-                await redis.set('zalo:oa:refresh_token', newRefreshToken);
-            }
-            console.log('🔄 Đã Refresh Zalo Access Token thành công!');
-            return access_token;
+            console.log(`✅ [Lead Form Committed - UPDATE] User: ${zaloUserId} | Phone: ${extractedPhone} | Email: ${extractedEmail}`);
+        } else {
+            // Insert mới nếu chưa từng tồn tại
+            const displayName = `Zalo User (${zaloUserId.slice(-4)})`;
+            await dbPool.query(`
+                INSERT INTO lead_form (user_id, full_name, email, mobile, status, created_at, updated_at)
+                VALUES ($1, $2, $3, $4, 'confirmed', NOW(), NOW())
+            `, [zaloUserId, displayName, extractedEmail, extractedPhone]);
+
+            console.log(`✅ [Lead Form Committed - INSERT] User: ${zaloUserId} | Phone: ${extractedPhone} | Email: ${extractedEmail}`);
         }
+
     } catch (err) {
-        console.error('❌ Lỗi Refresh Zalo Token:', err.response?.data || err.message);
+        console.error('❌ Lỗi khi commit lead_form:', err.message);
     }
-    return null;
 }
 
 // =================================================================
