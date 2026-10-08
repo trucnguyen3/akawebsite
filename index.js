@@ -672,39 +672,36 @@ app.post('/webhook-zalo', (req, res) => {
     }
 
     processAndEmitWebhook(req, "ZALO");
+
+    // Lấy thông tin event từ Zalo
+    const event = req.body;
+
+    // Kiểm tra đúng sự kiện User gửi tin nhắn văn bản đến OA
+    if (event && (event.event_name === 'user_send_text' || event.event_name === 'user_send_quick_reply')) {
+        const zaloUserId = event.sender?.id;
+        const userQuestion = event.message?.text?.trim();
+
+        if (zaloUserId && userQuestion) {
+            // Thực hiện xử lý bất đồng bộ (tránh để Zalo Webhook bị timeout)
+            (async () => {
+                // BƯỚC 1: Insert câu hỏi vào Postgres, lấy ngay `id` khóa chính
+                const chatId = await createPendingZaloChatRecord(zaloUserId, userQuestion);
+
+                // BƯỚC 2: Xử lý qua bộ lọc Cache/FAQ hoặc Gemini AI
+                const result = await processChatbotRequest(zaloUserId, userQuestion);
+
+                // BƯỚC 3: Cập nhật câu trả lời vào đúng bản ghi có `id` tương ứng
+                if (chatId) {
+                    await updateZaloChatAnswer(chatId, result.answer, result.source === 'cache');
+                }
+
+                // BƯỚC 4: Gửi câu trả lời về lại cho user trên Zalo
+                await sendZaloOAMessage(zaloUserId, result.answer);
+            })();
+        }
+    }
+    
     res.status(200).json({ status: 'success', message: 'Zalo webhook received successfully' });
-});
-
-// =================================================================
-// 4. ENDPOINT WEBHOOK CleverTap (HOÀN TOÀN KHÔNG CẦN AUTHEN)
-// =================================================================
-app.post('/webhook-clevertap', (req, res) => {
-    // 1. Khai báo thông tin xác thực mong muốn
-
-    // 2. Lấy header Authorization từ request
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Basic ')) {
-        console.warn(`[CleverTap] Từ chối truy cập (Thiếu Auth Header) từ IP: ${req.ip}`);
-        return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing Authentication Header' });
-    }
-
-    // 3. Giải mã chuỗi Base64
-    const base64Credentials = authHeader.split(' ')[1];
-    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-    const [username, password] = credentials.split(':');
-
-    // 4. Kiểm tra Username & Password
-    if (username !== WEBHOOK_CT_USER || password !== WEBHOOK_CT_PASS) {
-        console.warn(`[CleverTap] Sai thông tin xác thực từ IP: ${req.ip}`);
-        return res.status(401).json({ status: 'error', message: 'Unauthorized: Invalid credentials' });
-    }
-
-    // 5. Xác thực thành công -> Xử lý dữ liệu
-    console.log(`[CleverTap] Xác thực thành công. Nhận webhook event từ IP: ${req.ip}`);
-    processAndEmitWebhook(req, "CLEVERTAP");
-
-    return res.status(200).json({ status: 'success', message: 'CleverTap push data received successfully' });
 });
 
 // ROUTE ĐÓN CALLBACK ĐỔI ACCESS TOKEN TỪ ZALO OAUTH V4
@@ -748,6 +745,14 @@ app.get('/zalo/callback', async (req, res) => {
             return res.status(400).json({ status: 'error', message, details: response.data });
         }
 
+        if (!error && access_token) {
+            // 🌟 LƯU VÀO REDIS CÓ TTL THỜI HẠN DÙNG (expires_in thường là 2592000s = 30 ngày)
+            await redis.set('zalo:oa:access_token', access_token, 'EX', expires_in - 300); // Trừ 5 phút buffer
+            await redis.set('zalo:oa:refresh_token', refresh_token);
+            
+            console.log('✅ Đã lưu Zalo Access Token vào Redis!');
+        }
+
         console.log('✅ LẤY TOKEN ZALO OA THÀNH CÔNG!');
         console.log('Access Token:', access_token);
         console.log('Refresh Token:', refresh_token);
@@ -767,6 +772,151 @@ app.get('/zalo/callback', async (req, res) => {
         console.error('[Zalo OAuth Exception]', err.response?.data || err.message);
         res.status(500).send('Lỗi trong quá trình trao đổi token với Zalo OAuth API.');
     }
+});
+
+// =================================================================
+// 3. ENDPOINT WEBHOOK ZALO OA (SỬ DỤNG TRỰC TIẾP PK ID ĐỂ MAP CHAT)
+// =================================================================
+
+// Helper 1: Tạo bản ghi câu hỏi Zalo và lấy về id tự tăng
+async function createPendingZaloChatRecord(zaloUserId, question) {
+    try {
+        const query = `
+            INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
+            VALUES ($1, $2, $3, $4)
+            RETURNING id;
+        `;
+        // Ghi nhận câu hỏi trước, answer tạm để PENDING
+        const result = await dbPool.query(query, [zaloUserId, question, 'PENDING_ANSWER', false]);
+        return result.rows[0].id; // Trả về id (ví dụ: 20, 21...)
+    } catch (err) {
+        console.error('❌ Lỗi tạo bản ghi Zalo Chat:', err.message);
+        return null;
+    }
+}
+
+// Helper 2: Cập nhật câu trả lời theo đúng id
+async function updateZaloChatAnswer(chatId, answer, isCached = false) {
+    try {
+        const query = `
+            UPDATE chatbot_history 
+            SET answer = $1, is_cached = $2 
+            WHERE id = $3;
+        `;
+        await dbPool.query(query, [answer, isCached, chatId]);
+    } catch (err) {
+        console.error('❌ Lỗi cập nhật Zalo Chat answer:', err.message);
+    }
+}
+
+// Helper 3: Hàm gửi tin nhắn phản hồi qua Zalo OpenAPI (OA)
+async function sendZaloOAMessage(zaloUserId, textMessage) {
+    try {
+        // 1. Ưu tiên lấy Access Token tươi mới từ Redis
+        let zaloAccessToken = await redis.get('zalo:oa:access_token');
+
+        // 2. Nếu Redis hết hạn, tự động dùng Refresh Token đổi token mới
+        if (!zaloAccessToken) {
+            zaloAccessToken = await refreshZaloToken();
+        }
+
+        // 3. Fallback cuối cùng mới xem biến môi trường
+        if (!zaloAccessToken) {
+            zaloAccessToken = process.env.ZALO_OA_ACCESS_TOKEN || '';
+        }
+
+        if (!zaloAccessToken) {
+            console.warn('⚠️ Chưa cấu hình ZALO_OA_ACCESS_TOKEN để gửi tin nhắn phản hồi!');
+            return;
+        }
+
+        await axios.post(
+            'https://openapi.zalo.me/v2.0/oa/message',
+            {
+                recipient: { user_id: zaloUserId },
+                message: { text: textMessage }
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'access_token': zaloAccessToken
+                }
+            }
+        );
+        console.log(`✅ Đã gửi tin nhắn Zalo thành công đến user: ${zaloUserId}`);
+    } catch (err) {
+        console.error('❌ Lỗi gửi tin nhắn Zalo OA API:', err.response?.data || err.message);
+    }
+}
+
+async function refreshZaloToken() {
+    try {
+        const refreshToken = await redis.get('zalo:oa:refresh_token');
+        if (!refreshToken) return null;
+
+        const params = new URLSearchParams({
+            refresh_token: refreshToken,
+            app_id: ZALO_APP_ID,
+            grant_type: 'refresh_token'
+        });
+
+        const response = await axios.post(
+            'https://oauth.zaloapp.com/v4/oa/access_token',
+            params,
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'secret_key': ZALO_APP_SECRET
+                }
+            }
+        );
+
+        const { access_token, refresh_token: newRefreshToken, expires_in } = response.data;
+
+        if (access_token) {
+            await redis.set('zalo:oa:access_token', access_token, 'EX', expires_in - 300);
+            if (newRefreshToken) {
+                await redis.set('zalo:oa:refresh_token', newRefreshToken);
+            }
+            console.log('🔄 Đã Refresh Zalo Access Token thành công!');
+            return access_token;
+        }
+    } catch (err) {
+        console.error('❌ Lỗi Refresh Zalo Token:', err.response?.data || err.message);
+    }
+    return null;
+}
+
+// =================================================================
+// 4. ENDPOINT WEBHOOK CleverTap (HOÀN TOÀN KHÔNG CẦN AUTHEN)
+// =================================================================
+app.post('/webhook-clevertap', (req, res) => {
+    // 1. Khai báo thông tin xác thực mong muốn
+
+    // 2. Lấy header Authorization từ request
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
+        console.warn(`[CleverTap] Từ chối truy cập (Thiếu Auth Header) từ IP: ${req.ip}`);
+        return res.status(401).json({ status: 'error', message: 'Unauthorized: Missing Authentication Header' });
+    }
+
+    // 3. Giải mã chuỗi Base64
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [username, password] = credentials.split(':');
+
+    // 4. Kiểm tra Username & Password
+    if (username !== WEBHOOK_CT_USER || password !== WEBHOOK_CT_PASS) {
+        console.warn(`[CleverTap] Sai thông tin xác thực từ IP: ${req.ip}`);
+        return res.status(401).json({ status: 'error', message: 'Unauthorized: Invalid credentials' });
+    }
+
+    // 5. Xác thực thành công -> Xử lý dữ liệu
+    console.log(`[CleverTap] Xác thực thành công. Nhận webhook event từ IP: ${req.ip}`);
+    processAndEmitWebhook(req, "CLEVERTAP");
+
+    return res.status(200).json({ status: 'success', message: 'CleverTap push data received successfully' });
 });
 
 
