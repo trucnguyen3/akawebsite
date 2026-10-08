@@ -679,41 +679,46 @@ app.post('/webhook-zalo', async (req, res) => {
     const event = req.body;
     if (!event) return;
 
-    const eventName = event.event_name || '';
+    const eventName = event.event_name;
 
     try {
-        // Log payload raw để kiểm tra nếu cần debug
-        console.log(`[Zalo Event Log] ${eventName}:`, JSON.stringify(event.message || {}));
-
-        // A. TẤT CẢ TIN NHẮN TỪ BOT ZALO OA GỬI RA (OA SEND / QUESTION)
-        if (eventName.startsWith('oa_send_') || eventName === 'user_receive_message') {
+        // -----------------------------------------------------------------
+        // 1. ZALO CHAT FLOW ĐẶT CÂU HỎI (OA SEND)
+        // -----------------------------------------------------------------
+        if (
+            eventName === 'oa_send_text' || 
+            eventName === 'user_receive_message' ||
+            eventName === 'oa_send_quick_reply' ||
+            eventName === 'oa_send_list'
+        ) {
+            // CRITICAL: Đối với OA Send, recipient.id MỚI LÀ USER ID THẬT!
             const targetUserId = event.recipient?.id;
-            const zaloQuestion = extractZaloMessageText(event.message);
+            const zaloQuestion = event.message?.text?.trim() || event.message?.title || '';
 
             if (targetUserId && zaloQuestion) {
-                // Xóa câu hỏi PENDING cũ nếu có để tránh lệch luồng
-                await dbPool.query(
-                    `DELETE FROM chatbot_history WHERE user_id = $1 AND answer = 'PENDING_ANSWER'`, 
-                    [targetUserId]
-                );
-
-                // Thêm câu hỏi PENDING động từ Zalo
                 await dbPool.query(`
                     INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
                     VALUES ($1, $2, 'PENDING_ANSWER', false)
                 `, [targetUserId, zaloQuestion]);
 
-                console.log(`🤖 [Zalo Bot Question] User: ${targetUserId} | Question: "${zaloQuestion.substring(0, 50)}..."`);
+                console.log(`🤖 [Zalo Question] User: ${targetUserId} | Question: "${zaloQuestion}"`);
             }
         }
 
-        // B. TẤT CẢ TƯƠNG TÁC TỪ KHÁCH HÀNG (USER SEND / ANSWER)
-        if (eventName.startsWith('user_send_') || eventName === 'user_submit_form') {
+        // -----------------------------------------------------------------
+        // 2. USER PHẢN HỒI (USER SEND)
+        // -----------------------------------------------------------------
+        if (
+            eventName === 'user_send_text' || 
+            eventName === 'user_send_quick_reply' ||
+            eventName === 'user_submit_form'
+        ) {
+            // Đối với User Send, sender.id LÀ USER ID THẬT
             const targetUserId = event.sender?.id;
-            const userAnswer = extractZaloMessageText(event.message);
+            const userAnswer = event.message?.text?.trim() || event.message?.title || '';
 
             if (targetUserId && userAnswer) {
-                // UPDATE vào câu hỏi PENDING gần nhất của Zalo Bot
+                // UPDATE vào câu hỏi PENDING gần nhất của chính User đó
                 const updateResult = await dbPool.query(`
                     UPDATE chatbot_history 
                     SET answer = $1, is_cached = false 
@@ -725,11 +730,11 @@ app.post('/webhook-zalo', async (req, res) => {
                     RETURNING id;
                 `, [userAnswer, targetUserId]);
 
-                // Fallback nếu User gửi tin trước khi có event oa_send_*
+                // Fallback nếu User nhắn tin trước khi có câu hỏi PENDING
                 if (updateResult.rowCount === 0) {
                     await dbPool.query(`
                         INSERT INTO chatbot_history (user_id, question, answer, is_cached) 
-                        VALUES ($1, $2, $2, false)
+                        VALUES ($1, '[Khách gửi trước]', $2, false)
                     `, [targetUserId, userAnswer]);
                 }
 
@@ -738,7 +743,7 @@ app.post('/webhook-zalo', async (req, res) => {
         }
 
     } catch (err) {
-        console.error('❌ Lỗi xử lý Zalo Webhook:', err.message);
+        console.error('❌ Lỗi đồng bộ Zalo Chat Flow:', err.message);
     }
 });
 
