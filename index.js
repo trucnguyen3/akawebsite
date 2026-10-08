@@ -831,7 +831,7 @@ const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
 // Helper kiểm tra xem User có vừa bấm nút Xác nhận/Confirm hay không
 function isConfirmAction(text) {
     const t = text.trim().toLowerCase();
-    return t === 'Confirm';
+    return t === 'confirm';
 }
 
 // Hàm trích xuất SĐT và Email từ lịch sử chat gần nhất để lưu vào lead_form
