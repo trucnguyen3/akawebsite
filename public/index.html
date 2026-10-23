@@ -521,11 +521,6 @@
     <script src='//cdnt.netcoresmartech.com/smartechclient.js'></script>
     <script>smartech('create', 'ADGMOT35CHFLVDHBJNIG50K96BSUH1PDDQFBSPLEV97HGG26AH0G'); smartech('register', '183e1413a1409529a3359628eac41949'); smartech('identify', '');</script>
     <script type="text/javascript">
-        var clevertap = { event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [] };
-        // replace with the CLEVERTAP_ACCOUNT_ID with the actual ACCOUNT ID value from your Dashboard -> Settings page
-        clevertap.account.push({ "id": "6Z4-44W-667Z" }, "sg1");
-        clevertap.privacy.push({ optOut: false }); //set the flag to true, if the user of the device opts out of sharing their data
-        clevertap.privacy.push({ useIP: false }); //set the flag to true, if the user agrees to share their IP data
         clevertap.notifications.push({
             "titleText": "Would you like to receive Push Notifications?",
             "bodyText": "We promise to only send you relevant content and give you updates on your transactions",
@@ -535,6 +530,13 @@
             "askAgainTimeInSeconds": 5,
             "serviceWorkerPath": "/sw.js" // path to your custom service worker file
         });
+    </script>
+    <script type="text/javascript">
+        var clevertap = { event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [] };
+        // replace with the CLEVERTAP_ACCOUNT_ID with the actual ACCOUNT ID value from your Dashboard -> Settings page
+        clevertap.account.push({ "id": "6Z4-44W-667Z" }, "sg1");
+        clevertap.privacy.push({ optOut: false }); //set the flag to true, if the user of the device opts out of sharing their data
+        clevertap.privacy.push({ useIP: false }); //set the flag to true, if the user agrees to share their IP data
         (function () {
             var wzrk = document.createElement('script');
             wzrk.type = 'text/javascript';
