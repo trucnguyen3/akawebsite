@@ -1,4 +1,4 @@
-importScripts('https://s3-eu-west-1.amazonaws.com/static.wizrocket.com/js/sw_webpush.js');
+//importScripts('https://s3-eu-west-1.amazonaws.com/static.wizrocket.com/js/sw_webpush.js');
 var config = {
     apiKey: 'AIzaSyDAlWeaejssQz78BqhVxmJapSs7Axgz5xQ',
     messagingSenderId: '822761089009',
