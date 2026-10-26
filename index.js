@@ -1112,7 +1112,7 @@ app.get('/api/consultation/my-requests', async (req, res) => {
         c.plan_name as "planName", 
         c.status, 
         c.created_at as "createdAt",
-        COALESCE(u.phone, c.phone, 'Chưa cập nhật') as phone
+        COALESCE(u.mobile, c.mobile, 'Chưa cập nhật') as phone
       FROM consultation_requests c
       LEFT JOIN users u ON c.user_id = u.email
       WHERE c.user_id = $1
