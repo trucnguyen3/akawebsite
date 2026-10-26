@@ -1063,28 +1063,33 @@ app.post('/api/consultation', async (req, res) => {
   try {
     const { userId, productId, productName, planName, fullName, email, phone } = req.body;
 
-    if (!productId || !planName) {
-      return res.status(400).json({ success: false, message: 'Thông tin sản phẩm hoặc gói dịch vụ không hợp lệ.' });
+    // Email lấy từ userId hoặc field email
+    const userEmail = userId || email;
+
+    if (!userEmail || !productId || !planName) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Thiếu email tài khoản, sản phẩm hoặc gói dịch vụ.' 
+      });
     }
 
-    // Insert thẳng dữ liệu vào PostgreSQL với trạng thái PENDING
     const query = `
       INSERT INTO consultation_requests (user_id, product_id, product_name, plan_name, full_name, email, phone, status)
       VALUES ($1, $2, $3, $4, $5, $6, $7, 'PENDING')
       RETURNING *;
     `;
 
-    const values = [userId || 1, productId, productName, planName, fullName, email, phone];
+    const values = [userEmail, productId, productName, planName, fullName || '', userEmail, phone || ''];
     const result = await pool.query(query, values);
 
     return res.status(201).json({
       success: true,
-      message: 'Gửi yêu cầu tư vấn thành công!',
+      message: 'Đã lưu yêu cầu tư vấn thành công!',
       data: result.rows[0],
     });
   } catch (error) {
-    console.error('PostgreSQL Insert Error:', error);
-    return res.status(500).json({ success: false, message: 'Lỗi ghi nhận dữ liệu máy chủ.' });
+    console.error('Database Error:', error);
+    return res.status(500).json({ success: false, message: 'Lỗi lưu cơ sở dữ liệu.' });
   }
 });
 
@@ -1093,8 +1098,11 @@ app.post('/api/consultation', async (req, res) => {
 // ==========================================
 app.get('/api/consultation/my-requests', async (req, res) => {
   try {
-    // Có thể lọc theo user_id qua query params hoặc token xác thực
-    const userId = req.query.userId || 1; 
+    const { userId } = req.query; // Nhận email từ Query Params (VD: ?userId=user@example.com)
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'Thiếu email tài khoản.' });
+    }
 
     const query = `
       SELECT id, product_name as "productName", plan_name as "planName", status, created_at as "createdAt"
@@ -1103,7 +1111,7 @@ app.get('/api/consultation/my-requests', async (req, res) => {
       ORDER BY created_at DESC;
     `;
     
-    const result = await dbPool.query(query, [userId]);
+    const result = await pool.query(query, [userId]);
 
     return res.status(200).json({
       success: true,
@@ -1111,7 +1119,7 @@ app.get('/api/consultation/my-requests', async (req, res) => {
     });
   } catch (error) {
     console.error('Database Error:', error);
-    return res.status(500).json({ success: false, message: 'Lỗi lấy dữ liệu.' });
+    return res.status(500).json({ success: false, message: 'Lỗi tải dữ liệu.' });
   }
 });
 
