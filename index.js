@@ -1059,6 +1059,61 @@ app.get('/api/webhooks', (req, res) => {
     res.json(webhookPayloads);
 });
 
+app.post('/api/consultation', async (req, res) => {
+  try {
+    const { userId, productId, productName, planName, fullName, email, phone } = req.body;
+
+    if (!productId || !planName) {
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin sản phẩm hoặc gói dịch vụ.' });
+    }
+
+    const query = `
+      INSERT INTO consultation_requests (user_id, product_id, product_name, plan_name, full_name, email, phone, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'PENDING')
+      RETURNING *;
+    `;
+
+    const values = [userId || 1, productId, productName, planName, fullName || '', email || '', phone || ''];
+    const result = await dbPool.query(query, values);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Đã lưu yêu cầu tư vấn thành công!',
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('Database Error:', error);
+    return res.status(500).json({ success: false, message: 'Lỗi hệ thống cơ sở dữ liệu.' });
+  }
+});
+
+// ==========================================
+// 2. API LẤY DANH SÁCH YÊU CẦU ĐỂ HIỂN THỊ HOME
+// ==========================================
+app.get('/api/consultation/my-requests', async (req, res) => {
+  try {
+    // Có thể lọc theo user_id qua query params hoặc token xác thực
+    const userId = req.query.userId || 1; 
+
+    const query = `
+      SELECT id, product_name as "productName", plan_name as "planName", status, created_at as "createdAt"
+      FROM consultation_requests
+      WHERE user_id = $1
+      ORDER BY created_at DESC;
+    `;
+    
+    const result = await dbPool.query(query, [userId]);
+
+    return res.status(200).json({
+      success: true,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Database Error:', error);
+    return res.status(500).json({ success: false, message: 'Lỗi lấy dữ liệu.' });
+  }
+});
+
 server.listen(port, host, () => {
     console.log(`🚀 Node.js đang chạy trên cổng ${port}:`);
     console.log(`   - Chatbot API:       POST /api/chat`);
