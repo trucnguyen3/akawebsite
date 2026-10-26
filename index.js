@@ -1064,26 +1064,27 @@ app.post('/api/consultation', async (req, res) => {
     const { userId, productId, productName, planName, fullName, email, phone } = req.body;
 
     if (!productId || !planName) {
-      return res.status(400).json({ success: false, message: 'Thiếu thông tin sản phẩm hoặc gói dịch vụ.' });
+      return res.status(400).json({ success: false, message: 'Thông tin sản phẩm hoặc gói dịch vụ không hợp lệ.' });
     }
 
+    // Insert thẳng dữ liệu vào PostgreSQL với trạng thái PENDING
     const query = `
       INSERT INTO consultation_requests (user_id, product_id, product_name, plan_name, full_name, email, phone, status)
       VALUES ($1, $2, $3, $4, $5, $6, $7, 'PENDING')
       RETURNING *;
     `;
 
-    const values = [userId || 1, productId, productName, planName, fullName || '', email || '', phone || ''];
-    const result = await dbPool.query(query, values);
+    const values = [userId || 1, productId, productName, planName, fullName, email, phone];
+    const result = await pool.query(query, values);
 
     return res.status(201).json({
       success: true,
-      message: 'Đã lưu yêu cầu tư vấn thành công!',
+      message: 'Gửi yêu cầu tư vấn thành công!',
       data: result.rows[0],
     });
   } catch (error) {
-    console.error('Database Error:', error);
-    return res.status(500).json({ success: false, message: 'Lỗi hệ thống cơ sở dữ liệu.' });
+    console.error('PostgreSQL Insert Error:', error);
+    return res.status(500).json({ success: false, message: 'Lỗi ghi nhận dữ liệu máy chủ.' });
   }
 });
 
