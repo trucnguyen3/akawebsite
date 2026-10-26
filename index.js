@@ -1119,7 +1119,7 @@ app.get('/api/consultation/my-requests', async (req, res) => {
       ORDER BY c.created_at DESC;
     `;
     
-    const result = await pool.query(query, [userId]);
+    const result = await dbPool.query(query, [userId]);
 
     return res.status(200).json({
       success: true,
