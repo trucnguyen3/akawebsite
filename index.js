@@ -1098,20 +1098,28 @@ app.post('/api/consultation', async (req, res) => {
 // ==========================================
 app.get('/api/consultation/my-requests', async (req, res) => {
   try {
-    const { userId } = req.query; // Nhận email từ Query Params (VD: ?userId=user@example.com)
+    const { userId } = req.query; // userId ở đây chính là email của user
 
     if (!userId) {
-      return res.status(400).json({ success: false, message: 'Thiếu email tài khoản.' });
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin tài khoản.' });
     }
 
+    // 🌟 JOIN bảng consultation_requests với bảng users để lấy số điện thoại chính xác
     const query = `
-      SELECT id, product_name as "productName", plan_name as "planName", status, created_at as "createdAt"
-      FROM consultation_requests
-      WHERE user_id = $1
-      ORDER BY created_at DESC;
+      SELECT 
+        c.id, 
+        c.product_name as "productName", 
+        c.plan_name as "planName", 
+        c.status, 
+        c.created_at as "createdAt",
+        COALESCE(u.phone, c.phone, 'Chưa cập nhật') as phone
+      FROM consultation_requests c
+      LEFT JOIN users u ON c.user_id = u.email
+      WHERE c.user_id = $1
+      ORDER BY c.created_at DESC;
     `;
     
-    const result = await dbPool.query(query, [userId]);
+    const result = await pool.query(query, [userId]);
 
     return res.status(200).json({
       success: true,
@@ -1119,7 +1127,7 @@ app.get('/api/consultation/my-requests', async (req, res) => {
     });
   } catch (error) {
     console.error('Database Error:', error);
-    return res.status(500).json({ success: false, message: 'Lỗi tải dữ liệu.' });
+    return res.status(500).json({ success: false, message: 'Lỗi tải dữ liệu từ máy chủ.' });
   }
 });
 
