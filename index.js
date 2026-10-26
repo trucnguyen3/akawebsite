@@ -1080,7 +1080,7 @@ app.post('/api/consultation', async (req, res) => {
     `;
 
     const values = [userEmail, productId, productName, planName, fullName || '', userEmail, phone || ''];
-    const result = await pool.query(query, values);
+    const result = await dbPool.query(query, values);
 
     return res.status(201).json({
       success: true,
@@ -1111,7 +1111,7 @@ app.get('/api/consultation/my-requests', async (req, res) => {
       ORDER BY created_at DESC;
     `;
     
-    const result = await pool.query(query, [userId]);
+    const result = await dbPool.query(query, [userId]);
 
     return res.status(200).json({
       success: true,
