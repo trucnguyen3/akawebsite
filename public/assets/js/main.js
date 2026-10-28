@@ -29,59 +29,220 @@ var clevertap = { event: [], profile: [], account: [], onUserLogin: [], notifica
 
 let currentBookingState = {};
 
+// Dữ liệu mock các chuyến xe khách & máy bay theo tuyến
+const MOCK_TRIPS = [
+    // Tuyến Hồ Chí Minh -> Long An (Xe khách)
+    {
+        type: 'bus',
+        from: 'Hồ Chí Minh (SGN)',
+        to: 'Long An',
+        brand: 'Xe Khách Limousine',
+        code: 'BUS-LA01',
+        depTime: '08:00',
+        arrTime: '09:30',
+        duration: '1h 30m',
+        fromName: 'Hồ Chí Minh',
+        toName: 'Long An',
+        price: 180000,
+        oldPrice: 250000,
+        badge: 'Đưa đón tận nơi'
+    },
+    {
+        type: 'bus',
+        from: 'Hồ Chí Minh (SGN)',
+        to: 'Long An',
+        brand: 'Phương Trang Limousine',
+        code: 'FUTA-LA02',
+        depTime: '14:00',
+        arrTime: '15:30',
+        duration: '1h 30m',
+        fromName: 'Hồ Chí Minh',
+        toName: 'Long An',
+        price: 160000,
+        oldPrice: null,
+        badge: 'Xuất bến mỗi 30p'
+    },
+    // Tuyến Hà Nội -> Đà Nẵng (Máy bay)
+    {
+        type: 'flight',
+        from: 'Hà Nội (HAN)',
+        to: 'Đà Nẵng (DAD)',
+        brand: 'Bamboo Airways',
+        code: 'QH-201',
+        depTime: '09:45',
+        arrTime: '11:15',
+        duration: '1h 30m',
+        fromName: 'HAN',
+        toName: 'DAD',
+        price: 2500000,
+        oldPrice: 3700000,
+        badge: 'Giá tốt nhất'
+    },
+    {
+        type: 'flight',
+        from: 'Hà Nội (HAN)',
+        to: 'Đà Nẵng (DAD)',
+        brand: 'Vietjet Air',
+        code: 'VJ-512',
+        depTime: '20:15',
+        arrTime: '21:40',
+        duration: '1h 25m',
+        fromName: 'HAN',
+        toName: 'DAD',
+        price: 1900000,
+        oldPrice: null,
+        badge: 'Eco'
+    },
+    // Tuyến Hồ Chí Minh -> Phú Quốc (Máy bay)
+    {
+        type: 'flight',
+        from: 'Hồ Chí Minh (SGN)',
+        to: 'Phú Quốc (PQC)',
+        brand: 'Vietnam Airlines',
+        code: 'VN-1823',
+        depTime: '10:00',
+        arrTime: '11:05',
+        duration: '1h 05m',
+        fromName: 'SGN',
+        toName: 'PQC',
+        price: 2100000,
+        oldPrice: 2800000,
+        badge: 'Chuyến bay phổ biến'
+    }
+];
+
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof checkSession === 'function') checkSession();
     if (typeof initChatEvents === 'function') initChatEvents();
 
-    // Lắng nghe sự kiện click vào nút tìm kiếm (nút có icon kính lúp)
     const searchBtn = document.querySelector('.hero-gradient button');
-    const searchResultsSection = document.getElementById('searchResultsSection');
-
-    if (searchBtn && searchResultsSection) {
+    if (searchBtn) {
         searchBtn.addEventListener('click', (e) => {
             e.preventDefault();
-
-            const fromVal = document.getElementById('searchFrom').value;
-            const toVal = document.getElementById('searchTo').value;
-
-            // Kiểm tra nếu điểm đi trùng điểm đến
-            if (fromVal === toVal) {
-                alert("Điểm đi và Điểm đến không được trùng nhau!");
-                searchResultsSection.classList.add('hidden');
-                return;
-            }
-
-            // Hiển thị khung kết quả tìm kiếm
-            searchResultsSection.classList.remove('hidden');
-
-            // Cập nhật lại tiêu đề hoặc hiển thị thông tin chuyến phù hợp nếu cần
-            const resultTitle = searchResultsSection.querySelector('h3');
-            if (resultTitle) {
-                resultTitle.innerText = `Kết quả tìm kiếm từ ${fromVal} đến ${toVal}`;
-            }
-
-            // Cuộn mượt màn hình xuống phần kết quả
-            searchResultsSection.scrollIntoView({ behavior: 'smooth' });
+            performSearch();
         });
     }
 });
 
-// Xử lý loại vé (Khứ hồi / Một chiều)
-function handleTripTypeChange() {
-    const tripType = document.querySelector('input[name="trip"]:checked').value;
-    const returnContainer = document.getElementById('returnDateContainer');
-    if (returnContainer) {
-        returnContainer.style.display = tripType === 'oneway' ? 'none' : 'block';
+// Hàm thực hiện tìm kiếm và render dữ liệu động
+function performSearch() {
+    const fromVal = document.getElementById('searchFrom').value;
+    const toVal = document.getElementById('searchTo').value;
+    const searchResultsSection = document.getElementById('searchResultsSection');
+    const resultsList = document.getElementById('resultsList');
+    const resultTitle = document.getElementById('searchResultsTitle');
+
+    if (fromVal === toVal) {
+        alert("Điểm đi và Điểm đến không được trùng nhau!");
+        searchResultsSection?.classList.add('hidden');
+        return;
     }
+
+    // Lọc chuyến đi thỏa điều kiện từ danh sách MOCK_TRIPS
+    let matchedTrips = MOCK_TRIPS.filter(trip => 
+        trip.from.toLowerCase().includes(fromVal.toLowerCase().split(' ')[0]) &&
+        trip.to.toLowerCase().includes(toVal.toLowerCase().split(' ')[0])
+    );
+
+    // Nếu không có chuyến cố định trong mock data, tự tạo 1 chuyến động linh hoạt
+    if (matchedTrips.length === 0) {
+        const isBusRoute = toVal.includes('Long An') || fromVal.includes('Long An');
+        matchedTrips = [
+            {
+                type: isBusRoute ? 'bus' : 'flight',
+                from: fromVal,
+                to: toVal,
+                brand: isBusRoute ? 'Xe Khách Chất Lượng Cao' : 'SkyPremium Airlines',
+                code: isBusRoute ? 'BUS-EXPRESS' : 'SP-888',
+                depTime: '09:00',
+                arrTime: '11:00',
+                duration: '2h 00m',
+                fromName: fromVal.split(' ')[0],
+                toName: toVal.split(' ')[0],
+                price: isBusRoute ? 200000 : 1850000,
+                oldPrice: isBusRoute ? 250000 : 2200000,
+                badge: isBusRoute ? 'Đưa đón tận nơi' : 'Bay thẳng'
+            }
+        ];
+    }
+
+    // Cập nhật tiêu đề & Render danh sách HTML động
+    if (resultTitle) {
+        resultTitle.innerText = `Kết quả tìm kiếm: ${fromVal} ➔ ${toVal} (${matchedTrips.length} kết quả)`;
+    }
+
+    resultsList.innerHTML = matchedTrips.map(trip => renderTripCardHTML(trip)).join('');
+    searchResultsSection.classList.remove('hidden');
+    searchResultsSection.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Chọn chuyến bay/xe khách và mở modal nhập thông tin 2 người
+// Hàm sinh mã HTML cho từng card chuyến đi
+function renderTripCardHTML(trip) {
+    const isBus = trip.type === 'bus';
+    const iconClass = isBus ? 'fa-bus' : 'fa-plane';
+    const iconBg = isBus ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600';
+    const badgeBg = isBus ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700';
+    const borderClass = isBus ? 'border-amber-200' : 'border-slate-100';
+    const priceColor = isBus ? 'text-amber-600' : 'text-blue-600';
+    const btnHover = isBus ? 'hover:bg-amber-600' : 'hover:bg-blue-600';
+    const btnText = isBus ? 'Chọn vé xe' : 'Chọn chuyến';
+
+    return `
+    <div class="flight-card bg-white p-6 rounded-[1.5rem] border ${borderClass} transition-all duration-300 shadow-sm">
+        <div class="flex flex-col md:flex-row items-center gap-8">
+            <div class="flex items-center gap-4 min-w-[180px]">
+                <div class="w-12 h-12 ${iconBg} rounded-full flex items-center justify-center">
+                    <i class="fas ${iconClass} text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 uppercase tracking-tight">${escapeHTML(trip.brand)}</h4>
+                    <span class="text-xs font-medium px-2 py-1 ${badgeBg} rounded-md">${escapeHTML(trip.code)} • ${escapeHTML(trip.badge)}</span>
+                </div>
+            </div>
+
+            <div class="flex-1 flex items-center justify-between gap-4 w-full">
+                <div class="text-center">
+                    <span class="text-2xl font-black text-slate-800 leading-none">${trip.depTime}</span>
+                    <p class="text-sm font-bold text-slate-400 mt-1 uppercase">${escapeHTML(trip.fromName)}</p>
+                </div>
+
+                <div class="flex-1 flex flex-col items-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">${trip.duration}</span>
+                    <div class="w-full flex items-center">
+                        <div class="w-2 h-2 rounded-full border-2 border-slate-400 bg-white"></div>
+                        <div class="flex-1 h-[2px] border-t-2 border-dashed border-slate-300"></div>
+                        <i class="fas ${iconClass} text-slate-400 mx-2 text-sm"></i>
+                        <div class="flex-1 h-[2px] border-t-2 border-dashed border-slate-300"></div>
+                        <div class="w-2 h-2 rounded-full bg-slate-400"></div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <span class="text-2xl font-black text-slate-800 leading-none">${trip.arrTime}</span>
+                    <p class="text-sm font-bold text-slate-400 mt-1 uppercase">${escapeHTML(trip.toName)}</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-end min-w-[150px] border-l border-slate-100 pl-8">
+                ${trip.oldPrice ? `<span class="text-xs font-bold text-slate-400 line-through">${Number(trip.oldPrice).toLocaleString('vi-VN')}đ</span>` : ''}
+                <span class="text-2xl font-black ${priceColor} tracking-tight">${Number(trip.price).toLocaleString('vi-VN')}đ</span>
+                <button onclick="selectFlight('${escapeHTML(trip.brand)}', '${escapeHTML(trip.code)}', ${trip.price})"
+                    class="mt-4 w-full py-3 px-6 bg-slate-900 ${btnHover} text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-slate-200">
+                    ${btnText}
+                </button>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+// Giữ nguyên các hàm selectFlight, goToPayment, confirmPurchase (gửi API PostgreSQL) như trước...
 function selectFlight(flightName, flightCode, price) {
-    const tripType = document.querySelector('input[name="trip"]:checked').value;
-    const from = document.getElementById('searchFrom')?.value || "Hồ Chí Minh (SGN)";
-    const to = document.getElementById('searchTo')?.value || "Long An";
-    const depDate = document.getElementById('searchDepDate')?.value || "2026-04-05";
-    const retDate = tripType === 'roundtrip' ? (document.getElementById('searchRetDate')?.value || "2026-04-10") : null;
+    const tripType = document.querySelector('input[name="trip"]:checked')?.value || 'roundtrip';
+    const from = document.getElementById('searchFrom').value;
+    const to = document.getElementById('searchTo').value;
+    const depDate = document.getElementById('searchDepDate').value;
+    const retDate = tripType === 'roundtrip' ? document.getElementById('searchRetDate').value : null;
 
     currentBookingState = {
         tripType,
@@ -139,7 +300,6 @@ function backToPassengers() {
     document.getElementById('stepPassengers')?.classList.remove('hidden');
 }
 
-// Đẩy dữ liệu xuống Backend theo đúng format chuẩn API yêu cầu vào PostgreSQL
 async function confirmPurchase() {
     const btn = document.getElementById('btnConfirmPurchase');
     if (btn) {
@@ -200,41 +360,4 @@ async function confirmPurchase() {
 function closeModal() {
     document.getElementById('bookingModal')?.classList.add('hidden');
     document.body.style.overflow = 'auto';
-}
-
-function closeConsent() {
-    const banner = document.getElementById('consent-banner');
-    if (banner) banner.style.display = 'none';
-    localStorage.setItem('user-consent', 'accepted');
-}
-
-window.onload = () => {
-    if (localStorage.getItem('user-consent')) {
-        const banner = document.getElementById('consent-banner');
-        if (banner) banner.style.display = 'none';
-    }
-};
-
-window.onclick = function (event) {
-    const authModal = document.getElementById('auth-modal');
-    const bookingModal = document.getElementById('bookingModal');
-    if (event.target == authModal) {
-        if (typeof closeAuth === 'function') closeAuth();
-    }
-    if (event.target == bookingModal) {
-        closeModal();
-    }
-};
-
-async function handleShare() {
-    const shareUrl = 'https://uat1.akadigital.net/download';
-    try {
-        if (navigator.share) {
-            await navigator.share({ url: shareUrl });
-        } else {
-            navigator.clipboard.writeText(shareUrl);
-        }
-    } catch (err) {
-        console.log('Lỗi:', err);
-    }
 }
