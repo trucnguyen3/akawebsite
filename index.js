@@ -1137,30 +1137,27 @@ app.post('/api/flights/book', async (req, res) => {
       userId, 
       email, 
       tripType, 
-      flightName, 
-      flightCode, 
-      departureCity, 
-      arrivalCity, 
+      flightName,     // Tên nhà xe / chuyến bay (VD: "Xe Khách Limousine")
+      flightCode,     // Mã tuyến / mã xe (VD: "BUS-LA01")
+      departureCity,  // "Hồ Chí Minh (SGN)"
+      arrivalCity,    // "Long An"
       departureDate, 
       returnDate, 
       totalAmount, 
       paymentMethod, 
-      passengers 
+      passengers      // Mảng chứa thông tin 2 hành khách
     } = req.body;
 
-    // Email lấy từ userId hoặc field email
     const userEmail = userId || email;
 
-    // Kiểm tra dữ liệu bắt buộc
     if (!userEmail || !flightCode || !passengers || !Array.isArray(passengers) || passengers.length !== 2) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Thiếu thông tin tài khoản, chuyến bay hoặc thông tin 2 hành khách.' 
+        message: 'Thiếu thông tin tài khoản, tuyến xe hoặc thông tin 2 hành khách.' 
       });
     }
 
-    // Tạo mã đặt chỗ ngẫu nhiên (PNR)
-    const bookingReference = 'SP' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const bookingReference = 'BUS' + Math.random().toString(36).substring(2, 8).toUpperCase();
 
     const query = `
       INSERT INTO flight_bookings 
@@ -1171,24 +1168,24 @@ app.post('/api/flights/book', async (req, res) => {
 
     const values = [
       bookingReference,
-      tripType || 'roundtrip',
-      flightName || '',
+      tripType || 'oneway',
+      flightName,
       flightCode,
-      departureCity || '',
-      arrivalCity || '',
-      departureDate || '',
+      departureCity,
+      arrivalCity,
+      departureDate,
       returnDate || null,
-      totalAmount || 0,
+      totalAmount,
       paymentMethod || 'CREDIT_CARD',
       userEmail,
-      JSON.stringify(passengers) // Chuyển mảng passengers thành JSON để lưu vào PostgreSQL
+      JSON.stringify(passengers)
     ];
 
     const result = await dbPool.query(query, values);
 
     return res.status(201).json({
       success: true,
-      message: 'Đặt vé và thanh toán thành công!',
+      message: 'Đặt vé xe khách và thanh toán thành công!',
       data: result.rows[0],
     });
 

@@ -46,10 +46,10 @@ function handleTripTypeChange() {
 // Chọn chuyến bay và mở modal nhập thông tin 2 người
 function selectFlight(flightName, flightCode, price) {
     const tripType = document.querySelector('input[name="trip"]:checked').value;
-    const from = document.getElementById('searchFrom')?.value || "Hà Nội (HAN)";
-    const to = document.getElementById('searchTo')?.value || "Đà Nẵng (DAD)";
-    const depDate = document.getElementById('searchDepDate')?.value || "2026-04-05";
-    const retDate = tripType === 'roundtrip' ? (document.getElementById('searchRetDate')?.value || "2026-04-10") : null;
+    const from = document.getElementById('searchFrom').value;
+    const to = document.getElementById('searchTo').value;
+    const depDate = document.getElementById('searchDepDate').value;
+    const retDate = tripType === 'roundtrip' ? document.getElementById('searchRetDate').value : null;
 
     currentBookingState = {
         tripType,
