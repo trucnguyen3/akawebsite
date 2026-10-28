@@ -412,7 +412,6 @@ async function openMyBookings() {
 
         if (result.success && result.data.length > 0) {
             listContainer.innerHTML = result.data.map(booking => {
-                // Parse mảng hành khách từ JSONB
                 let passengersArr = [];
                 try {
                     passengersArr = typeof booking.passengers === 'string' ? JSON.parse(booking.passengers) : booking.passengers;
@@ -421,6 +420,18 @@ async function openMyBookings() {
                 const passengersStr = passengersArr.map(p => p.fullName).join(', ');
                 const isBus = booking.flight_code && booking.flight_code.startsWith('BUS');
                 const badgeColor = isBus ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700';
+
+                // KIỂM TRA XEM ĐIỂM ĐẾN CÓ PHẢI LÀ LONG AN KHÔNG
+                const isLongAnRoute = booking.arrival_city && booking.arrival_city.toLowerCase().includes('long an');
+
+                // TẠO NÚT BẤM CHUYỂN QUA TRANG TR-WEDDING NẾU LÀ VÉ LONG AN
+                const longAnActionBtn = isLongAnRoute ? `
+                    <a href="https://uat1.akadigital.net/tr-wedding" target="_blank" class="inline-block mt-2">
+                        <button class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-sm">
+                            <i class="fas fa-external-link-alt"></i> Xem thông tin lịch trình Long An
+                        </button>
+                    </a>
+                ` : '';
 
                 return `
                 <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -432,6 +443,9 @@ async function openMyBookings() {
                         <p class="text-sm font-bold text-slate-800">${escapeHTML(booking.departure_city)} ➔ ${escapeHTML(booking.arrival_city)}</p>
                         <p class="text-xs text-slate-500 mt-1">Hành khách: <span class="font-medium text-slate-700">${escapeHTML(passengersStr)}</span></p>
                         <p class="text-xs text-slate-400 mt-0.5">Ngày đi: ${escapeHTML(booking.departure_date)}</p>
+                        
+                        <!-- Hiển thị nút chuyển trang nếu là vé Long An -->
+                        ${longAnActionBtn}
                     </div>
                     <div class="text-right w-full md:w-auto border-t md:border-t-0 pt-3 md:pt-0 border-slate-200">
                         <span class="text-lg font-black text-slate-900">${Number(booking.total_amount).toLocaleString('vi-VN')}đ</span>
