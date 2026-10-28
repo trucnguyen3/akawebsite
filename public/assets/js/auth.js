@@ -6,6 +6,7 @@
                 });
                 const data = await res.json();
                 if (data.status === 'success') {
+                    window.currentUserEmail = data.data.email;
                     renderUI(data.data);
                 } else {
                     renderUI(null);
@@ -132,6 +133,7 @@
 
                 if (result.status === 'success') {
                     closeAuth();
+                    window.currentUserEmail = result.data.email;
                     renderUI(result.data);
 
                     smartech('identify', email)
@@ -194,6 +196,7 @@
 
                 if (res.ok && result.status === 'success') {
                     closeAuth();
+                    window.currentUserEmail = result.data.email;
                     renderUI(result.data);
                 } else {
                     alert(result.message || result.error || "Đăng ký không thành công!");
