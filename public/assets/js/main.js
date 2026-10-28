@@ -32,6 +32,38 @@ let currentBookingState = {};
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof checkSession === 'function') checkSession();
     if (typeof initChatEvents === 'function') initChatEvents();
+
+    // Lắng nghe sự kiện click vào nút tìm kiếm (nút có icon kính lúp)
+    const searchBtn = document.querySelector('.hero-gradient button');
+    const searchResultsSection = document.getElementById('searchResultsSection');
+
+    if (searchBtn && searchResultsSection) {
+        searchBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const fromVal = document.getElementById('searchFrom').value;
+            const toVal = document.getElementById('searchTo').value;
+
+            // Kiểm tra nếu điểm đi trùng điểm đến
+            if (fromVal === toVal) {
+                alert("Điểm đi và Điểm đến không được trùng nhau!");
+                searchResultsSection.classList.add('hidden');
+                return;
+            }
+
+            // Hiển thị khung kết quả tìm kiếm
+            searchResultsSection.classList.remove('hidden');
+
+            // Cập nhật lại tiêu đề hoặc hiển thị thông tin chuyến phù hợp nếu cần
+            const resultTitle = searchResultsSection.querySelector('h3');
+            if (resultTitle) {
+                resultTitle.innerText = `Kết quả tìm kiếm từ ${fromVal} đến ${toVal}`;
+            }
+
+            // Cuộn mượt màn hình xuống phần kết quả
+            searchResultsSection.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
 });
 
 // Xử lý loại vé (Khứ hồi / Một chiều)
@@ -43,13 +75,13 @@ function handleTripTypeChange() {
     }
 }
 
-// Chọn chuyến bay và mở modal nhập thông tin 2 người
+// Chọn chuyến bay/xe khách và mở modal nhập thông tin 2 người
 function selectFlight(flightName, flightCode, price) {
     const tripType = document.querySelector('input[name="trip"]:checked').value;
-    const from = document.getElementById('searchFrom').value;
-    const to = document.getElementById('searchTo').value;
-    const depDate = document.getElementById('searchDepDate').value;
-    const retDate = tripType === 'roundtrip' ? document.getElementById('searchRetDate').value : null;
+    const from = document.getElementById('searchFrom')?.value || "Hồ Chí Minh (SGN)";
+    const to = document.getElementById('searchTo')?.value || "Long An";
+    const depDate = document.getElementById('searchDepDate')?.value || "2026-04-05";
+    const retDate = tripType === 'roundtrip' ? (document.getElementById('searchRetDate')?.value || "2026-04-10") : null;
 
     currentBookingState = {
         tripType,
@@ -107,7 +139,7 @@ function backToPassengers() {
     document.getElementById('stepPassengers')?.classList.remove('hidden');
 }
 
-// Đẩy dữ liệu xuống Backend theo đúng format chuẩn API yêu cầu
+// Đẩy dữ liệu xuống Backend theo đúng format chuẩn API yêu cầu vào PostgreSQL
 async function confirmPurchase() {
     const btn = document.getElementById('btnConfirmPurchase');
     if (btn) {
