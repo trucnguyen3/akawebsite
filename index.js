@@ -1131,6 +1131,73 @@ app.get('/api/consultation/my-requests', async (req, res) => {
   }
 });
 
+app.post('/api/flights/book', async (req, res) => {
+  try {
+    const { 
+      userId, 
+      email, 
+      tripType, 
+      flightName, 
+      flightCode, 
+      departureCity, 
+      arrivalCity, 
+      departureDate, 
+      returnDate, 
+      totalAmount, 
+      paymentMethod, 
+      passengers 
+    } = req.body;
+
+    // Email lấy từ userId hoặc field email
+    const userEmail = userId || email;
+
+    // Kiểm tra dữ liệu bắt buộc
+    if (!userEmail || !flightCode || !passengers || !Array.isArray(passengers) || passengers.length !== 2) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Thiếu thông tin tài khoản, chuyến bay hoặc thông tin 2 hành khách.' 
+      });
+    }
+
+    // Tạo mã đặt chỗ ngẫu nhiên (PNR)
+    const bookingReference = 'SP' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    const query = `
+      INSERT INTO flight_bookings 
+      (booking_reference, trip_type, flight_name, flight_code, departure_city, arrival_city, departure_date, return_date, total_amount, payment_method, payment_status, user_email, passengers)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'PAID', $11, $12)
+      RETURNING *;
+    `;
+
+    const values = [
+      bookingReference,
+      tripType || 'roundtrip',
+      flightName || '',
+      flightCode,
+      departureCity || '',
+      arrivalCity || '',
+      departureDate || '',
+      returnDate || null,
+      totalAmount || 0,
+      paymentMethod || 'CREDIT_CARD',
+      userEmail,
+      JSON.stringify(passengers) // Chuyển mảng passengers thành JSON để lưu vào PostgreSQL
+    ];
+
+    const result = await dbPool.query(query, values);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Đặt vé và thanh toán thành công!',
+      data: result.rows[0],
+    });
+
+  } catch (error) {
+    console.error('Database Error:', error);
+    return res.status(500).json({ success: false, message: 'Lỗi lưu cơ sở dữ liệu.' });
+  }
+});
+
 server.listen(port, host, () => {
     console.log(`🚀 Node.js đang chạy trên cổng ${port}:`);
     console.log(`   - Chatbot API:       POST /api/chat`);
