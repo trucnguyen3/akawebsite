@@ -72,30 +72,36 @@
         }
         window.addEventListener('load', createFavicon);
 
-        function renderUI(user) {
-            const authButtons = document.getElementById('auth-buttons');
-            const userProfile = document.getElementById('user-profile');
+function renderUI(user) {
+    const authButtons = document.getElementById('auth-buttons');
+    const userProfile = document.getElementById('user-profile');
 
-            if (user) {
-                authButtons?.classList.add('hidden');
-                userProfile?.classList.remove('hidden');
-                if (userProfile) {
-                    userProfile.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="text-right hidden md:block">
-                            <p class="text-xs font-bold text-blue-900">${escapeHTML(user.email)}</p>
-                            <p class="text-[10px] text-slate-500">${escapeHTML(user.mobile || 'Thành viên Premium')}</p>
-                        </div>
-                        <button onclick="handleLogout()" class="px-4 py-2 text-xs font-bold bg-slate-100 text-slate-600 rounded-full hover:bg-red-50 hover:text-red-500 transition">
-                            Đăng xuất
-                        </button>
-                    </div>`;
-                }
-            } else {
-                authButtons?.classList.remove('hidden');
-                userProfile?.classList.add('hidden');
-            }
+    if (user) {
+        window.currentUserEmail = user.email; // Đồng bộ email sang main.js
+        authButtons?.classList.add('hidden');
+        userProfile?.classList.remove('hidden');
+        if (userProfile) {
+            userProfile.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden md:block">
+                    <p class="text-xs font-bold text-blue-900">${escapeHTML(user.email)}</p>
+                    <p class="text-[10px] text-slate-500">${escapeHTML(user.mobile || 'Thành viên Premium')}</p>
+                </div>
+                <!-- NÚT MỞ LỊCH SỬ ĐẶT VÉ -->
+                <button onclick="openMyBookings()" class="px-3 py-2 text-xs font-bold bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition flex items-center gap-1">
+                    <i class="fas fa-ticket-alt"></i> Vé của tôi
+                </button>
+                <button onclick="handleLogout()" class="px-3 py-2 text-xs font-bold bg-slate-100 text-slate-600 rounded-full hover:bg-red-50 hover:text-red-500 transition">
+                    Đăng xuất
+                </button>
+            </div>`;
         }
+    } else {
+        window.currentUserEmail = null;
+        authButtons?.classList.remove('hidden');
+        userProfile?.classList.add('hidden');
+    }
+}
 
         async function handleLogout() {
             try {

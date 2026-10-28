@@ -1195,6 +1195,32 @@ app.post('/api/flights/book', async (req, res) => {
   }
 });
 
+app.get('/api/flights/my-bookings', async (req, res) => {
+  try {
+    // Lấy email từ query params hoặc session
+    const userEmail = req.query.email;
+
+    if (!userEmail) {
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin email người dùng.' });
+    }
+
+    const query = `
+      SELECT * FROM flight_bookings 
+      WHERE user_email = $1 
+      ORDER BY created_at DESC;
+    `;
+    const result = await dbPool.query(query, [userEmail]);
+
+    return res.status(200).json({
+      success: true,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Database Error:', error);
+    return res.status(500).json({ success: false, message: 'Lỗi lấy dữ liệu lịch sử đặt vé.' });
+  }
+});
+
 server.listen(port, host, () => {
     console.log(`🚀 Node.js đang chạy trên cổng ${port}:`);
     console.log(`   - Chatbot API:       POST /api/chat`);

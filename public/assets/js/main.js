@@ -361,3 +361,87 @@ function closeModal() {
     document.getElementById('bookingModal')?.classList.add('hidden');
     document.body.style.overflow = 'auto';
 }
+
+async function openMyBookings() {
+    const modal = document.getElementById('myBookingsModal');
+    const listContainer = document.getElementById('myBookingsList');
+
+    modal?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    const userEmail = window.currentUserEmail;
+    if (!userEmail) {
+        listContainer.innerHTML = `<p class="text-center text-red-500 py-4">Vui lòng đăng nhập để xem lịch sử đặt vé!</p>`;
+        return;
+    }
+
+    listContainer.innerHTML = `<p class="text-center text-slate-400 py-8">Đang tải danh sách vé...</p>`;
+
+    try {
+        const res = await fetch(`https://uat1.akadigital.net/api/flights/my-bookings?email=${encodeURIComponent(userEmail)}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        const result = await res.json();
+
+        if (result.success && result.data.length > 0) {
+            listContainer.innerHTML = result.data.map(booking => {
+                // Parse mảng hành khách từ JSONB
+                let passengersArr = [];
+                try {
+                    passengersArr = typeof booking.passengers === 'string' ? JSON.parse(booking.passengers) : booking.passengers;
+                } catch (e) { passengersArr = []; }
+
+                const passengersStr = passengersArr.map(p => p.fullName).join(', ');
+                const isBus = booking.flight_code && booking.flight_code.startsWith('BUS');
+                const badgeColor = isBus ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700';
+
+                return `
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-black text-blue-600">${escapeHTML(booking.booking_reference)}</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 ${badgeColor} rounded">${escapeHTML(booking.flight_name)} (${escapeHTML(booking.flight_code)})</span>
+                        </div>
+                        <p class="text-sm font-bold text-slate-800">${escapeHTML(booking.departure_city)} ➔ ${escapeHTML(booking.arrival_city)}</p>
+                        <p class="text-xs text-slate-500 mt-1">Hành khách: <span class="font-medium text-slate-700">${escapeHTML(passengersStr)}</span></p>
+                        <p class="text-xs text-slate-400 mt-0.5">Ngày đi: ${escapeHTML(booking.departure_date)}</p>
+                    </div>
+                    <div class="text-right w-full md:w-auto border-t md:border-t-0 pt-3 md:pt-0 border-slate-200">
+                        <span class="text-lg font-black text-slate-900">${Number(booking.total_amount).toLocaleString('vi-VN')}đ</span>
+                        <p class="text-[11px] font-bold text-green-600 mt-1 uppercase">Đã thanh toán</p>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        } else {
+            listContainer.innerHTML = `<p class="text-center text-slate-500 py-8">Bạn chưa đặt chuyến đi nào.</p>`;
+        }
+    } catch (err) {
+        console.error("Lỗi tải lịch sử:", err);
+        listContainer.innerHTML = `<p class="text-center text-red-500 py-4">Không thể kết nối đến máy chủ để tải lịch sử vé.</p>`;
+    }
+}
+
+function closeMyBookings() {
+    const modal = document.getElementById('myBookingsModal');
+    modal?.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Bổ sung đóng modal khi click ra vùng ngoài
+window.onclick = function (event) {
+    const authModal = document.getElementById('auth-modal');
+    const bookingModal = document.getElementById('bookingModal');
+    const myBookingsModal = document.getElementById('myBookingsModal');
+
+    if (event.target == authModal) {
+        if (typeof closeAuth === 'function') closeAuth();
+    }
+    if (event.target == bookingModal) {
+        closeModal();
+    }
+    if (event.target == myBookingsModal) {
+        closeMyBookings();
+    }
+};

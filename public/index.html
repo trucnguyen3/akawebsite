@@ -167,7 +167,6 @@
                             <i class="fas fa-plane-arrival text-blue-500 mr-3"></i>
                             <select id="searchTo"
                                 class="bg-transparent w-full outline-none font-semibold cursor-pointer">
-                                <option value="Long An" selected>Long An (Bến xe/Tân An)</option>
                                 <option value="Hà Nội (HAN)">Hà Nội (HAN)</option>
                                 <option value="Hồ Chí Minh (SGN)">Hồ Chí Minh (SGN)</option>
                                 <option value="Phú Quốc (PQC)">Phú Quốc (PQC)</option>
@@ -176,6 +175,7 @@
                                 <option value="Lâm Đồng (DLI)">Lâm Đồng (DLI)</option>
                                 <option value="Khánh Hòa (CXR)">Khánh Hòa (CXR)</option>
                                 <option value="Bình Định (UIH)">Bình Định (UIH)</option>
+                                <option value="Long An" selected>Long An (Bến xe/Tân An)</option>
                             </select>
                         </div>
                     </div>
@@ -559,6 +559,25 @@
                     class="py-4 px-8 bg-slate-900 text-white rounded-2xl font-bold hover:bg-blue-600 transition w-full">
                     Hoàn tất
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="myBookingsModal"
+        class="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-3xl rounded-[2.5rem] p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeMyBookings()"
+                class="absolute top-6 right-6 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-red-50 hover:text-red-500 transition">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <h3 class="text-2xl font-bold text-slate-800 mb-2">Chuyến đi / Vé đã đặt</h3>
+            <p class="text-sm text-slate-500 mb-6">Danh sách các vé máy bay và xe khách bạn đã thanh toán thành công.
+            </p>
+
+            <!-- Danh sách vé được render động bằng JS -->
+            <div id="myBookingsList" class="space-y-4">
+                <p class="text-center text-slate-400 py-8">Đang tải dữ liệu...</p>
             </div>
         </div>
     </div>
