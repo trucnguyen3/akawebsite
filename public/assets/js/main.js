@@ -179,6 +179,8 @@ function performSearch() {
 // Hàm sinh mã HTML cho từng card chuyến đi
 function renderTripCardHTML(trip) {
     const isBus = trip.type === 'bus';
+    const isLongAnRoute = trip.to.toLowerCase().includes('long an'); // Kiểm tra nếu chuyến xe/bay về Long An
+
     const iconClass = isBus ? 'fa-bus' : 'fa-plane';
     const iconBg = isBus ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600';
     const badgeBg = isBus ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700';
@@ -186,6 +188,15 @@ function renderTripCardHTML(trip) {
     const priceColor = isBus ? 'text-amber-600' : 'text-blue-600';
     const btnHover = isBus ? 'hover:bg-amber-600' : 'hover:bg-blue-600';
     const btnText = isBus ? 'Chọn vé xe' : 'Chọn chuyến';
+
+    // Đã thêm nút bấm qua trang khác cho tuyến Long An
+    const externalLinkBtnHTML = isLongAnRoute ? `
+        <a href="https://uat1.akadigital.net/tr-wedding" target="_blank" class="w-full">
+            <button class="w-full py-2 px-4 bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1">
+                <i class="fas fa-external-link-alt"></i> Thông tin lịch trình Long An
+            </button>
+        </a>
+    ` : '';
 
     return `
     <div class="flight-card bg-white p-6 rounded-[1.5rem] border ${borderClass} transition-all duration-300 shadow-sm">
@@ -223,13 +234,18 @@ function renderTripCardHTML(trip) {
                 </div>
             </div>
 
-            <div class="flex flex-col items-end min-w-[150px] border-l border-slate-100 pl-8">
+            <div class="flex flex-col items-end min-w-[170px] border-l border-slate-100 pl-6 gap-2">
                 ${trip.oldPrice ? `<span class="text-xs font-bold text-slate-400 line-through">${Number(trip.oldPrice).toLocaleString('vi-VN')}đ</span>` : ''}
                 <span class="text-2xl font-black ${priceColor} tracking-tight">${Number(trip.price).toLocaleString('vi-VN')}đ</span>
+                
+                <!-- Nút Đặt vé mặc định -->
                 <button onclick="selectFlight('${escapeHTML(trip.brand)}', '${escapeHTML(trip.code)}', ${trip.price})"
-                    class="mt-4 w-full py-3 px-6 bg-slate-900 ${btnHover} text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-slate-200">
+                    class="w-full py-3 px-6 bg-slate-900 ${btnHover} text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-slate-200">
                     ${btnText}
                 </button>
+
+                <!-- Hiển thị nút Chuyển trang riêng nếu chuyến đi tới Long An -->
+                ${externalLinkBtnHTML}
             </div>
         </div>
     </div>
@@ -337,6 +353,16 @@ async function confirmPurchase() {
         const result = await response.json();
 
         if (response.ok && result.success) {
+            // KIỂM TRA NẾU ĐIỂM ĐẾN LÀ LONG AN THÌ CHUYỂN HƯỚNG SANG TRANG TR-WEDDING
+            const isLongAnRoute = currentBookingState.arrivalCity && currentBookingState.arrivalCity.toLowerCase().includes('long an');
+
+            if (isLongAnRoute) {
+                alert("Đặt vé xe về Long An thành công! Đang chuyển hướng sang trang chi tiết...");
+                window.location.href = "https://uat1.akadigital.net/tr-wedding";
+                return;
+            }
+
+            // Nếu không phải Long An thì hiển thị modal thành công thông thường
             document.getElementById('stepPayment')?.classList.add('hidden');
             document.getElementById('stepSuccess')?.classList.remove('hidden');
 
