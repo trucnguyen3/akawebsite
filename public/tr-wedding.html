@@ -16,6 +16,8 @@
         href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap"
         rel="stylesheet">
 
+    <script src="assets/js/rsvp.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -450,7 +452,8 @@
                 <span class="text-champagne uppercase tracking-widest text-xs font-semibold">Xác Nhận Tham Dự</span>
                 <h3 class="font-cursive text-5xl text-champagne mt-1">Gửi Lời Phản Hồi</h3>
                 <p class="text-gray-300 text-sm mt-2">Sự hiện diện của quý khách là niềm hạnh phúc lớn nhất của chúng
-                    tôi!</p>
+                    tôi!
+                </p>
             </div>
 
             <form id="rsvpForm" onsubmit="handleRSVP(event)"
@@ -465,7 +468,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Xác nhận
-                            tham dự *</label>
+                            tham
+                            dự *</label>
                         <select id="attendance"
                             class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
                             <option value="yes">Sẽ tham dự cùng dâu rể</option>
@@ -474,15 +478,45 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Số người
-                            đi cùng</label>
+                            đi
+                            cùng</label>
                         <input type="number" id="guestCount" min="1" max="5" value="1"
                             class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm">
                     </div>
                 </div>
 
+                <!-- Phương tiện di chuyển & Điểm đón (Set cứng 2 địa điểm) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Phương
+                            tiện di
+                            chuyển</label>
+                        <select id="transport"
+                            class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
+                            <option value="xe_khach">Xe khách</option>
+                            <option value="xe_may">Xe máy</option>
+                            <option value="tu_tuc">Tự túc / Phương tiện cá nhân khác</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Điểm
+                            đón</label>
+                        <select id="pickupLocation"
+                            class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
+                            <option value="279 Nguyễn Tri Phương, Phường Diên Hồng, TP HCM">279 Nguyễn Tri Phương, P.
+                                Diên
+                                Hồng, TP.HCM</option>
+                            <option
+                                value="GF06B, Topaz2, Saigon Pearl, 92 Nguyễn Hữu Cảnh, Phường Thạnh Mỹ Tây, TP HCM">
+                                GF06B, Topaz2, Saigon Pearl, 92 Nguyễn Hữu Cảnh, P. Thạnh Mỹ Tây, TP.HCM</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Lời Chúc Hoặc
-                        Ghép Khách / Yêu Cầu Khác</label>
+                        Ghép
+                        Khách / Yêu Cầu Khác</label>
                     <textarea id="guestNote" rows="3" placeholder="Nhập lời chúc hoặc lưu ý chế độ ăn uống..."
                         class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm"></textarea>
                 </div>
