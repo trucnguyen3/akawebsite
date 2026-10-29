@@ -16,6 +16,7 @@
         href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap"
         rel="stylesheet">
 
+    <script src="assets/js/tr_wed.js"></script>
     <script src="assets/js/rsvp.js"></script>
 
     <script>
@@ -626,89 +627,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // COUNTDOWN TIMER LOGIC
-        const weddingDate = new Date("November 28, 2026 09:00:00").getTime();
-
-        function updateCountdown() {
-            const now = new Date().getTime();
-            const distance = weddingDate - now;
-
-            if (distance < 0) {
-                document.getElementById("countdown").innerHTML = "<div class='text-gold text-2xl font-serif col-span-4'>Hôm nay là Ngày Trọng Đại!</div>";
-                return;
-            }
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            document.getElementById("days").innerText = days < 10 ? '0' + days : days;
-            document.getElementById("hours").innerText = hours < 10 ? '0' + hours : hours;
-            document.getElementById("minutes").innerText = minutes < 10 ? '0' + minutes : minutes;
-            document.getElementById("seconds").innerText = seconds < 10 ? '0' + seconds : seconds;
-        }
-
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
-
-        // LIGHTBOX LOGIC
-        function openLightbox(imgSrc) {
-            document.getElementById('lightboxImg').src = imgSrc;
-            document.getElementById('lightbox').classList.remove('hidden');
-        }
-
-        function closeLightbox() {
-            document.getElementById('lightbox').classList.add('hidden');
-        }
-
-        // RSVP FORM HANDLER
-        function handleRSVP(event) {
-            event.preventDefault();
-            const name = document.getElementById('guestName').value;
-            const note = document.getElementById('guestNote').value;
-
-            // Show success message
-            document.getElementById('rsvpSuccess').classList.remove('hidden');
-
-            // If user left a note/wish, push it to wishes wall
-            if (note.trim() !== '') {
-                const container = document.getElementById('wishesContainer');
-                const newWish = document.createElement('div');
-                newWish.className = 'p-4 rounded-xl bg-white/80 border border-champagne/40 shadow-sm animate-fade-in';
-                newWish.innerHTML = `
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="font-bold text-emeraldDeep text-sm">${name}</span>
-                        <span class="text-xs text-gray-400">Vừa xong</span>
-                    </div>
-                    <p class="text-gray-600 text-sm">"${note}"</p>
-                `;
-                container.prepend(newWish);
-            }
-
-            // Reset form
-            document.getElementById('rsvpForm').reset();
-        }
-
-        // AUDIO TOGGLE LOGIC
-        let isPlaying = false;
-        const audio = document.getElementById('weddingAudio');
-        const icon = document.getElementById('musicIcon');
-
-        function toggleAudio() {
-            if (isPlaying) {
-                audio.pause();
-                icon.className = 'fas fa-music';
-            } else {
-                audio.play().catch(e => console.log("Audio play blocked by browser."));
-                icon.className = 'fas fa-pause';
-            }
-            isPlaying = !isPlaying;
-        }
-    </script>
 </body>
 
 </html>
