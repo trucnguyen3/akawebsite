@@ -1249,6 +1249,25 @@ app.post('/api/rsvp', async (req, res) => {
     }
 });
 
+// API lấy danh sách RSVP
+app.get('/api/rsvp-list', async (req, res) => {
+    try {
+        const query = `
+            SELECT * FROM rsvp_guests 
+            ORDER BY created_at DESC;
+        `;
+        const result = await pool.query(query);
+
+        res.status(200).json({
+            success: true,
+            data: result.rows
+        });
+    } catch (err) {
+        console.error('Database Error:', err.message);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
 server.listen(port, host, () => {
     console.log(`🚀 Node.js đang chạy trên cổng ${port}:`);
     console.log(`   - Chatbot API:       POST /api/chat`);
