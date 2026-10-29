@@ -24,20 +24,27 @@
             theme: {
                 extend: {
                     colors: {
+                        // Bảng màu mới chuẩn Hồng Pastel & Berry Romantic
                         cream: '#FDFBF7',
-                        champagne: '#fef3c7',
-                        gold: '#d97706',
-                        rose: '#E8A598',
                         blush: '#F9ECEC',
-                        emeraldDeep: '#2c2229',
-                        burgundy: '#5B1E31',
-                        charcoal: '#2D3748',
+
+                        // Màu chủ đạo
+                        emeraldDeep: '#8B4A62',       // Đổi tên biến cũ sang màu Berry tím mận chín (cho tiêu đề, icon)
+                        themeBg: '#e8d6e2',           // Nền hồng pastel
                         themeColor: '#e8d6e2',
-                        themeBg: '#e8d6e2',          // Màu hồng pastel chủ đạo
-                        btnBg: '#e8d6e2',            // Nền button
-                        btnBorder: '#d4b8cc',        // Viền button
-                        btnText: '#4a3043',          // Chữ trong button (đối lập hoàn toàn, dễ đọc)
-                        btnHoverBg: '#dfc8d8'        // Hiệu ứng hover nhè nh
+
+                        // Màu nhấn thay thế hoàn toàn cho Gold/Champagne/Nâu
+                        gold: '#8B4A62',              // Đổi gold sang màu Berry để giữ tính tương thích class
+                        champagne: '#F3E8EE',         // Viền/nền phụ sáng nhẹ nhàng
+                        rose: '#D896A8',              // Hồng dusty rose cho điểm nhấn phụ
+                        burgundy: '#5B1E31',          // Đỏ mận đậm cho tương phản cao
+                        charcoal: '#33222B',          // Chữ chính màu xám tím đậm (thay cho đen/nâu)
+
+                        // Bộ màu chuẩn cho Button & Form
+                        btnBg: '#e8d6e2',
+                        btnBorder: '#d4b8cc',
+                        btnText: '#4a3043',
+                        btnHoverBg: '#dfc8d8'
                     },
                     fontFamily: {
                         cursive: ['Alex Brush', 'cursive'],
@@ -103,6 +110,7 @@
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(212, 175, 55, 0.2);
+            margin-left: 20px;
         }
 
         /* Music Floating Button */
@@ -127,7 +135,7 @@
 
     <!-- Music Player Controls -->
     <button id="musicToggle" onclick="toggleAudio()"
-        class="music-btn fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-gold text-white flex items-center justify-center text-xl transition-all hover:scale-110 focus:outline-none">
+        class="music-btn fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[#e8d6e2] text-[#4a3043] border border-[#d4b8cc] text-white flex items-center justify-center text-xl transition-all hover:scale-110 focus:outline-none">
         <i id="musicIcon" class="fas fa-music"></i>
     </button>
     <audio id="weddingAudio" loop>
@@ -149,7 +157,7 @@
                 <a href="#wishes" class="hover:text-gold transition">Gửi Lời Chúc</a>
             </div>
             <a href="#rsvp"
-                class="bg-emeraldDeep text-white px-4 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider hover:bg-gold transition shadow">
+                class="bg-[#e8d6e2] text-[#4a3043] border border-[#d4b8cc] px-5 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider hover:bg-[#dfc8d8] transition shadow-sm">
                 THAM DỰ
             </a>
         </div>
@@ -234,32 +242,34 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <!-- GROOM -->
                 <div class="glass-card p-6 rounded-2xl text-center space-y-4 shadow-md hover:shadow-xl transition">
-                    <div class="w-48 h-48 mx-auto rounded-full overflow-hidden border-4 border-gold shadow-md">
+                    <!-- Viền ảnh chuyển thành màu hồng #d4b8cc -->
+                    <div class="w-48 h-48 mx-auto rounded-full overflow-hidden border-4 border-[#d4b8cc] shadow-md">
                         <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600"
-                            alt="Chú rể Hoàng Anh" class="w-full h-full object-cover">
+                            alt="Chú rể Xuân Trúc" class="w-full h-full object-cover">
                     </div>
                     <div>
                         <h4 class="font-serif text-2xl font-bold text-emeraldDeep">Nguyễn Thiện Lê Xuân Trúc</h4>
-                        <p class="text-gold text-sm font-semibold uppercase tracking-wider">Chú Rể</p>
+                        <p class="text-[#8B4A62] text-sm font-semibold uppercase tracking-wider">Chú Rể</p>
                     </div>
                     <p class="text-gray-600 text-sm leading-relaxed italic">
-                        "Anh là người điềm tĩnh, thích công nghệ và yêu thiên nhiên. Khoảnh khắc gặp được Trúc, anh biết
+                        "Anh là người điềm tĩnh, thích công nghệ và yêu thiên nhiên. Khoảnh khắc gặp được Trân, anh biết
                         cuộc đời mình đã tìm thấy một nửa hoàn hảo nhất."
                     </p>
                 </div>
 
                 <!-- BRIDE -->
                 <div class="glass-card p-6 rounded-2xl text-center space-y-4 shadow-md hover:shadow-xl transition">
-                    <div class="w-48 h-48 mx-auto rounded-full overflow-hidden border-4 border-gold shadow-md">
+                    <!-- Viền ảnh chuyển thành màu hồng #d4b8cc -->
+                    <div class="w-48 h-48 mx-auto rounded-full overflow-hidden border-4 border-[#d4b8cc] shadow-md">
                         <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600"
-                            alt="Cô dâu Cẩm Trúc" class="w-full h-full object-cover">
+                            alt="Cô dâu Bảo Trân" class="w-full h-full object-cover">
                     </div>
                     <div>
                         <h4 class="font-serif text-2xl font-bold text-emeraldDeep">Phạm Thị Bảo Trân</h4>
-                        <p class="text-gold text-sm font-semibold uppercase tracking-wider">Cô Dâu</p>
+                        <p class="text-[#8B4A62] text-sm font-semibold uppercase tracking-wider">Cô Dâu</p>
                     </div>
                     <p class="text-gray-600 text-sm leading-relaxed italic">
-                        "Cô gái yêu đời, thích đi du lịch và cắm hoa. Với Trúc, tình yêu là sự sẻ chia, lắng nghe và
+                        "Cô gái yêu đời, thích đi du lịch và cắm hoa. Với Trân, tình yêu là sự sẻ chia, lắng nghe và
                         luôn cùng nhau tạo nên những niềm vui bình dị."
                     </p>
                 </div>
@@ -271,22 +281,26 @@
     <section id="about" class="py-20 relative z-10">
         <div class="max-w-4xl mx-auto px-4">
             <div class="text-center mb-16">
-                <span class="text-gold uppercase tracking-widest text-xs font-semibold">Kỷ niệm đáng nhớ</span>
-                <h3 class="font-cursive text-5xl text-emeraldDeep mt-1">Câu Chuyện Tình Yêu</h3>
-                <div class="w-16 h-0.5 bg-gold mx-auto mt-4"></div>
+                <span class="text-[#8B4A62] uppercase tracking-widest text-xs font-semibold">Kỷ niệm đáng nhớ</span>
+                <h3 class="font-cursive text-5xl text-[#8B4A62] mt-1">Câu Chuyện Tình Yêu</h3>
+                <!-- Đường gạch ngang đổi sang hồng pastel #d4b8cc -->
+                <div class="w-16 h-1 bg-[#d4b8cc] mx-auto mt-4 rounded-full"></div>
             </div>
 
-            <div class="relative border-l-2 border-gold/40 ml-4 md:ml-1/2 space-y-12">
+            <!-- Đường trục dọc Timeline đổi thành màu hồng #d4b8cc -->
+            <div class="relative border-l-2 border-[#d4b8cc] ml-4 md:ml-1/2 space-y-12">
+
                 <!-- Timeline Item 1 -->
                 <div class="relative pl-8 md:pl-0 md:flex items-center group">
+                    <!-- Icon hình tròn màu hồng mận #8B4A62 -->
                     <div
-                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-gold text-white flex items-center justify-center text-xs shadow">
+                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow">
                         <i class="fas fa-heart"></i>
                     </div>
                     <div
-                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left">
-                        <span class="text-xs font-bold text-gold">10/2021</span>
-                        <h4 class="font-serif text-xl font-bold text-emeraldDeep mt-1">Lần Đầu Gặp Mặt</h4>
+                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left border border-[#d4b8cc]/50">
+                        <span class="text-xs font-bold text-[#8B4A62]">10/2021</span>
+                        <h4 class="font-serif text-xl font-bold text-[#8B4A62] mt-1">Lần Đầu Gặp Mặt</h4>
                         <p class="text-gray-600 text-sm mt-2 leading-relaxed">
                             Một buổi chiều thu tại quán cà phê quen thuộc. Ánh mắt đầu tiên chạm nhau đã mở ra khởi đầu
                             cho chuỗi ngày ngọt ngào.
@@ -297,13 +311,13 @@
                 <!-- Timeline Item 2 -->
                 <div class="relative pl-8 md:pl-0 md:flex items-center group">
                     <div
-                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-gold text-white flex items-center justify-center text-xs shadow">
+                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow">
                         <i class="fas fa-coffee"></i>
                     </div>
                     <div
-                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:ml-auto text-left">
-                        <span class="text-xs font-bold text-gold">02/2023</span>
-                        <h4 class="font-serif text-xl font-bold text-emeraldDeep mt-1">Chuyến Đi Đầu Tiên</h4>
+                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:ml-auto text-left border border-[#d4b8cc]/50">
+                        <span class="text-xs font-bold text-[#8B4A62]">02/2023</span>
+                        <h4 class="font-serif text-xl font-bold text-[#8B4A62] mt-1">Chuyến Đi Đầu Tiên</h4>
                         <p class="text-gray-600 text-sm mt-2 leading-relaxed">
                             Cùng nhau chinh phục Đà Lạt mộng mơ. Những bước chân song hành qua từng đồi thông đã kéo hai
                             tâm hồn lại gần nhau hơn.
@@ -314,15 +328,16 @@
                 <!-- Timeline Item 3 -->
                 <div class="relative pl-8 md:pl-0 md:flex items-center group">
                     <div
-                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-gold text-white flex items-center justify-center text-xs shadow">
+                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow">
                         <i class="fas fa-ring"></i>
                     </div>
                     <div
-                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left">
-                        <span class="text-xs font-bold text-gold">12/2025</span>
-                        <h4 class="font-serif text-xl font-bold text-emeraldDeep mt-1">Lời Cầu Hôn Nắng Ấm</h4>
+                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left border border-[#d4b8cc]/50">
+                        <span class="text-xs font-bold text-[#8B4A62]">12/2025</span>
+                        <h4 class="font-serif text-xl font-bold text-[#8B4A62] mt-1">Lời Cầu Hôn Nắng Ấm</h4>
                         <p class="text-gray-600 text-sm mt-2 leading-relaxed">
-                            Dưới ánh hoàng hôn bên bờ biển, Hoàng Anh đã quỳ xuống và hỏi câu trả lời mà Trúc đã mong
+                            Dưới ánh hoàng hôn bên bờ biển, Xuân Trúc đã quỳ xuống và hỏi câu trả lời mà Bảo Trân đã
+                            mong
                             chờ: "Em đồng ý làm vợ anh nhé?"
                         </p>
                     </div>
@@ -331,19 +346,20 @@
                 <!-- Timeline Item 4 -->
                 <div class="relative pl-8 md:pl-0 md:flex items-center group">
                     <div
-                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-gold text-white flex items-center justify-center text-xs shadow">
+                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow">
                         <i class="fas fa-church"></i>
                     </div>
                     <div
-                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:ml-auto text-left">
-                        <span class="text-xs font-bold text-gold">11/2026</span>
-                        <h4 class="font-serif text-xl font-bold text-emeraldDeep mt-1">Ngày Chung Đôi</h4>
+                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:ml-auto text-left border border-[#d4b8cc]/50">
+                        <span class="text-xs font-bold text-[#8B4A62]">01/2027</span>
+                        <h4 class="font-serif text-xl font-bold text-[#8B4A62] mt-1">Ngày Chung Đôi</h4>
                         <p class="text-gray-600 text-sm mt-2 leading-relaxed">
                             Chính thức bước vào hành trình hôn nhân trước sự chứng kiến và chúc phúc của gia đình, bạn
                             bè thân thương.
                         </p>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
@@ -504,7 +520,7 @@
                             <select id="transport" onchange="toggleTransportOptions()"
                                 class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-600 text-sm bg-white">
                                 <option value="xe_khach">Xe khách cô dâu chuẩn bị</option>
-                                <option value="xe_may">Xe máy cá nhân</option>
+                                <option value="xe_may">Tự túc</option>
                             </select>
                         </div>
                     </div>
