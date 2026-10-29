@@ -26,6 +26,7 @@ function handleRSVP(event) {
     event.preventDefault();
 
     // 1. Lấy dữ liệu từ form
+    console.log("Form submitted, checking CleverTap...");
     const name = document.getElementById('guestName').value;
     const phone = document.getElementById('guestPhone').value;
     const attendance = document.getElementById('attendance').value;
