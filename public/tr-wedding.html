@@ -59,8 +59,10 @@
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
-            /* Tạo hiệu ứng gradient chuyển màu nhẹ nhàng từ hồng phấn sang trắng kem giống mẫu */
-            background: linear-gradient(135deg, #F8E1E7 0%, #F4D4DC 50%, #FAF0F2 100%);
+            /* Tạo dải gradient loang màu rõ rệt giữa hồng phấn và các vệt trắng loang lổ */
+            background: linear-gradient(135deg, #F4D4DC 0%, #FFFFFF 35%, #F7DCE3 70%, #FFFFFF 100%);
+            background-attachment: fixed;
+            background-size: 200% 200%;
             color: #33222B;
             overflow-x: hidden;
             scroll-behavior: smooth;
@@ -109,9 +111,12 @@
 
         /* Glassmorphism Card */
         .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
+            background: rgba(255, 255, 255, 0.92);
+            /* Tăng độ đục của màu trắng lên để tách biệt rõ với nền hồng */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(244, 212, 220, 0.6);
+            /* Viền hồng phấn nhẹ nhàng */
+            box-shadow: 0 10px 30px rgba(139, 74, 98, 0.08);
             margin-left: 20px;
         }
 
