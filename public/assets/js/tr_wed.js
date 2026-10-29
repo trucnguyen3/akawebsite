@@ -62,4 +62,25 @@
                 icon.className = 'fas fa-pause';
             }
             isPlaying = !isPlaying;
-        }
+}
+        
+// Hàm tự động ẩn/hiện ô SĐT và Điểm đón dựa vào lựa chọn phương tiện
+function toggleTransportOptions() {
+    const transport = document.getElementById('transport').value;
+    const busGroup = document.getElementById('busTransportGroup');
+    const phoneInput = document.getElementById('guestPhone');
+
+    if (transport === 'xe_khach') {
+        busGroup.classList.remove('hidden');
+        phoneInput.setAttribute('required', 'true'); // Bắt buộc nhập sđt nếu đi xe khách
+    } else {
+        busGroup.classList.add('hidden');
+        phoneInput.removeAttribute('required'); // Không bắt buộc nếu tự túc/xe máy
+        phoneInput.value = ''; // Reset giá trị
+    }
+}
+
+// Chạy 1 lần khi load trang để đồng bộ trạng thái ban đầu (Mặc định đang chọn xe_khach)
+document.addEventListener('DOMContentLoaded', function() {
+    toggleTransportOptions();
+});

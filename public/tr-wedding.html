@@ -461,22 +461,12 @@
             <form id="rsvpForm" onsubmit="handleRSVP(event)"
                 class="glass-card text-gray-800 p-8 rounded-3xl space-y-6 shadow-2xl">
 
-                <!-- Họ tên & Số điện thoại -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Họ và Tên
-                            Quý
-                            Khách *</label>
-                        <input type="text" id="guestName" required placeholder="Nhập họ và tên..."
-                            class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Số Điện
-                            Thoại
-                            *</label>
-                        <input type="tel" id="guestPhone" required placeholder="Nhập số điện thoại..."
-                            class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm">
-                    </div>
+                <!-- Họ tên -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Họ và Tên Quý
+                        Khách *</label>
+                    <input type="text" id="guestName" required placeholder="Nhập họ và tên..."
+                        class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm">
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -499,21 +489,31 @@
                     </div>
                 </div>
 
-                <!-- Phương tiện di chuyển & Điểm đón cố định -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Phương tiện di chuyển -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Phương tiện di
+                        chuyển</label>
+                    <select id="transport" onchange="toggleTransportOptions()"
+                        class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
+                        <option value="xe_khach">Xe khách (Dâu rể chuẩn bị)</option>
+                        <option value="xe_may">Xe máy cá nhân</option>
+                        <option value="tu_tuc">Tự túc / Phương tiện khác</option>
+                    </select>
+                </div>
+
+                <!-- Khu vực ẩn/hiện: SĐT & Điểm đón (Chỉ hiện khi chọn xe_khach) -->
+                <div id="busTransportGroup" class="grid grid-cols-1 md:grid-cols-2 gap-4 transition-all duration-300">
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Phương
-                            tiện di
-                            chuyển</label>
-                        <select id="transport"
-                            class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
-                            <option value="xe_khach">Xe khách</option>
-                            <option value="tu_tuc">Tự túc / Phương tiện cá nhân khác</option>
-                        </select>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Số Điện
+                            Thoại
+                            Liên Hệ *</label>
+                        <input type="tel" id="guestPhone" placeholder="Nhập số điện thoại..."
+                            class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Điểm
-                            đón</label>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Điểm Đón
+                            Cố
+                            Định</label>
                         <select id="pickupLocation"
                             class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
                             <option value="279 Nguyễn Tri Phương, Phường Diên Hồng, TP HCM">279 Nguyễn Tri Phương, P.
@@ -528,8 +528,8 @@
 
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Lời Chúc Hoặc
-                        Ghép
-                        Khách / Yêu Cầu Khác</label>
+                        Ghi
+                        Chú Khác</label>
                     <textarea id="guestNote" rows="3" placeholder="Nhập lời chúc hoặc lưu ý chế độ ăn uống..."
                         class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm"></textarea>
                 </div>
