@@ -1225,7 +1225,29 @@ app.get('/api/flights/my-bookings', async (req, res) => {
   }
 });
 
+app.post('/api/rsvp', async (req, res) => {
+    const { guestName, phone, attendance, guestCount, transportMethod, pickupLocation, note } = req.body;
 
+    try {
+        const query = `
+            INSERT INTO rsvp_guests (guest_name, phone, attendance, guest_count, transport_method, pickup_location, note, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+            RETURNING *;
+        `;
+        
+        const values = [guestName, phone, attendance, guestCount, transportMethod, pickupLocation, note];
+        const newRsvp = await dbPool.query(query, values);
+
+        res.status(201).json({
+            success: true,
+            message: 'RSVP submitted successfully',
+            data: newRsvp.rows[0]
+        });
+    } catch (err) {
+        console.error('Database Error:', err.message);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
 
 server.listen(port, host, () => {
     console.log(`🚀 Node.js đang chạy trên cổng ${port}:`);
