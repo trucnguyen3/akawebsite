@@ -133,6 +133,42 @@
             background-position: 0 0, 15px 15px;
             opacity: 0.3;
         }
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: #ffffff !important;
+            border: 1px solid #E5BAC5 !important;
+            border-radius: 1rem !important;
+            /* Bo tròn góc mềm mại (rounded-2xl) */
+            padding: 0.75rem 1rem !important;
+            padding-right: 2.5rem !important;
+            /* Chừa khoảng trống cho icon mũi tên */
+            font-size: 0.875rem;
+            color: #33222B;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238B4A62' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(139, 74, 98, 0.04);
+        }
+
+        /* Hiệu ứng khi bấm vào ô select */
+        select:focus {
+            outline: none !important;
+            border-color: #8B4A62 !important;
+            box-shadow: 0 0 0 3px rgba(139, 74, 98, 0.15) !important;
+        }
+
+        /* Tùy chỉnh các option bên trong khi sổ xuống (Hỗ trợ trên Chrome/Edge/Safari hiện đại) */
+        select option {
+            background-color: #FFFFFF;
+            color: #33222B;
+            padding: 12px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
