@@ -64,23 +64,38 @@
             isPlaying = !isPlaying;
 }
         
-// Hàm tự động ẩn/hiện ô SĐT và Điểm đón dựa vào lựa chọn phương tiện
+// Ẩn/hiện toàn bộ cụm trường thông tin đi lại khi chọn "Không thể tham dự"
+function toggleAttendanceFields() {
+    const attendance = document.getElementById('attendance').value;
+    const attendingFields = document.getElementById('attendingFields');
+    const phoneInput = document.getElementById('guestPhone');
+
+    if (attendance === 'no') {
+        attendingFields.classList.add('hidden');
+        phoneInput.removeAttribute('required'); // Không bắt buộc sđt nếu không đi
+    } else {
+        attendingFields.classList.remove('hidden');
+        toggleTransportOptions(); // Check lại điều kiện xe khách
+    }
+}
+
+// Ẩn/hiện ô SĐT và Điểm đón dựa vào phương tiện
 function toggleTransportOptions() {
     const transport = document.getElementById('transport').value;
     const busGroup = document.getElementById('busTransportGroup');
     const phoneInput = document.getElementById('guestPhone');
+    const attendance = document.getElementById('attendance').value;
 
-    if (transport === 'xe_khach') {
+    if (attendance === 'yes' && transport === 'xe_khach') {
         busGroup.classList.remove('hidden');
-        phoneInput.setAttribute('required', 'true'); // Bắt buộc nhập sđt nếu đi xe khách
+        phoneInput.setAttribute('required', 'true');
     } else {
         busGroup.classList.add('hidden');
-        phoneInput.removeAttribute('required'); // Không bắt buộc nếu tự túc/xe máy
-        phoneInput.value = ''; // Reset giá trị
+        phoneInput.removeAttribute('required');
     }
 }
 
-// Chạy 1 lần khi load trang để đồng bộ trạng thái ban đầu (Mặc định đang chọn xe_khach)
+// Khởi chạy trạng thái ban đầu khi load trang
 document.addEventListener('DOMContentLoaded', function() {
-    toggleTransportOptions();
+    toggleAttendanceFields();
 });

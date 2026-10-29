@@ -1,53 +1,56 @@
 async function handleRSVP(event) {
     event.preventDefault();
 
-    // 1. Lấy dữ liệu từ form
     const name = document.getElementById('guestName').value;
-    let phone = document.getElementById('guestPhone').value.trim();
     const attendance = document.getElementById('attendance').value;
-    const guestCount = parseInt(document.getElementById('guestCount').value) || 1;
-    const transport = document.getElementById('transport').value;
-    const pickupLocation = document.getElementById('pickupLocation').value;
     const note = document.getElementById('guestNote').value;
 
-    // 2. Chuẩn hóa số điện thoại (Thay số 0 ở đầu thành +84)
-    if (phone.startsWith('0')) {
-        phone = '+84' + phone.slice(1);
-    }
-
-    // 3. Đóng gói dữ liệu gửi đi
-    const payload = {
+    let payload = {
         guestName: name,
-        phone: phone,
         attendance: attendance,
-        guestCount: guestCount,
-        transportMethod: transport,
-        pickupLocation: pickupLocation,
-        note: note || ""
+        note: note
     };
 
+    // Nếu chọn tham dự thì lấy thêm thông tin phụ
+    if (attendance === 'yes') {
+        const guestCount = parseInt(document.getElementById('guestCount').value) || 1;
+        const transport = document.getElementById('transport').value;
+        let phone = document.getElementById('guestPhone').value.trim();
+        const pickupLocation = (transport === 'xe_khach') ? document.getElementById('pickupLocation').value : 'Không đi xe khách';
+
+        if (phone && phone.startsWith('0')) {
+            phone = '+84' + phone.slice(1);
+        }
+
+        payload.guestCount = guestCount;
+        payload.transportMethod = transport;
+        payload.pickupLocation = pickupLocation;
+        payload.phone = phone || 'N/A';
+    } else {
+        // Nếu không tham dự thì gán giá trị mặc định cho các trường ẩn
+        payload.guestCount = 0;
+        payload.transportMethod = 'Không tham dự';
+        payload.pickupLocation = 'Không tham dự';
+        payload.phone = 'N/A';
+    }
+
     try {
-        // Gửi request API đến backend của bạn (Thay URL bằng endpoint thực tế)
         const response = await fetch('https://uat1.akadigital.net/api/rsvp', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        const result = await response.json();
-
         if (response.ok) {
-            // 4. Hiển thị thông báo thành công và reset form
             document.getElementById('rsvpForm').reset();
+            toggleAttendanceFields();
             document.getElementById('rsvpSuccess').classList.remove('hidden');
             document.getElementById('rsvpSuccess').scrollIntoView({ behavior: 'smooth' });
         } else {
-            alert('Có lỗi xảy ra: ' + (result.message || 'Vui lòng thử lại sau.'));
+            alert('Có lỗi xảy ra, vui lòng thử lại.');
         }
     } catch (error) {
         console.error('Network Error:', error);
-        alert('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng.');
+        alert('Không thể kết nối đến máy chủ.');
     }
 }

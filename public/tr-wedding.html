@@ -461,7 +461,7 @@
             <form id="rsvpForm" onsubmit="handleRSVP(event)"
                 class="glass-card text-gray-800 p-8 rounded-3xl space-y-6 shadow-2xl">
 
-                <!-- Họ tên -->
+                <!-- Họ và Tên -->
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Họ và Tên Quý
                         Khách *</label>
@@ -469,67 +469,71 @@
                         class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm">
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Xác nhận
-                            tham
-                            dự *</label>
-                        <select id="attendance"
-                            class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
-                            <option value="yes">Sẽ tham dự cùng dâu rể</option>
-                            <option value="no">Rất tiếc không thể tham dự</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Số người
-                            đi
-                            cùng</label>
-                        <input type="number" id="guestCount" min="1" max="5" value="1"
-                            class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm">
-                    </div>
-                </div>
-
-                <!-- Phương tiện di chuyển -->
+                <!-- Xác nhận tham dự -->
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Phương tiện di
-                        chuyển</label>
-                    <select id="transport" onchange="toggleTransportOptions()"
+                    <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Xác nhận tham
+                        dự
+                        *</label>
+                    <select id="attendance" onchange="toggleAttendanceFields()"
                         class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
-                        <option value="xe_khach">Xe khách cô dâu chuẩn bị</option>
-                        <option value="xe_may">Xe máy cá nhân</option>
+                        <option value="yes">Sẽ tham dự cùng dâu rể</option>
+                        <option value="no">Rất tiếc không thể tham dự</option>
                     </select>
                 </div>
 
-                <!-- Khu vực ẩn/hiện: SĐT & Điểm đón (Chỉ hiện khi chọn xe_khach) -->
-                <div id="busTransportGroup" class="grid grid-cols-1 md:grid-cols-2 gap-4 transition-all duration-300">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Số Điện
-                            Thoại
-                            Liên Hệ *</label>
-                        <input type="tel" id="guestPhone" placeholder="Nhập số điện thoại..."
-                            class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm">
+                <!-- KHU VỰC CHỈ HIỆN KHI THAM DỰ (yes) -->
+                <div id="attendingFields" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Số
+                                người
+                                đi cùng</label>
+                            <input type="number" id="guestCount" min="1" max="5" value="1"
+                                class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Phương
+                                tiện di chuyển</label>
+                            <select id="transport" onchange="toggleTransportOptions()"
+                                class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
+                                <option value="xe_khach">Xe khách cô dâu chuẩn bị</option>
+                                <option value="xe_may">Xe máy cá nhân</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Điểm Đón
-                            Cố
-                            Định</label>
-                        <select id="pickupLocation"
-                            class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
-                            <option value="279 Nguyễn Tri Phương, Phường Diên Hồng, TP HCM">279 Nguyễn Tri Phương, P.
-                                Diên
-                                Hồng, TP.HCM</option>
-                            <option
-                                value="GF06B, Topaz2, Saigon Pearl, 92 Nguyễn Hữu Cảnh, Phường Thạnh Mỹ Tây, TP HCM">
-                                GF06B, Topaz2, Saigon Pearl, 92 Nguyễn Hữu Cảnh, P. Thạnh Mỹ Tây, TP.HCM</option>
-                        </select>
+
+                    <!-- Điểm đón & SĐT (Chỉ hiện nếu đi xe khách) -->
+                    <div id="busTransportGroup" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Số
+                                Điện
+                                Thoại Liên Hệ *</label>
+                            <input type="tel" id="guestPhone" placeholder="Nhập số điện thoại..."
+                                class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Điểm
+                                Đón
+                                Cố Định</label>
+                            <select id="pickupLocation"
+                                class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm bg-white">
+                                <option value="279 Nguyễn Tri Phương, Phường Diên Hồng, TP HCM">279 Nguyễn Tri Phương,
+                                    P.
+                                    Diên Hồng, TP.HCM</option>
+                                <option
+                                    value="GF06B, Topaz2, Saigon Pearl, 92 Nguyễn Hữu Cảnh, Phường Thạnh Mỹ Tây, TP HCM">
+                                    GF06B, Topaz2, Saigon Pearl, 92 Nguyễn Hữu Cảnh, P. Thạnh Mỹ Tây, TP.HCM</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Lời chúc / Ghi chú (Luôn hiện cho cả 2 trường hợp) -->
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Lời Chúc Hoặc
-                        Ghi
-                        Chú Khác</label>
-                    <textarea id="guestNote" rows="3" placeholder="Nhập lời chúc hoặc lưu ý chế độ ăn uống..."
+                    <label class="block text-xs font-bold uppercase tracking-wider text-emeraldDeep mb-2">Lời Chúc Đến
+                        Dâu &
+                        Rể *</label>
+                    <textarea id="guestNote" rows="3" required placeholder="Nhập lời chúc gửi đến cặp đôi..."
                         class="w-full px-4 py-3 rounded-xl border border-champagne focus:outline-none focus:ring-2 focus:ring-gold text-sm"></textarea>
                 </div>
 
