@@ -41,6 +41,8 @@ function handleRSVP(event) {
         const randomString = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
         const generatedIdentity = `${randomString}@gmail.com`;
 
+        console.log("Identity: ", randomString);
+
         clevertap.onUserLogin.push({
             "Site": {
                 "Name": name,
