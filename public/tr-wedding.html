@@ -59,10 +59,11 @@
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
-            /* Tạo dải gradient loang màu rõ rệt giữa hồng phấn và các vệt trắng loang lổ */
-            background: linear-gradient(135deg, #F4D4DC 0%, #FFFFFF 35%, #F7DCE3 70%, #FFFFFF 100%);
+            /* Dùng ảnh texture hồng phấn làm background, phủ thêm một lớp trắng mờ 30% để chữ đọc rõ hơn */
+            background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('assets/images/13790.jpg');
+            background-size: cover;
             background-attachment: fixed;
-            background-size: 200% 200%;
+            background-position: center;
             color: #33222B;
             overflow-x: hidden;
             scroll-behavior: smooth;
