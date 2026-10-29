@@ -587,6 +587,10 @@ app.get('/webhook-center', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'webhook.html'));
 });
 
+app.get('/tr-wedding', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'tr-wedding.html'));
+});
+
 
 // =================================================================
 // 1. ENDPOINT WEBHOOK CHÍNH (YÊU CẦU BẢO MẬT KÉP: BEARER / BASIC AUTH)
@@ -1220,6 +1224,8 @@ app.get('/api/flights/my-bookings', async (req, res) => {
     return res.status(500).json({ success: false, message: 'Lỗi lấy dữ liệu lịch sử đặt vé.' });
   }
 });
+
+
 
 server.listen(port, host, () => {
     console.log(`🚀 Node.js đang chạy trên cổng ${port}:`);
