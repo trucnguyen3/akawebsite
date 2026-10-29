@@ -1,12 +1,15 @@
         // COUNTDOWN TIMER LOGIC
-        const weddingDate = new Date("November 28, 2026 09:00:00").getTime();
+        const weddingDate = new Date("Dec 20, 2026 09:00:00").getTime();
 
         function updateCountdown() {
+            const countdownEl = document.getElementById("countdown");
+            if (!countdownEl) return;
+
             const now = new Date().getTime();
             const distance = weddingDate - now;
 
             if (distance < 0) {
-                document.getElementById("countdown").innerHTML = "<div class='text-gold text-2xl font-serif col-span-4'>Hôm nay là Ngày Trọng Đại!</div>";
+                countdownEl.innerHTML = "<div class='text-gold text-2xl font-serif col-span-4'>Hôm nay là Ngày Trọng Đại!</div>";
                 return;
             }
 
@@ -15,11 +18,22 @@
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            document.getElementById("days").innerText = days < 10 ? '0' + days : days;
-            document.getElementById("hours").innerText = hours < 10 ? '0' + hours : hours;
-            document.getElementById("minutes").innerText = minutes < 10 ? '0' + minutes : minutes;
-            document.getElementById("seconds").innerText = seconds < 10 ? '0' + seconds : seconds;
+            const daysEl = document.getElementById("days");
+            const hoursEl = document.getElementById("hours");
+            const minutesEl = document.getElementById("minutes");
+            const secondsEl = document.getElementById("seconds");
+
+            if (daysEl) daysEl.innerText = days < 10 ? '0' + days : days;
+            if (hoursEl) hoursEl.innerText = hours < 10 ? '0' + hours : hours;
+            if (minutesEl) minutesEl.innerText = minutes < 10 ? '0' + minutes : minutes;
+            if (secondsEl) secondsEl.innerText = seconds < 10 ? '0' + seconds : seconds;
         }
+
+        // Đợi DOM load xong rồi mới chạy đếm ngược
+        document.addEventListener("DOMContentLoaded", function() {
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        });
 
         setInterval(updateCountdown, 1000);
         updateCountdown();
