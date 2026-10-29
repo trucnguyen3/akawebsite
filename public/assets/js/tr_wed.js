@@ -1,5 +1,5 @@
         // COUNTDOWN TIMER LOGIC
-        const weddingDate = new Date("Dec 20, 2026 09:00:00").getTime();
+        const weddingDate = new Date("Jan 16, 2027 09:00:00").getTime();
 
         function updateCountdown() {
             const countdownEl = document.getElementById("countdown");
