@@ -27,7 +27,7 @@ function handleRSVP(event) {
 
     // 1. Lấy dữ liệu từ form
     const name = document.getElementById('guestName').value;
-    const phone = document.getElementById('guestPhone').value; // Dùng làm Identity chính
+    const phone = document.getElementById('guestPhone').value;
     const attendance = document.getElementById('attendance').value;
     const guestCount = parseInt(document.getElementById('guestCount').value) || 1;
     const transport = document.getElementById('transport').value;
@@ -36,22 +36,26 @@ function handleRSVP(event) {
 
     if (typeof clevertap !== 'undefined') {
         // 2. Định danh User bằng onUserLogin (Dùng số điện thoại làm Phone/Identity)
+
+        const randomString = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+        const generatedIdentity = `${randomString}@gmail.com`;
+
         clevertap.onUserLogin.push({
             "Site": {
                 "Name": name,
-                "Phone": phone, // Số điện thoại là định danh chính
-                "Identity": phone, // Đảm bảo gom đúng profile trên CleverTap
-                "Wedding RSVP": attendance === 'yes' ? 'Attending' : 'Not Attending',
-                "Transport Method": transport,
-                "Pickup Location": pickupLocation
+                "Phone": phone,
+                "Email": generatedIdentity,
+                "Identity": randomString,
+                "MSG-email": true,
+                "MSG-push": true,
+                "MSG-sms": false,
+                "MSG-whatsapp": false
             }
         });
 
         // 3. Gửi Event RSVP ngay sau khi login
         const eventName = "Wedding RSVP Submitted";
         const eventProps = {
-            "Guest Name": name,
-            "Phone": phone,
             "Attendance Status": attendance,
             "Guest Count": guestCount,
             "Transport Method": transport,
