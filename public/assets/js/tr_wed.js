@@ -99,3 +99,47 @@ function toggleTransportOptions() {
 document.addEventListener('DOMContentLoaded', function() {
     toggleAttendanceFields();
 });
+
+// Bật/tắt menu sổ xuống
+function toggleCustomSelect(wrapperId) {
+    const targetWrapper = document.getElementById(wrapperId);
+    const isOpen = targetWrapper.classList.contains('open');
+    
+    // Đóng tất cả các dropdown khác đang mở
+    document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+    
+    if (!isOpen) {
+        targetWrapper.classList.add('open');
+    }
+}
+
+// Xử lý khi người dùng chọn 1 option
+function selectOption(fieldKey, value, textLabel, element) {
+    // 1. Cập nhật value cho hidden input
+    document.getElementById(fieldKey === 'pickup' ? 'pickupLocation' : fieldKey).value = value;
+    
+    // 2. Cập nhật label hiển thị
+    document.getElementById(`label-${fieldKey}`).innerText = textLabel;
+    
+    // 3. Đổi trạng thái active/selected cho option
+    const optionsContainer = element.parentElement;
+    optionsContainer.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+    element.classList.add('selected');
+    
+    // 4. Đóng menu
+    element.closest('.custom-select-wrapper').classList.remove('open');
+    
+    // 5. Trigger lại logic ẩn/hiện form của bạn
+    if (fieldKey === 'attendance') {
+        toggleAttendanceFields();
+    } else if (fieldKey === 'transport') {
+        toggleTransportOptions();
+    }
+}
+
+// Tự động đóng dropdown khi click ra ngoài màn hình
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+    }
+});
