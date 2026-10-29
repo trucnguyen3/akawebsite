@@ -35,6 +35,12 @@ function handleRSVP(event) {
     const pickupLocation = document.getElementById('pickupLocation').value;
     const note = document.getElementById('guestNote').value;
 
+    if (phone.startsWith('0')) {
+        phone = '+84' + phone.slice(1); 
+    }
+
+    console.log("Phone: ", phone);
+
     if (typeof clevertap !== 'undefined') {
         // 2. Định danh User bằng onUserLogin (Dùng số điện thoại làm Phone/Identity)
 
