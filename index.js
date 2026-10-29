@@ -591,6 +591,10 @@ app.get('/tr-wedding', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'tr-wedding.html'));
 });
 
+app.get('/guest-list', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'guest-list.html'));
+});
+
 
 // =================================================================
 // 1. ENDPOINT WEBHOOK CHÍNH (YÊU CẦU BẢO MẬT KÉP: BEARER / BASIC AUTH)
