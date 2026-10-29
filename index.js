@@ -1260,7 +1260,7 @@ app.get('/api/rsvp-list', async (req, res) => {
             SELECT * FROM rsvp_guests 
             ORDER BY created_at DESC;
         `;
-        const result = await pool.query(query);
+        const result = await dbPool.query(query);
 
         res.status(200).json({
             success: true,
