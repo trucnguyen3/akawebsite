@@ -27,13 +27,13 @@ function handleRSVP(event) {
 
     // 1. Lấy dữ liệu từ form
     console.log("Form submitted, checking CleverTap...");
-    const name = document.getElementById('guestName').value;
-    const phone = document.getElementById('guestPhone').value;
-    const attendance = document.getElementById('attendance').value;
-    const guestCount = parseInt(document.getElementById('guestCount').value) || 1;
-    const transport = document.getElementById('transport').value;
-    const pickupLocation = document.getElementById('pickupLocation').value;
-    const note = document.getElementById('guestNote').value;
+    let name = document.getElementById('guestName').value;
+    let phone = document.getElementById('guestPhone').value;
+    let attendance = document.getElementById('attendance').value;
+    let guestCount = parseInt(document.getElementById('guestCount').value) || 1;
+    let transport = document.getElementById('transport').value;
+    let pickupLocation = document.getElementById('pickupLocation').value;
+    let note = document.getElementById('guestNote').value;
 
     if (phone.startsWith('0')) {
         phone = '+84' + phone.slice(1); 
@@ -44,8 +44,8 @@ function handleRSVP(event) {
     if (typeof clevertap !== 'undefined') {
         // 2. Định danh User bằng onUserLogin (Dùng số điện thoại làm Phone/Identity)
 
-        const randomString = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-        const generatedIdentity = `${randomString}@gmail.com`;
+        let randomString = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+        let generatedIdentity = `${randomString}@gmail.com`;
 
         console.log("Identity: ", randomString);
 
@@ -63,8 +63,8 @@ function handleRSVP(event) {
         });
 
         // 3. Gửi Event RSVP ngay sau khi login
-        const eventName = "Wedding RSVP Submitted";
-        const eventProps = {
+        let eventName = "Wedding RSVP Submitted";
+        let eventProps = {
             "Attendance Status": attendance,
             "Guest Count": guestCount,
             "Transport Method": transport,
