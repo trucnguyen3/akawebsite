@@ -25,37 +25,43 @@ function openWeddingInvitation() {
         });
     }
 
-    // 4. CHỜ 2 CÁNH THIỆP MỞ XONG HẲN (1000ms), sau đó BẮT ĐẦU TỰ ĐỘNG LĂN MƯỢT MÀ
+    // 4. CHỜ 2 CÁNH THIỆP MỞ XONG HẲN (1000ms), sau đó BẮT ĐẦU TỰ ĐỘNG LĂN
     setTimeout(() => {
         startAutoScrollToFooter();
-    }, 1050);
+    }, 1100);
 
     // 5. Ẩn hẳn lớp phủ phong bì
     setTimeout(() => {
         envelope.classList.add('open-done');
-    }, 1100);
+    }, 1200);
 }
 
-// Hàm chạy tự động lăn sử dụng requestAnimationFrame (cực kỳ mượt và chắc chắn chạy)
+// Hàm tự động lăn bằng tọa độ tuyệt đối (Cực kỳ mạnh và chắc chắn chạy)
 function startAutoScrollToFooter() {
     isAutoScrolling = true;
     const btnIcon = document.getElementById('scrollIcon');
     if (btnIcon) btnIcon.className = "fas fa-pause text-xs";
 
-    // Hủy animation cũ nếu đang chạy
     if (scrollAnimationId) cancelAnimationFrame(scrollAnimationId);
 
+    // Lấy vị trí cuộn hiện tại
+    let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
     function step() {
-        // Nếu người dùng chủ động lăn chuột hoặc đã tới gần cuối trang thì dừng lại
+        if (!isAutoScrolling) return;
+
+        // Tăng tọa độ lên 2 pixel mỗi khung hình (tăng số này nếu muốn lăn nhanh hơn)
+        currentScroll += 2;
+        window.scrollTo(0, currentScroll);
+
+        // Tính toán điểm dừng khi đã tới gần đáy trang
         const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        if (!isAutoScrolling || window.scrollY >= maxScroll - 10) {
+        
+        if (currentScroll >= maxScroll || (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 5) {
             stopAutoScroll();
             return;
         }
 
-        // Tốc độ lăn (tăng số 1.2 lên nếu muốn lăn nhanh hơn, giảm xuống nếu muốn lăn chậm)
-        window.scrollBy({ top: 1.2, behavior: 'linear' });
-        
         scrollAnimationId = requestAnimationFrame(step);
     }
 
@@ -82,14 +88,9 @@ function toggleAutoScroll() {
     }
 }
 
-// Nếu người dùng chạm/lăn chuột tay vào màn hình thì tự động ngắt chế độ auto-scroll để tránh kẹt tay
-window.addEventListener('wheel', () => {
-    if (isAutoScrolling) stopAutoScroll();
-}, { passive: true });
-
-window.addEventListener('touchstart', () => {
-    if (isAutoScrolling) stopAutoScroll();
-}, { passive: true });
+// Ngắt tự động lăn ngay khi người dùng chạm tay hoặc lăn chuột
+window.addEventListener('wheel', () => { if (isAutoScrolling) stopAutoScroll(); }, { passive: true });
+window.addEventListener('touchstart', () => { if (isAutoScrolling) stopAutoScroll(); }, { passive: true });
 
 // Hàm bật/tắt nhạc thủ công
 function toggleAudio() {
