@@ -110,3 +110,57 @@
         box-shadow: 0 15px 30px rgba(139, 74, 98, 0.35);
     }
 }
+
+/* --- CSS RIÊNG CHO CÁC ITEM NẰM BÊN PHẢI (XÒE SANG BÊN TRÁI TRÊN DESKTOP) --- */
+@media (min-width: 768px) {
+
+    /* Đặt vị trí container sang lề bên trái của card */
+    .glass-card.fan-left-side .fan-gallery-container {
+        top: 50%;
+        left: -130px;
+        right: auto;
+        transform: translateY(-50%);
+        width: 160px;
+        height: 200px;
+    }
+
+    .glass-card.fan-left-side.fan-active .fan-gallery-container {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        left: -160px;
+        /* Đẩy xòe sang trái đẹp mắt */
+    }
+
+    .glass-card.fan-left-side .fan-image {
+        top: 50%;
+        right: 0;
+        left: auto;
+        margin-top: -67px;
+        transform-origin: right center;
+        /* Trục xoay nằm bên phải ảnh */
+    }
+
+    /* Hiệu ứng xòe quạt ngang sang bên trái */
+    .glass-card.fan-left-side.fan-active .fan-image:nth-child(1) {
+        transform: rotate(16deg) translateX(-10px) translateY(-35px) scale(0.95);
+        z-index: 1;
+    }
+
+    .glass-card.fan-left-side.fan-active .fan-image:nth-child(2) {
+        transform: rotate(0deg) translateX(-35px) translateY(0) scale(1.05);
+        z-index: 3;
+    }
+
+    .glass-card.fan-left-side.fan-active .fan-image:nth-child(3) {
+        transform: rotate(-16deg) translateX(-10px) translateY(35px) scale(0.95);
+        z-index: 2;
+    }
+
+    /* Hover ảnh xòe sang trái trên Desktop */
+    .glass-card.fan-left-side.fan-active .fan-image:hover {
+        transform: scale(1.2) translateX(-45px) !important;
+        z-index: 10 !important;
+        box-shadow: 0 15px 30px rgba(139, 74, 98, 0.35);
+    }
+}

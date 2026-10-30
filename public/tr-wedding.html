@@ -265,17 +265,19 @@
                 <!-- Timeline Item 2 -->
                 <div class="relative pl-8 md:pl-0 md:flex items-center group">
                     <div
-                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow">
+                        class="absolute -left-3 top-1 md:left-auto md:right-[-12px] w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow z-10">
                         <i class="fas fa-coffee"></i>
                     </div>
-                    <div class="glass-card relative p-6 pt-10 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left border border-[#d4b8cc]/50 cursor-pointer"
+
+                    <!-- Thêm class fan-left-side để ảnh xòe sang bên trái trên Desktop -->
+                    <div class="glass-card fan-left-side relative p-6 pt-10 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:ml-auto text-left border border-[#d4b8cc]/50 cursor-pointer"
                         onclick="toggleFan(this, event)">
 
-                        <!-- CỤM 3 TẤM HÌNH NẰM ĐÈ LÊN TRÊN CARD -->
+                        <!-- CỤM 3 TẤM HÌNH (Sẽ tự động nằm bên TRÁI trên Desktop) -->
                         <div class="fan-gallery-container">
-                            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800"
-                                alt="Kỷ niệm 1" class="fan-image" onclick="zoomImage(this, event)">
                             <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800"
+                                alt="Kỷ niệm 1" class="fan-image" onclick="zoomImage(this, event)">
+                            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800"
                                 alt="Kỷ niệm 2" class="fan-image" onclick="zoomImage(this, event)">
                             <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=800"
                                 alt="Kỷ niệm 3" class="fan-image" onclick="zoomImage(this, event)">
@@ -285,8 +287,15 @@
                         <h4 class="font-serif text-xl font-bold text-[#8B4A62] mt-1">Chuyến Đi Đầu Tiên</h4>
                         <p class="text-gray-600 text-sm mt-2 leading-relaxed">
                             Cùng nhau chinh phục Đà Lạt mộng mơ. Những bước chân song hành qua từng đồi thông đã kéo hai
-                            tâm hồn lại gần nhau hơn.
+                            tâm hồn lại gần
+                            nhau hơn.
                         </p>
+
+                        <div class="text-center mt-3 pt-2 border-t border-[#d4b8cc]/30">
+                            <span class="text-[11px] text-[#8B4A62] italic font-medium"><i
+                                    class="fas fa-hand-pointer mr-1"></i> Bấm để
+                                xem khoảnh khắc</span>
+                        </div>
                     </div>
                 </div>
 
