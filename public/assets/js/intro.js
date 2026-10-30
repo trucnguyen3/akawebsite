@@ -33,7 +33,7 @@ function openWeddingInvitation() {
     // 5. Ẩn hẳn lớp phủ phong bì
     setTimeout(() => {
         envelope.classList.add('open-done');
-    }, 50);
+    }, 100);
 }
 
 // Hàm tự động lăn bằng tọa độ tuyệt đối (Cực kỳ mạnh và chắc chắn chạy)
