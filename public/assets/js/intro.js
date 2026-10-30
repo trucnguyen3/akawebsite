@@ -11,7 +11,7 @@ function openWeddingInvitation() {
     // 1. Kích hoạt hiệu ứng mở 2 cánh thiệp
     envelope.classList.add('opening');
     
-    // 2. Mở khóa cuộn trang NGAY LẬP TỨC
+    // 2. Mở khóa cuộn trang ngay lập tức
     document.body.classList.remove('envelope-locked');
 
     // 3. Tự động phát nhạc
@@ -25,27 +25,32 @@ function openWeddingInvitation() {
         });
     }
 
-    // 4. FIX LỖI TỰ ĐỘNG TRƯỢT: Đợi 700ms cho hiệu ứng mở cửa mượt rồi mới scroll
+    // 4. CHỜ 2 CÁNH THIỆP MỞ XONG HẲN (1000ms) rồi mới thực hiện tự động trượt mượt mà xuống dưới
     setTimeout(() => {
+        // Tìm section nội dung chính (bạn có thể thay #story bằng ID của section đầu tiên trên web của bạn)
         const targetSection = document.getElementById('story') || document.getElementById('couple') || document.querySelector('section');
         
         if (targetSection) {
-            targetSection.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start' 
+            // Lấy tọa độ chính xác của section đó so với đỉnh trang
+            const targetPosition = targetSection.getBoundingClientRect().top + window.pageYOffset;
+            
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
             });
         } else {
-            window.scrollBy({ 
-                top: window.innerHeight * 0.9, 
-                behavior: 'smooth' 
+            // Nếu không tìm thấy ID, mặc định trượt xuống đúng 1 màn hình rưỡi
+            window.scrollTo({
+                top: window.innerHeight * 0.9,
+                behavior: 'smooth'
             });
         }
-    }, 700);
+    }, 1050); // Chờ đúng 1.05 giây (sau khi hiệu ứng trượt cửa kết thúc)
 
-    // 5. Ẩn hẳn lớp phủ phong bì sau khi hoàn tất animation (1 giây)
+    // 5. Ẩn hẳn lớp phủ phong bì
     setTimeout(() => {
         envelope.classList.add('open-done');
-    }, 1000);
+    }, 1100);
 }
 
 // Hàm bật/tắt Auto-Scroll khi bấm nút mũi tên ở góc màn hình
