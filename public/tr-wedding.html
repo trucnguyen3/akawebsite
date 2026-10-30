@@ -263,68 +263,86 @@
             font-weight: 600;
         }
 
-        /* Ban đầu khung chứa ảnh ẩn hoàn toàn */
+        /* Container chứa 3 hình xòe quạt (NỔI BÊN TRÊN glass-card) */
         .fan-gallery-container {
-            position: relative;
-            width: 100%;
-            height: 0;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 0;
+            position: absolute;
+            top: -30px;
+            /* Nhô lên trên viền trên của card */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 160px;
+            pointer-events: none;
+            /* Tránh cản trở click vào card khi đang ẩn */
+            z-index: 30;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Định dạng chung cho từng tấm ảnh */
-        .fan-image {
-            position: absolute;
-            width: 105px;
-            height: 135px;
-            object-fit: cover;
-            border-radius: 0.75rem;
-            border: 3px solid #ffffff;
-            box-shadow: 0 8px 20px rgba(139, 74, 98, 0.15);
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            transform-origin: bottom center;
-            transform: rotate(0deg) translateY(20px) scale(0.8);
-            opacity: 0;
         }
 
-        /* KHI BẤM VÀO CARD (Kích hoạt class fan-active): Khung mở ra và ảnh xòe quạt */
-        .fan-gallery-container.fan-active {
-            height: 160px;
-            margin-top: 1rem;
+        /* KHI CARD ĐƯỢC BẤM (ACTIVE): Hiện khung ảnh xòe quạt nổi lên trên */
+        .glass-card.fan-active .fan-gallery-container {
             opacity: 1;
             visibility: visible;
+            pointer-events: auto;
+            top: -50px;
+            /* Đẩy nhẹ lên trên tạo hiệu ứng nổi */
         }
 
-        .fan-gallery-container.fan-active .fan-image {
-            opacity: 1;
+        /* Định dạng từng tấm hình */
+        .fan-image {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 100px;
+            height: 130px;
+            margin-left: -50px;
+            object-fit: cover;
+            border-radius: 0.85rem;
+            border: 3px solid #ffffff;
+            box-shadow: 0 10px 25px rgba(139, 74, 98, 0.25);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: bottom center;
+            cursor: pointer;
         }
 
-        .fan-gallery-container.fan-active .fan-image:nth-child(1) {
-            transform: rotate(-18deg) translateX(-42px) translateY(0) scale(1);
+        /* Trạng thái ban đầu chập vào nhau */
+        .fan-image:nth-child(1) {
+            transform: rotate(0deg) scale(0.8);
             z-index: 1;
         }
 
-        .fan-gallery-container.fan-active .fan-image:nth-child(2) {
-            transform: rotate(0deg) translateX(0) translateY(-8px) scale(1.05);
-            z-index: 3;
-        }
-
-        .fan-gallery-container.fan-active .fan-image:nth-child(3) {
-            transform: rotate(18deg) translateX(42px) translateY(0) scale(1);
+        .fan-image:nth-child(2) {
+            transform: rotate(0deg) scale(0.85);
             z-index: 2;
         }
 
-        /* Hiệu ứng phóng to khi rê chuột vào từng ảnh đã xòe */
-        .fan-gallery-container.fan-active .fan-image:hover {
-            transform: scale(1.15) translateY(-15px) !important;
+        .fan-image:nth-child(3) {
+            transform: rotate(0deg) scale(0.8);
+            z-index: 1;
+        }
+
+        /* Trạng thái XÒE QUẠT khi active */
+        .glass-card.fan-active .fan-image:nth-child(1) {
+            transform: rotate(-22deg) translateX(-45px) translateY(-5px) scale(1);
+            z-index: 1;
+        }
+
+        .glass-card.fan-active .fan-image:nth-child(2) {
+            transform: rotate(0deg) translateX(0) translateY(-15px) scale(1.08);
+            z-index: 3;
+        }
+
+        .glass-card.fan-active .fan-image:nth-child(3) {
+            transform: rotate(22deg) translateX(45px) translateY(-5px) scale(1);
+            z-index: 2;
+        }
+
+        /* Hiệu ứng hover lên từng tấm hình đã xòe */
+        .glass-card.fan-active .fan-image:hover {
+            transform: scale(1.2) translateY(-25px) !important;
             z-index: 10 !important;
-            box-shadow: 0 12px 25px rgba(139, 74, 98, 0.3);
+            box-shadow: 0 15px 30px rgba(139, 74, 98, 0.35);
         }
     </style>
 </head>
@@ -494,12 +512,24 @@
                 <!-- Timeline Item 1 -->
                 <div class="relative pl-8 md:pl-0 md:flex items-center group">
                     <div
-                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow">
+                        class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow z-10">
                         <i class="fas fa-heart"></i>
                     </div>
 
-                    <div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left border border-[#d4b8cc]/50 cursor-pointer"
-                        onclick="toggleFan(this)">
+                    <!-- Glass Card với position relative để chứa ảnh đè lên trên -->
+                    <div class="glass-card relative p-6 pt-10 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left border border-[#d4b8cc]/50 cursor-pointer"
+                        onclick="toggleFan(this, event)">
+
+                        <!-- CỤM 3 TẤM HÌNH NẰM ĐÈ LÊN TRÊN CARD -->
+                        <div class="fan-gallery-container">
+                            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800"
+                                alt="Kỷ niệm 1" class="fan-image" onclick="zoomImage(this, event)">
+                            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800"
+                                alt="Kỷ niệm 2" class="fan-image" onclick="zoomImage(this, event)">
+                            <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=800"
+                                alt="Kỷ niệm 3" class="fan-image" onclick="zoomImage(this, event)">
+                        </div>
+
                         <span class="text-xs font-bold text-[#8B4A62]">10/2021</span>
                         <h4 class="font-serif text-xl font-bold text-[#8B4A62] mt-1">Lần Đầu Gặp Mặt</h4>
                         <p class="text-gray-600 text-sm mt-2 leading-relaxed">
@@ -508,20 +538,10 @@
                             ngọt ngào.
                         </p>
 
-                        <!-- Ban đầu phần này hoàn toàn ẩn đi -->
-                        <div class="fan-gallery-container">
-                            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=400"
-                                alt="Kỷ niệm 1" class="fan-image">
-                            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=400"
-                                alt="Kỷ niệm 2" class="fan-image">
-                            <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=400"
-                                alt="Kỷ niệm 3" class="fan-image">
-                        </div>
-
-                        <div class="text-center mt-2">
+                        <div class="text-center mt-3 pt-2 border-t border-[#d4b8cc]/30">
                             <span class="text-[11px] text-[#8B4A62] italic font-medium"><i
-                                    class="fas fa-hand-pointer mr-1"></i> Chạm để
-                                xem khoảnh khắc</span>
+                                    class="fas fa-hand-pointer mr-1"></i> Bấm để
+                                xem album ảnh</span>
                         </div>
                     </div>
                 </div>
@@ -870,6 +890,16 @@
             </div>
         </div>
     </section>
+
+    <!-- LIGHTBOX MODAL PHÓNG TO ẢNH -->
+    <div id="lightbox" class="fixed inset-0 z-50 bg-black/90 hidden flex items-center justify-center p-4 transition-all"
+        onclick="closeLightbox()">
+        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white text-3xl hover:text-[#d4b8cc]">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="lightboxImg" src="" alt="Enlarged Photo"
+            class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border-2 border-white/20">
+    </div>
 
     <!-- FOOTER -->
     <footer class="py-12 bg-emeraldDeep text-white text-center relative z-10 border-t border-gold/30">

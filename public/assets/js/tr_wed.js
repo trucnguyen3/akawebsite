@@ -144,19 +144,39 @@ document.addEventListener('click', function(e) {
     }
 });
 
-function toggleFan(cardElement) {
-    const fanContainer = cardElement.querySelector('.fan-gallery-container');
-    if (!fanContainer) return;
+function toggleFan(cardElement, event) {
+    // Nếu bấm trúng tấm ảnh thì không đóng/mở quạt nữa
+    if (event.target.classList.contains('fan-image')) return;
 
-    const isOpen = fanContainer.classList.contains('fan-active');
+    const isOpen = cardElement.classList.contains('fan-active');
 
-    // Đóng tất cả các card khác nếu muốn mỗi thời điểm chỉ mở 1 card
-    document.querySelectorAll('.fan-gallery-container').forEach(container => {
-        container.classList.remove('fan-active');
-    });
+    // Đóng tất cả các card đang xòe khác
+    document.querySelectorAll('.glass-card').forEach(card => card.classList.remove('fan-active'));
 
-    // Nếu card này chưa mở thì bật lên
+    // Mở card hiện tại nếu chưa mở
     if (!isOpen) {
-        fanContainer.classList.add('fan-active');
+        cardElement.classList.add('fan-active');
+    }
+}
+
+// Bấm vào từng tấm ảnh trong quạt xòe để phóng to (Lightbox)
+function zoomImage(imgElement, event) {
+    event.stopPropagation(); // Ngăn sự kiện click lan ra ngoài card
+    
+    const imgSrc = imgElement.getAttribute('src');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+
+    if (lightbox && lightboxImg) {
+        lightboxImg.src = imgSrc;
+        lightbox.classList.remove('hidden');
+    }
+}
+
+// Đóng khung phóng to ảnh
+function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox) {
+        lightbox.classList.add('hidden');
     }
 }
