@@ -1,7 +1,7 @@
         body {
             font-family: 'Montserrat', sans-serif;
             /* Dùng ảnh texture hồng phấn làm background, phủ thêm một lớp trắng mờ 30% để chữ đọc rõ hơn */
-            background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('assets/images/13790.jpg');
+            background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('../images/13790.jpg');
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
