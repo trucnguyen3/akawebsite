@@ -262,6 +262,78 @@
             color: #8B4A62;
             font-weight: 600;
         }
+
+        /* Container chứa 3 tấm hình xòe */
+        .fan-gallery-container {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            /* Chiều cao vùng hiển thị ảnh */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 1rem;
+            cursor: pointer;
+        }
+
+        /* Định dạng chung cho từng tấm ảnh trong quạt */
+        .fan-image {
+            position: absolute;
+            width: 110px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 0.75rem;
+            border: 3px solid #ffffff;
+            box-shadow: 0 8px 20px rgba(139, 74, 98, 0.15);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: bottom center;
+            /* Trục xoay nằm ở góc dưới tâm ảnh */
+        }
+
+        /* Trạng thái mặc định (Chập vào nhau hoặc thu gọn nhẹ) */
+        .fan-gallery-container .fan-image:nth-child(1) {
+            transform: rotate(0deg) translateY(0) scale(0.9);
+            opacity: 0.8;
+            z-index: 1;
+        }
+
+        .fan-gallery-container .fan-image:nth-child(2) {
+            transform: rotate(0deg) translateY(0) scale(0.95);
+            opacity: 0.9;
+            z-index: 2;
+        }
+
+        .fan-gallery-container .fan-image:nth-child(3) {
+            transform: rotate(0deg) translateY(0) scale(0.9);
+            opacity: 0.8;
+            z-index: 1;
+        }
+
+        /* TRẠNG THÁI XÒE (Khi card có class 'fan-active') */
+        .fan-gallery-container.fan-active .fan-image:nth-child(1) {
+            transform: rotate(-18deg) translateX(-45px) translateY(-5px);
+            /* Ảnh trái: Xoay -18 độ, dịch trái */
+            z-index: 1;
+        }
+
+        .fan-gallery-container.fan-active .fan-image:nth-child(2) {
+            transform: rotate(0deg) translateX(0) translateY(-12px) scale(1.05);
+            /* Ảnh giữa: Đứng thẳng, nhô lên cao hơn chút */
+            z-index: 3;
+        }
+
+        .fan-gallery-container.fan-active .fan-image:nth-child(3) {
+            transform: rotate(18deg) translateX(45px) translateY(-5px);
+            /* Ảnh phải: Xoay +18 độ, dịch phải */
+            z-index: 2;
+        }
+
+        /* Thêm hiệu ứng hover nhẹ khi rê chuột vào từng ảnh xòe */
+        .fan-gallery-container.fan-active .fan-image:hover {
+            transform: scale(1.15) translateY(-20px) !important;
+            z-index: 10 !important;
+            box-shadow: 0 12px 25px rgba(139, 74, 98, 0.3);
+        }
     </style>
 </head>
 
@@ -429,19 +501,36 @@
 
                 <!-- Timeline Item 1 -->
                 <div class="relative pl-8 md:pl-0 md:flex items-center group">
-                    <!-- Icon hình tròn màu hồng mận #8B4A62 -->
                     <div
                         class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow">
                         <i class="fas fa-heart"></i>
                     </div>
-                    <div
-                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left border border-[#d4b8cc]/50">
+
+                    <!-- Thêm onclick="toggleFan(this)" để kích hoạt xòe ảnh khi bấm vào card -->
+                    <div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left border border-[#d4b8cc]/50 cursor-pointer"
+                        onclick="toggleFan(this)">
                         <span class="text-xs font-bold text-[#8B4A62]">10/2021</span>
                         <h4 class="font-serif text-xl font-bold text-[#8B4A62] mt-1">Lần Đầu Gặp Mặt</h4>
                         <p class="text-gray-600 text-sm mt-2 leading-relaxed">
                             Một buổi chiều thu tại quán cà phê quen thuộc. Ánh mắt đầu tiên chạm nhau đã mở ra khởi đầu
-                            cho chuỗi ngày ngọt ngào.
+                            cho chuỗi ngày
+                            ngọt ngào.
                         </p>
+
+                        <!-- KHU VỰC 3 TẤM HÌNH XÒE QUẬT -->
+                        <div class="fan-gallery-container">
+                            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=400"
+                                alt="Kỷ niệm 1" class="fan-image">
+                            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=400"
+                                alt="Kỷ niệm 2" class="fan-image">
+                            <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=400"
+                                alt="Kỷ niệm 3" class="fan-image">
+                        </div>
+                        <div class="text-center mt-2">
+                            <span class="text-[11px] text-[#8B4A62] italic font-medium"><i
+                                    class="fas fa-hand-pointer mr-1"></i> Bấm để
+                                xem khoảnh khắc</span>
+                        </div>
                     </div>
                 </div>
 
