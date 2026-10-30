@@ -1,14 +1,30 @@
-/* Hiệu ứng khi thiệp đã được mở xong */
-#introEnvelope.fade-out {
-    opacity: 0;
-    pointer-events: none;
-    visibility: hidden;
-}
-
-/* Khóa cuộn trang khi chưa mở thiệp */
+/* Khóa cuộn trang khi màn hình mở thiệp đang hiển thị */
 body.envelope-locked {
     overflow: hidden;
     height: 100vh;
+}
+
+/* Hiệu ứng khi bấm Mở Thiệp: Cánh trái trượt sang trái, cánh phải trượt sang phải */
+#introEnvelope.opening .door-left {
+    transform: translateX(-100%);
+}
+
+#introEnvelope.opening .door-right {
+    transform: translateX(100%);
+}
+
+/* Hiệu ứng mờ dần và thu nhỏ nội dung ở giữa khi mở */
+#introEnvelope.opening #envelopeContent {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+}
+
+/* Ẩn hẳn container sau khi hiệu ứng trượt hoàn tất */
+#introEnvelope.open-done {
+    visibility: hidden;
+    pointer-events: none;
+    transition: visibility 0s 1s;
 }
         
         body {

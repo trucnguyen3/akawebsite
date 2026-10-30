@@ -66,16 +66,31 @@
 </head>
 
 <body class="relative">
-    <!-- MÀN HÌNH MỞ THIỆP (ENVELOPE OPENING OVERLAY) -->
+    <!-- MÀN HÌNH MỞ THIỆP 2 CÁNH (SPLIT ENVELOPE OVERLAY) -->
     <div id="introEnvelope"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-[#FDFBF7] transition-opacity duration-1000">
-        <div class="text-center p-8 max-w-sm w-full mx-4 cursor-pointer" onclick="openWeddingInvitation()">
+        class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#8B4A62]/10 backdrop-blur-sm">
 
-            <!-- Hộp thiệp/Phong bì thiết kế theo màu Mauve & Berry -->
+        <!-- Cánh cửa bên Trái -->
+        <div
+            class="envelope-door door-left absolute top-0 left-0 w-1/2 h-full bg-[#FDFBF7] border-r border-[#E5BAC5] shadow-2xl z-20 flex items-center justify-end transition-transform duration-1000 ease-in-out">
             <div
-                class="relative bg-white border-2 border-[#E5BAC5] rounded-3xl p-8 shadow-2xl transition-all duration-700 transform hover:scale-105 group">
+                class="absolute right-[-35px] top-1/2 -translate-y-1/2 text-[#8B4A62] font-cursive text-4xl opacity-30 select-none pointer-events-none hidden md:block">
+                Truc & Anh</div>
+        </div>
 
-                <!-- Huy hiệu niêm phong sáp/trái tim -->
+        <!-- Cánh cửa bên Phải -->
+        <div
+            class="envelope-door door-right absolute top-0 right-0 w-1/2 h-full bg-[#FDFBF7] border-l border-[#E5BAC5] shadow-2xl z-20 flex items-center justify-start transition-transform duration-1000 ease-in-out">
+        </div>
+
+        <!-- Hộp thiệp & Nút mở ở chính giữa -->
+        <div id="envelopeContent"
+            class="relative z-30 text-center p-8 max-w-sm w-full mx-4 transition-all duration-500 cursor-pointer"
+            onclick="openWeddingInvitation()">
+            <div
+                class="relative bg-white border-2 border-[#E5BAC5] rounded-3xl p-8 shadow-2xl transition-all duration-500 hover:scale-105 group">
+
+                <!-- Huy hiệu trái tim sáp -->
                 <div
                     class="w-16 h-16 bg-[#8B4A62] text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-md border-4 border-[#FDFBF7] group-hover:rotate-12 transition-transform duration-300">
                     <i class="fas fa-heart text-2xl"></i>
@@ -86,7 +101,6 @@
                 <h2 class="font-cursive text-4xl text-[#8B4A62] mb-3">Truc & Anh</h2>
                 <p class="text-gray-500 text-xs italic mb-6">Trân trọng kính mời quý khách đến chung vui</p>
 
-                <!-- Nút Mở Thiệp -->
                 <button
                     class="bg-[#8B4A62] hover:bg-[#733c51] text-white text-xs font-bold uppercase tracking-wider py-3 px-8 rounded-full shadow-lg transition duration-300 flex items-center justify-center gap-2 mx-auto">
                     <i class="fas fa-envelope-open-text"></i> Mở Thiệp Ngay

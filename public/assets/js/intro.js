@@ -1,17 +1,18 @@
-// Khóa cuộn trang khi vừa vào web
+// Khóa cuộn ngay khi tải trang
 document.body.classList.add('envelope-locked');
 
 function openWeddingInvitation() {
     const envelope = document.getElementById('introEnvelope');
-    if (!envelope) return;
+    if (!envelope || envelope.classList.contains('opening')) return;
 
-    // 1. Thêm class fade out để làm mờ phong bì
-    envelope.classList.add('fade-out');
-
-    // 2. Mở khóa cuộn trang cho website bên dưới
+    // Kích hoạt class opening để 2 cánh trượt ra 2 bên
+    envelope.classList.add('opening');
+    
+    // Mở khóa cuộn trang cho web bên dưới
     document.body.classList.remove('envelope-locked');
 
-    // (Tùy chọn) Nếu bạn có nhạc nền (BGM) cho website, có thể kích hoạt phát nhạc ngay tại đây:
-    // const bgMusic = document.getElementById('bgMusic');
-    // if (bgMusic) bgMusic.play().catch(e => console.log("Autoplay blocked"));
+    // Sau 1 giây (đúng bằng thời gian animation trượt), ẩn hẳn lớp phủ đi
+    setTimeout(() => {
+        envelope.classList.add('open-done');
+    }, 1000);
 }
