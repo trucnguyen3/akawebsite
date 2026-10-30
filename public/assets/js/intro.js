@@ -1,4 +1,7 @@
-// Khóa cuộn ngay khi tải trang
+let isAutoScrolling = false;
+let scrollInterval;
+
+// Khóa cuộn trang khi vừa vào web
 document.body.classList.add('envelope-locked');
 
 function openWeddingInvitation() {
@@ -11,9 +14,22 @@ function openWeddingInvitation() {
     // 2. Mở khóa cuộn trang
     document.body.classList.remove('envelope-locked');
 
-    // 3. Sau 600ms (khi cửa đang mở ra), tự động trượt mượt mà xuống phần nội dung chính
+    // 3. TỰ ĐỘNG PHÁT NHẠC (Do người dùng vừa bấm click mở thiệp nên trình duyệt sẽ cho phép phát)
+    const audio = document.getElementById('weddingAudio');
+    const musicIcon = document.getElementById('musicIcon');
+    if (audio) {
+        audio.play().then(() => {
+            if (musicIcon) {
+                musicIcon.className = "fas fa-compact-disc fa-spin"; // Đổi icon thành đĩa nhạc đang xoay
+            }
+        }).catch(err => {
+            console.log("Trình duyệt chặn autoplay audio:", err);
+        });
+    }
+
+    // 4. TỰ ĐỘNG TRƯỢT (Auto-scroll) xuống phần nội dung sau 600ms khi cửa mở
     setTimeout(() => {
-        // Tìm đến section nội dung chính (ví dụ: id="story" hoặc section đầu tiên sau header)
+        // Tìm chính xác section đầu tiên (như #story hoặc #couple hoặc class chứa nội dung)
         const targetSection = document.getElementById('story') || document.getElementById('couple') || document.querySelector('section');
         
         if (targetSection) {
@@ -22,39 +38,51 @@ function openWeddingInvitation() {
                 block: 'start' 
             });
         } else {
-            // Hoặc trượt xuống đúng bằng chiều cao màn hình nếu không tìm thấy ID
             window.scrollBy({ 
-                top: window.innerHeight * 0.8, 
+                top: window.innerHeight * 0.85, 
                 behavior: 'smooth' 
             });
         }
     }, 600);
 
-    // 4. Ẩn hẳn lớp phủ phong bì sau khi hoàn tất animation
+    // 5. Ẩn hẳn lớp phủ phong bì sau khi hoàn tất animation (1 giây)
     setTimeout(() => {
         envelope.classList.add('open-done');
     }, 1000);
 }
 
-let isAutoScrolling = false;
-let scrollInterval;
-
+// Hàm bật/tắt Auto-Scroll khi bấm nút icon Play/Pause ở góc màn hình
 function toggleAutoScroll() {
     isAutoScrolling = !isAutoScrolling;
     const btnIcon = document.getElementById('scrollIcon');
 
     if (isAutoScrolling) {
-        if (btnIcon) btnIcon.className = "fas fa-pause";
+        if (btnIcon) btnIcon.className = "fas fa-pause text-xs";
         scrollInterval = setInterval(() => {
-            // Kiểm tra nếu trượt đến cuối trang thì dừng lại
+            // Nếu trượt tới cuối trang thì tự ngắt
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 10) {
                 toggleAutoScroll();
                 return;
             }
             window.scrollBy({ top: 1, behavior: 'linear' });
-        }, 25); // Tốc độ trượt (số ms càng nhỏ trượt càng nhanh)
+        }, 30); // Tốc độ trượt đều đặn mượt mà
     } else {
-        if (btnIcon) btnIcon.className = "fas fa-play";
+        if (btnIcon) btnIcon.className = "fas fa-play text-xs";
         clearInterval(scrollInterval);
+    }
+}
+
+// Hàm bật/tắt nhạc thủ công khi bấm nút nốt nhạc
+function toggleAudio() {
+    const audio = document.getElementById('weddingAudio');
+    const musicIcon = document.getElementById('musicIcon');
+    if (!audio) return;
+
+    if (audio.paused) {
+        audio.play();
+        if (musicIcon) musicIcon.className = "fas fa-compact-disc fa-spin";
+    } else {
+        audio.pause();
+        if (musicIcon) musicIcon.className = "fas fa-music";
     }
 }

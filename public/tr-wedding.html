@@ -112,16 +112,6 @@
     <!-- Background Pattern -->
     <div class="fixed inset-0 bg-pattern pointer-events-none z-0"></div>
 
-    <!-- Music Player Controls -->
-    <button id="musicToggle" onclick="toggleAudio()"
-        class="music-btn fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[#e8d6e2] text-[#4a3043] border border-[#d4b8cc] text-white flex items-center justify-center text-xl transition-all hover:scale-110 focus:outline-none">
-        <i id="musicIcon" class="fas fa-music"></i>
-    </button>
-    <audio id="weddingAudio" loop>
-        <!-- Royalty Free Wedding Romantic Piano Track -->
-        <source src="./assets/songs/motdoi.mp3" type="audio/mpeg">
-    </audio>
-
     <!-- Navigation Bar -->
     <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-champagne/40 shadow-sm">
         <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
@@ -688,10 +678,26 @@
             class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border-2 border-white/20">
     </div>
 
-    <button onclick="toggleAutoScroll()" title="Tự động cuộn trang"
-        class="fixed bottom-6 right-6 z-40 bg-white/90 backdrop-blur-md text-[#8B4A62] border border-[#E5BAC5] p-3.5 rounded-full shadow-lg hover:bg-[#8B4A62] hover:text-white transition-all duration-300 flex items-center justify-center">
-        <i id="scrollIcon" class="fas fa-play text-sm"></i>
-    </button>
+    <!-- Nhóm nút điều khiển nổi ở góc dưới bên phải (z-50 để luôn nằm trên cùng) -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 items-end">
+
+        <!-- Nút Bật/Tắt Tự Động Trượt (Nằm PHÍA TRÊN nút phát nhạc) -->
+        <button onclick="toggleAutoScroll()" title="Tự động cuộn trang"
+            class="w-11 h-11 rounded-full bg-white/90 backdrop-blur-md text-[#8B4A62] border border-[#E5BAC5] shadow-lg hover:bg-[#8B4A62] hover:text-white transition-all duration-300 flex items-center justify-center">
+            <i id="scrollIcon" class="fas fa-play text-xs"></i>
+        </button>
+
+        <!-- Nút Phát/Dừng Nhạc -->
+        <button id="musicToggle" onclick="toggleAudio()"
+            class="music-btn w-12 h-12 rounded-full bg-[#e8d6e2] text-[#4a3043] border border-[#d4b8cc] flex items-center justify-center text-lg shadow-lg transition-all hover:scale-110 focus:outline-none">
+            <i id="musicIcon" class="fas fa-music"></i>
+        </button>
+    </div>
+
+    <!-- Audio Nhạc Nền -->
+    <audio id="weddingAudio" loop>
+        <source src="./assets/songs/motdoi.mp3" type="audio/mpeg">
+    </audio>
 
     <!-- FOOTER -->
     <footer class="py-12 bg-emeraldDeep text-white text-center relative z-10 border-t border-gold/30">
