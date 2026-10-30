@@ -148,15 +148,14 @@ function toggleFan(cardElement) {
     const fanContainer = cardElement.querySelector('.fan-gallery-container');
     if (!fanContainer) return;
 
-    // Kiểm tra xem card này đã mở hay chưa
     const isOpen = fanContainer.classList.contains('fan-active');
 
-    // (Tùy chọn) Đóng tất cả các card khác đang mở để chỉ mở 1 card tại một thời điểm
+    // Đóng tất cả các card khác nếu muốn mỗi thời điểm chỉ mở 1 card
     document.querySelectorAll('.fan-gallery-container').forEach(container => {
         container.classList.remove('fan-active');
     });
 
-    // Nếu lúc đầu chưa mở thì giờ bật class active lên để xòe ra
+    // Nếu card này chưa mở thì bật lên
     if (!isOpen) {
         fanContainer.classList.add('fan-active');
     }

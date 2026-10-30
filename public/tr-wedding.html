@@ -263,74 +263,66 @@
             font-weight: 600;
         }
 
-        /* Container chứa 3 tấm hình xòe */
+        /* Ban đầu khung chứa ảnh ẩn hoàn toàn */
         .fan-gallery-container {
             position: relative;
             width: 100%;
-            height: 180px;
-            /* Chiều cao vùng hiển thị ảnh */
+            height: 0;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 1rem;
-            cursor: pointer;
+            margin-top: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Định dạng chung cho từng tấm ảnh trong quạt */
+        /* Định dạng chung cho từng tấm ảnh */
         .fan-image {
             position: absolute;
-            width: 110px;
-            height: 140px;
+            width: 105px;
+            height: 135px;
             object-fit: cover;
             border-radius: 0.75rem;
             border: 3px solid #ffffff;
             box-shadow: 0 8px 20px rgba(139, 74, 98, 0.15);
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-origin: bottom center;
-            /* Trục xoay nằm ở góc dưới tâm ảnh */
+            transform: rotate(0deg) translateY(20px) scale(0.8);
+            opacity: 0;
         }
 
-        /* Trạng thái mặc định (Chập vào nhau hoặc thu gọn nhẹ) */
-        .fan-gallery-container .fan-image:nth-child(1) {
-            transform: rotate(0deg) translateY(0) scale(0.9);
-            opacity: 0.8;
-            z-index: 1;
+        /* KHI BẤM VÀO CARD (Kích hoạt class fan-active): Khung mở ra và ảnh xòe quạt */
+        .fan-gallery-container.fan-active {
+            height: 160px;
+            margin-top: 1rem;
+            opacity: 1;
+            visibility: visible;
         }
 
-        .fan-gallery-container .fan-image:nth-child(2) {
-            transform: rotate(0deg) translateY(0) scale(0.95);
-            opacity: 0.9;
-            z-index: 2;
+        .fan-gallery-container.fan-active .fan-image {
+            opacity: 1;
         }
 
-        .fan-gallery-container .fan-image:nth-child(3) {
-            transform: rotate(0deg) translateY(0) scale(0.9);
-            opacity: 0.8;
-            z-index: 1;
-        }
-
-        /* TRẠNG THÁI XÒE (Khi card có class 'fan-active') */
         .fan-gallery-container.fan-active .fan-image:nth-child(1) {
-            transform: rotate(-18deg) translateX(-45px) translateY(-5px);
-            /* Ảnh trái: Xoay -18 độ, dịch trái */
+            transform: rotate(-18deg) translateX(-42px) translateY(0) scale(1);
             z-index: 1;
         }
 
         .fan-gallery-container.fan-active .fan-image:nth-child(2) {
-            transform: rotate(0deg) translateX(0) translateY(-12px) scale(1.05);
-            /* Ảnh giữa: Đứng thẳng, nhô lên cao hơn chút */
+            transform: rotate(0deg) translateX(0) translateY(-8px) scale(1.05);
             z-index: 3;
         }
 
         .fan-gallery-container.fan-active .fan-image:nth-child(3) {
-            transform: rotate(18deg) translateX(45px) translateY(-5px);
-            /* Ảnh phải: Xoay +18 độ, dịch phải */
+            transform: rotate(18deg) translateX(42px) translateY(0) scale(1);
             z-index: 2;
         }
 
-        /* Thêm hiệu ứng hover nhẹ khi rê chuột vào từng ảnh xòe */
+        /* Hiệu ứng phóng to khi rê chuột vào từng ảnh đã xòe */
         .fan-gallery-container.fan-active .fan-image:hover {
-            transform: scale(1.15) translateY(-20px) !important;
+            transform: scale(1.15) translateY(-15px) !important;
             z-index: 10 !important;
             box-shadow: 0 12px 25px rgba(139, 74, 98, 0.3);
         }
@@ -506,7 +498,6 @@
                         <i class="fas fa-heart"></i>
                     </div>
 
-                    <!-- Thêm onclick="toggleFan(this)" để kích hoạt xòe ảnh khi bấm vào card -->
                     <div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left border border-[#d4b8cc]/50 cursor-pointer"
                         onclick="toggleFan(this)">
                         <span class="text-xs font-bold text-[#8B4A62]">10/2021</span>
@@ -517,7 +508,7 @@
                             ngọt ngào.
                         </p>
 
-                        <!-- KHU VỰC 3 TẤM HÌNH XÒE QUẬT -->
+                        <!-- Ban đầu phần này hoàn toàn ẩn đi -->
                         <div class="fan-gallery-container">
                             <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=400"
                                 alt="Kỷ niệm 1" class="fan-image">
@@ -526,9 +517,10 @@
                             <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=400"
                                 alt="Kỷ niệm 3" class="fan-image">
                         </div>
+
                         <div class="text-center mt-2">
                             <span class="text-[11px] text-[#8B4A62] italic font-medium"><i
-                                    class="fas fa-hand-pointer mr-1"></i> Bấm để
+                                    class="fas fa-hand-pointer mr-1"></i> Chạm để
                                 xem khoảnh khắc</span>
                         </div>
                     </div>
