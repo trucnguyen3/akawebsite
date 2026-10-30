@@ -305,8 +305,19 @@
                         class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow">
                         <i class="fas fa-ring"></i>
                     </div>
-                    <div
-                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left border border-[#d4b8cc]/50">
+                    <div class="glass-card relative p-6 pt-10 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:mr-auto text-left border border-[#d4b8cc]/50 cursor-pointer"
+                        onclick="toggleFan(this, event)">
+
+                        <!-- CỤM 3 TẤM HÌNH NẰM ĐÈ LÊN TRÊN CARD -->
+                        <div class="fan-gallery-container">
+                            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800"
+                                alt="Kỷ niệm 1" class="fan-image" onclick="zoomImage(this, event)">
+                            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800"
+                                alt="Kỷ niệm 2" class="fan-image" onclick="zoomImage(this, event)">
+                            <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=800"
+                                alt="Kỷ niệm 3" class="fan-image" onclick="zoomImage(this, event)">
+                        </div>
+
                         <span class="text-xs font-bold text-[#8B4A62]">12/2025</span>
                         <h4 class="font-serif text-xl font-bold text-[#8B4A62] mt-1">Lời Cầu Hôn Nắng Ấm</h4>
                         <p class="text-gray-600 text-sm mt-2 leading-relaxed">
@@ -314,6 +325,12 @@
                             mong
                             chờ: "Em đồng ý làm vợ anh nhé?"
                         </p>
+
+                        <div class="text-center mt-3 pt-2 border-t border-[#d4b8cc]/30">
+                            <span class="text-[11px] text-[#8B4A62] italic font-medium"><i
+                                    class="fas fa-hand-pointer mr-1"></i> Bấm để
+                                xem album ảnh</span>
+                        </div>
                     </div>
                 </div>
 
@@ -323,14 +340,30 @@
                         class="absolute -left-3 top-1 w-6 h-6 rounded-full bg-[#8B4A62] text-white flex items-center justify-center text-xs shadow">
                         <i class="fas fa-church"></i>
                     </div>
-                    <div
-                        class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:ml-auto text-left border border-[#d4b8cc]/50">
+                    <div class="glass-card fan-left-side relative p-6 pt-10 rounded-2xl shadow-sm hover:shadow-md transition md:w-5/12 md:ml-auto text-left border border-[#d4b8cc]/50 cursor-pointer"
+                        onclick="toggleFan(this, event)">
+
+                        <!-- CỤM 3 TẤM HÌNH (Sẽ tự động nằm bên TRÁI trên Desktop) -->
+                        <div class="fan-gallery-container">
+                            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800"
+                                alt="Kỷ niệm 1" class="fan-image" onclick="zoomImage(this, event)">
+                            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800"
+                                alt="Kỷ niệm 2" class="fan-image" onclick="zoomImage(this, event)">
+                            <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=800"
+                                alt="Kỷ niệm 3" class="fan-image" onclick="zoomImage(this, event)">
+                        </div>
                         <span class="text-xs font-bold text-[#8B4A62]">01/2027</span>
                         <h4 class="font-serif text-xl font-bold text-[#8B4A62] mt-1">Ngày Chung Đôi</h4>
                         <p class="text-gray-600 text-sm mt-2 leading-relaxed">
                             Chính thức bước vào hành trình hôn nhân trước sự chứng kiến và chúc phúc của gia đình, bạn
                             bè thân thương.
                         </p>
+
+                        <div class="text-center mt-3 pt-2 border-t border-[#d4b8cc]/30">
+                            <span class="text-[11px] text-[#8B4A62] italic font-medium"><i
+                                    class="fas fa-hand-pointer mr-1"></i> Bấm để
+                                xem album ảnh</span>
+                        </div>
                     </div>
                 </div>
 
