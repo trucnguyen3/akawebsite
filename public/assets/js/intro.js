@@ -25,56 +25,56 @@ function openWeddingInvitation() {
         });
     }
 
-    // 4. CHỜ 2 CÁNH THIỆP MỞ XONG HẲN (1000ms) rồi tự động trượt mượt mà xuống phần "Chuyện Tình Yêu"
+    // 4. CHỜ 2 CÁNH THIỆP MỞ XONG HẲN (1000ms), sau đó BẮT ĐẦU TỰ ĐỘNG LĂN TỪ TỪ XUỐNG DƯỚI
     setTimeout(() => {
-        // Tìm trực tiếp section Chuyện tình yêu (có id="about" trong menu của bạn) hoặc section nội dung đầu tiên
-        const targetSection = document.getElementById('about') || document.querySelector('section:nth-of-type(2)');
-        
-        if (targetSection) {
-            targetSection.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start' 
-            });
-        } else {
-            // Dự phòng: Trượt xuống một khoảng bằng chiều cao màn hình nếu không tìm thấy ID
-            window.scrollBy({ 
-                top: window.innerHeight, 
-                behavior: 'smooth' 
-            });
-        }
+        startAutoScrollToFooter();
     }, 1050);
 
-    // 5. Ẩn hẳn lớp phủ phong bì sau khi hoàn tất animation
+    // 5. Ẩn hẳn lớp phủ phong bì
     setTimeout(() => {
         envelope.classList.add('open-done');
     }, 1100);
 }
 
-// Hàm bật/tắt Auto-Scroll khi bấm nút mũi tên ở góc màn hình
-function toggleAutoScroll() {
-    isAutoScrolling = !isAutoScrolling;
+// Hàm thực hiện lăn từ từ xuống footer
+function startAutoScrollToFooter() {
+    isAutoScrolling = true;
     const btnIcon = document.getElementById('scrollIcon');
+    if (btnIcon) btnIcon.className = "fas fa-pause text-xs"; // Đổi icon thành nút Pause
 
-    if (isAutoScrolling) {
-        // Đang chạy auto-scroll thì đổi icon thành nút Pause (tạm dừng)
-        if (btnIcon) btnIcon.className = "fas fa-pause text-xs";
+    // Xóa interval cũ nếu có để tránh bị chồng chéo
+    if (scrollInterval) clearInterval(scrollInterval);
+
+    scrollInterval = setInterval(() => {
+        // Kiểm tra nếu đã lăn tới gần cuối trang (footer) thì dừng lại và đổi icon
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 10) {
+            stopAutoScroll();
+            return;
+        }
         
-        scrollInterval = setInterval(() => {
-            // Nếu trượt tới cuối trang thì tự ngắt
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 10) {
-                toggleAutoScroll();
-                return;
-            }
-            window.scrollBy({ top: 1, behavior: 'linear' });
-        }, 30); // Tốc độ trượt đều đặn mượt mà
+        // Lăn xuống 1 pixel mỗi lần (số càng lớn lăn càng nhanh, ví dụ: 1.5 hoặc 2)
+        window.scrollBy({ top: 1.2, behavior: 'linear' });
+    }, 25); // Tốc độ mượt mà (milisecond)
+}
+
+// Hàm dừng tự động lăn
+function stopAutoScroll() {
+    isAutoScrolling = false;
+    const btnIcon = document.getElementById('scrollIcon');
+    if (btnIcon) btnIcon.className = "fas fa-chevron-down text-xs";
+    clearInterval(scrollInterval);
+}
+
+// Nút bấm ở góc màn hình để Bật / Tắt chế độ lăn thủ công
+function toggleAutoScroll() {
+    if (isAutoScrolling) {
+        stopAutoScroll();
     } else {
-        // Dừng lại thì đổi icon về mũi tên hướng xuống
-        if (btnIcon) btnIcon.className = "fas fa-chevron-down text-xs";
-        clearInterval(scrollInterval);
+        startAutoScrollToFooter();
     }
 }
 
-// Hàm bật/tắt nhạc thủ công khi bấm nút nốt nhạc
+// Hàm bật/tắt nhạc thủ công
 function toggleAudio() {
     const audio = document.getElementById('weddingAudio');
     const musicIcon = document.getElementById('musicIcon');
