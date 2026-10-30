@@ -75,7 +75,7 @@
             class="envelope-door door-left absolute top-0 left-0 w-1/2 h-full bg-[#FDFBF7] border-r border-[#E5BAC5] shadow-2xl z-20 flex items-center justify-end transition-transform duration-1000 ease-in-out">
             <div
                 class="absolute right-[-35px] top-1/2 -translate-y-1/2 text-[#8B4A62] font-cursive text-4xl opacity-30 select-none pointer-events-none hidden md:block">
-                Truc & Anh</div>
+                Trúc & Trân</div>
         </div>
 
         <!-- Cánh cửa bên Phải -->
@@ -96,9 +96,9 @@
                     <i class="fas fa-heart text-2xl"></i>
                 </div>
 
-                <span class="text-xs uppercase tracking-widest text-[#8B4A62] font-semibold block mb-2">Thiệp Mời
-                    Cưới</span>
-                <h2 class="font-cursive text-4xl text-[#8B4A62] mb-3">Truc & Anh</h2>
+                <span
+                    class="text-xs uppercase tracking-widest text-[#8B4A62] font-semibold block mb-2">16.01.2027<br />17.01.2027</span>
+                <h2 class="font-cursive text-4xl text-[#8B4A62] mb-3">Trúc & Trân</h2>
                 <p class="text-gray-500 text-xs italic mb-6">Trân trọng kính mời quý khách đến chung vui</p>
 
                 <button
@@ -106,8 +106,6 @@
                     <i class="fas fa-envelope-open-text"></i> Mở Thiệp Ngay
                 </button>
             </div>
-
-            <p class="text-[11px] text-[#8B4A62] mt-4 opacity-70 animate-pulse">Chạm vào bất cứ đâu để mở thiệp</p>
         </div>
     </div>
 
@@ -121,9 +119,7 @@
     </button>
     <audio id="weddingAudio" loop>
         <!-- Royalty Free Wedding Romantic Piano Track -->
-        <source
-            src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-wedding-piano-112191.mp3"
-            type="audio/mpeg">
+        <source src="./assets/songs/motdoi.mp3" type="audio/mpeg">
     </audio>
 
     <!-- Navigation Bar -->
@@ -691,6 +687,11 @@
         <img id="lightboxImg" src="" alt="Enlarged Photo"
             class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border-2 border-white/20">
     </div>
+
+    <button onclick="toggleAutoScroll()" title="Tự động cuộn trang"
+        class="fixed bottom-6 right-6 z-40 bg-white/90 backdrop-blur-md text-[#8B4A62] border border-[#E5BAC5] p-3.5 rounded-full shadow-lg hover:bg-[#8B4A62] hover:text-white transition-all duration-300 flex items-center justify-center">
+        <i id="scrollIcon" class="fas fa-play text-sm"></i>
+    </button>
 
     <!-- FOOTER -->
     <footer class="py-12 bg-emeraldDeep text-white text-center relative z-10 border-t border-gold/30">
