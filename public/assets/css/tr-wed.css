@@ -1,3 +1,16 @@
+/* Hiệu ứng khi thiệp đã được mở xong */
+#introEnvelope.fade-out {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+/* Khóa cuộn trang khi chưa mở thiệp */
+body.envelope-locked {
+    overflow: hidden;
+    height: 100vh;
+}
+        
         body {
             font-family: 'Montserrat', sans-serif;
             /* Dùng ảnh texture hồng phấn làm background, phủ thêm một lớp trắng mờ 30% để chữ đọc rõ hơn */
