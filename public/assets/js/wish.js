@@ -41,8 +41,8 @@ async function loadLatestWishes() {
                 const isPinned = guestName.toLowerCase() === 'gemma pham';
 
                 const pinBadge = isPinned ? `
-                    <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-[#F8E1E7] text-[#8B4A62] px-2.5 py-0.5 rounded-full border border-[#d4b8cc]">
-                        <i class="fas fa-thumbtack"></i> Pinned
+                    <span class="inline-flex items-center gap-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wider bg-[#F8E1E7] text-[#8B4A62] px-2 py-0.5 rounded-full border border-[#d4b8cc] shrink-0">
+                        <i class="fas fa-thumbtack text-[8px] md:text-[9px]"></i> Pinned
                     </span>
                 ` : '';
 
@@ -51,15 +51,19 @@ async function loadLatestWishes() {
                     : 'bg-white/90 border border-[#d4b8cc]/60 shadow-sm';
 
                 const wishCard = `
-                    <div class="p-4 rounded-2xl ${cardStyle} transition hover:shadow-md">
-                        <div class="flex justify-between items-center mb-1">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-[#8B4A62] text-sm">${escapeHtml(guestName)}</span>
+                    <div class="p-3.5 md:p-4 rounded-2xl ${cardStyle} transition hover:shadow-md">
+                        <!-- Header: Tên + Pinned + Thời gian -->
+                        <div class="flex flex-wrap items-center justify-between gap-1.5 mb-2">
+                            <div class="flex items-center gap-2 min-w-0 flex-1">
+                                <span class="font-bold text-[#8B4A62] text-sm truncate">${escapeHtml(guestName)}</span>
                                 ${pinBadge}
                             </div>
-                            <span class="text-xs text-gray-400">${timeAgo}</span>
+                            <span class="text-[11px] md:text-xs text-gray-400 shrink-0">${timeAgo}</span>
                         </div>
-                        <p class="text-gray-700 text-sm italic">"${escapeHtml(noteText)}"</p>
+                        <!-- Nội dung lời chúc: Tự động xuống dòng mượt mà, không tràn khung -->
+                        <p class="text-gray-700 text-xs md:text-sm italic leading-relaxed break-words overflow-hidden">
+                            "${escapeHtml(noteText)}"
+                        </p>
                     </div>
                 `;
                 container.innerHTML += wishCard;

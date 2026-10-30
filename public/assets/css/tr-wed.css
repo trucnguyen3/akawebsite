@@ -203,3 +203,16 @@
             color: #8B4A62;
             font-weight: 600;
         }
+
+        /* Mặc định trên Mobile: Không dịch chuyển (về giữa) */
+.wedding-img {
+    object-position: center center;
+}
+
+/* Trên màn hình Desktop (md từ 768px trở lên): Áp dụng tọa độ riêng cho từng ảnh */
+@media (min-width: 768px) {
+    .pos-img-1 { object-position: center -35px; }
+    .pos-img-2 { object-position: center -120px; }
+    .pos-img-3 { object-position: center -155px; }
+    .pos-img-4 { object-position: center center; }
+}
