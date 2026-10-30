@@ -1,5 +1,5 @@
 let isAutoScrolling = false;
-let scrollInterval;
+let scrollAnimationId = null;
 
 // Khóa cuộn trang khi vừa vào web
 document.body.classList.add('envelope-locked');
@@ -25,7 +25,7 @@ function openWeddingInvitation() {
         });
     }
 
-    // 4. CHỜ 2 CÁNH THIỆP MỞ XONG HẲN (1000ms), sau đó BẮT ĐẦU TỰ ĐỘNG LĂN TỪ TỪ XUỐNG DƯỚI
+    // 4. CHỜ 2 CÁNH THIỆP MỞ XONG HẲN (1000ms), sau đó BẮT ĐẦU TỰ ĐỘNG LĂN MƯỢT MÀ
     setTimeout(() => {
         startAutoScrollToFooter();
     }, 1050);
@@ -36,36 +36,44 @@ function openWeddingInvitation() {
     }, 1100);
 }
 
-// Hàm thực hiện lăn từ từ xuống footer
+// Hàm chạy tự động lăn sử dụng requestAnimationFrame (cực kỳ mượt và chắc chắn chạy)
 function startAutoScrollToFooter() {
     isAutoScrolling = true;
     const btnIcon = document.getElementById('scrollIcon');
-    if (btnIcon) btnIcon.className = "fas fa-pause text-xs"; // Đổi icon thành nút Pause
+    if (btnIcon) btnIcon.className = "fas fa-pause text-xs";
 
-    // Xóa interval cũ nếu có để tránh bị chồng chéo
-    if (scrollInterval) clearInterval(scrollInterval);
+    // Hủy animation cũ nếu đang chạy
+    if (scrollAnimationId) cancelAnimationFrame(scrollAnimationId);
 
-    scrollInterval = setInterval(() => {
-        // Kiểm tra nếu đã lăn tới gần cuối trang (footer) thì dừng lại và đổi icon
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 10) {
+    function step() {
+        // Nếu người dùng chủ động lăn chuột hoặc đã tới gần cuối trang thì dừng lại
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        if (!isAutoScrolling || window.scrollY >= maxScroll - 10) {
             stopAutoScroll();
             return;
         }
-        
-        // Lăn xuống 1 pixel mỗi lần (số càng lớn lăn càng nhanh, ví dụ: 1.5 hoặc 2)
+
+        // Tốc độ lăn (tăng số 1.2 lên nếu muốn lăn nhanh hơn, giảm xuống nếu muốn lăn chậm)
         window.scrollBy({ top: 1.2, behavior: 'linear' });
-    }, 25); // Tốc độ mượt mà (milisecond)
+        
+        scrollAnimationId = requestAnimationFrame(step);
+    }
+
+    scrollAnimationId = requestAnimationFrame(step);
 }
 
-// Hàm dừng tự động lăn
+// Dừng tự động lăn
 function stopAutoScroll() {
     isAutoScrolling = false;
+    if (scrollAnimationId) {
+        cancelAnimationFrame(scrollAnimationId);
+        scrollAnimationId = null;
+    }
     const btnIcon = document.getElementById('scrollIcon');
     if (btnIcon) btnIcon.className = "fas fa-chevron-down text-xs";
-    clearInterval(scrollInterval);
 }
 
-// Nút bấm ở góc màn hình để Bật / Tắt chế độ lăn thủ công
+// Bấm nút ở góc màn hình để Bật/Tắt
 function toggleAutoScroll() {
     if (isAutoScrolling) {
         stopAutoScroll();
@@ -73,6 +81,15 @@ function toggleAutoScroll() {
         startAutoScrollToFooter();
     }
 }
+
+// Nếu người dùng chạm/lăn chuột tay vào màn hình thì tự động ngắt chế độ auto-scroll để tránh kẹt tay
+window.addEventListener('wheel', () => {
+    if (isAutoScrolling) stopAutoScroll();
+}, { passive: true });
+
+window.addEventListener('touchstart', () => {
+    if (isAutoScrolling) stopAutoScroll();
+}, { passive: true });
 
 // Hàm bật/tắt nhạc thủ công
 function toggleAudio() {
