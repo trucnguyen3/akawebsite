@@ -11,25 +11,22 @@ function openWeddingInvitation() {
     // 1. Kích hoạt hiệu ứng mở 2 cánh thiệp
     envelope.classList.add('opening');
     
-    // 2. Mở khóa cuộn trang
+    // 2. Mở khóa cuộn trang NGAY LẬP TỨC
     document.body.classList.remove('envelope-locked');
 
-    // 3. TỰ ĐỘNG PHÁT NHẠC (Do người dùng vừa bấm click mở thiệp nên trình duyệt sẽ cho phép phát)
+    // 3. Tự động phát nhạc
     const audio = document.getElementById('weddingAudio');
     const musicIcon = document.getElementById('musicIcon');
     if (audio) {
         audio.play().then(() => {
-            if (musicIcon) {
-                musicIcon.className = "fas fa-compact-disc fa-spin"; // Đổi icon thành đĩa nhạc đang xoay
-            }
+            if (musicIcon) musicIcon.className = "fas fa-compact-disc fa-spin";
         }).catch(err => {
             console.log("Trình duyệt chặn autoplay audio:", err);
         });
     }
 
-    // 4. TỰ ĐỘNG TRƯỢT (Auto-scroll) xuống phần nội dung sau 600ms khi cửa mở
+    // 4. FIX LỖI TỰ ĐỘNG TRƯỢT: Đợi 700ms cho hiệu ứng mở cửa mượt rồi mới scroll
     setTimeout(() => {
-        // Tìm chính xác section đầu tiên (như #story hoặc #couple hoặc class chứa nội dung)
         const targetSection = document.getElementById('story') || document.getElementById('couple') || document.querySelector('section');
         
         if (targetSection) {
@@ -39,11 +36,11 @@ function openWeddingInvitation() {
             });
         } else {
             window.scrollBy({ 
-                top: window.innerHeight * 0.85, 
+                top: window.innerHeight * 0.9, 
                 behavior: 'smooth' 
             });
         }
-    }, 600);
+    }, 700);
 
     // 5. Ẩn hẳn lớp phủ phong bì sau khi hoàn tất animation (1 giây)
     setTimeout(() => {
@@ -51,13 +48,15 @@ function openWeddingInvitation() {
     }, 1000);
 }
 
-// Hàm bật/tắt Auto-Scroll khi bấm nút icon Play/Pause ở góc màn hình
+// Hàm bật/tắt Auto-Scroll khi bấm nút mũi tên ở góc màn hình
 function toggleAutoScroll() {
     isAutoScrolling = !isAutoScrolling;
     const btnIcon = document.getElementById('scrollIcon');
 
     if (isAutoScrolling) {
+        // Đang chạy auto-scroll thì đổi icon thành nút Pause (tạm dừng)
         if (btnIcon) btnIcon.className = "fas fa-pause text-xs";
+        
         scrollInterval = setInterval(() => {
             // Nếu trượt tới cuối trang thì tự ngắt
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 10) {
@@ -67,7 +66,8 @@ function toggleAutoScroll() {
             window.scrollBy({ top: 1, behavior: 'linear' });
         }, 30); // Tốc độ trượt đều đặn mượt mà
     } else {
-        if (btnIcon) btnIcon.className = "fas fa-play text-xs";
+        // Dừng lại thì đổi icon về mũi tên hướng xuống
+        if (btnIcon) btnIcon.className = "fas fa-chevron-down text-xs";
         clearInterval(scrollInterval);
     }
 }
