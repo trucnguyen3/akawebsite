@@ -1,0 +1,112 @@
+/* Container chứa 3 hình xòe quạt (Cấu hình chung) */
+.fan-gallery-container {
+    position: absolute;
+    z-index: 30;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Định dạng chung cho từng tấm ảnh */
+.fan-image {
+    position: absolute;
+    width: 105px;
+    height: 135px;
+    object-fit: cover;
+    border-radius: 0.85rem;
+    border: 3px solid #ffffff;
+    box-shadow: 0 10px 25px rgba(139, 74, 98, 0.25);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+}
+
+/* --- 1. MOBILE STYLE (Hiện phía trên card) --- */
+@media (max-width: 767px) {
+    .fan-gallery-container {
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 220px;
+        height: 150px;
+    }
+
+    .glass-card.fan-active .fan-gallery-container {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        top: -50px;
+    }
+
+    .fan-image {
+        bottom: 0;
+        left: 50%;
+        margin-left: -52px;
+        transform-origin: bottom center;
+    }
+
+    .glass-card.fan-active .fan-image:nth-child(1) {
+        transform: rotate(-20deg) translateX(-42px) translateY(-5px);
+        z-index: 1;
+    }
+
+    .glass-card.fan-active .fan-image:nth-child(2) {
+        transform: rotate(0deg) translateX(0) translateY(-12px) scale(1.05);
+        z-index: 3;
+    }
+
+    .glass-card.fan-active .fan-image:nth-child(3) {
+        transform: rotate(20deg) translateX(42px) translateY(-5px);
+        z-index: 2;
+    }
+}
+
+/* --- 2. DESKTOP STYLE (NẰM BÊN PHẢI GLASS-CARD) --- */
+@media (min-width: 768px) {
+    .fan-gallery-container {
+        top: 50%;
+        right: -130px;
+        /* Nhô sang lề bên phải của glass-card */
+        transform: translateY(-50%);
+        width: 160px;
+        height: 200px;
+    }
+
+    /* Khi active trên desktop */
+    .glass-card.fan-active .fan-gallery-container {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        right: -160px;
+    }
+
+    .fan-image {
+        top: 50%;
+        left: 0;
+        margin-top: -67px;
+        transform-origin: left center;
+        /* Trục xoay nằm bên trái */
+    }
+
+    .glass-card.fan-active .fan-image:nth-child(1) {
+        transform: rotate(-16deg) translateX(10px) translateY(-35px) scale(0.95);
+        z-index: 1;
+    }
+
+    .glass-card.fan-active .fan-image:nth-child(2) {
+        transform: rotate(0deg) translateX(35px) translateY(0) scale(1.05);
+        z-index: 3;
+    }
+
+    .glass-card.fan-active .fan-image:nth-child(3) {
+        transform: rotate(16deg) translateX(10px) translateY(35px) scale(0.95);
+        z-index: 2;
+    }
+
+    /* Hover ảnh trên Desktop */
+    .glass-card.fan-active .fan-image:hover {
+        transform: scale(1.2) translateX(45px) !important;
+        z-index: 10 !important;
+        box-shadow: 0 15px 30px rgba(139, 74, 98, 0.35);
+    }
+}
