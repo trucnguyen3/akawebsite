@@ -61,6 +61,7 @@
     <script src="assets/js/tr_wed.js" defer></script>
     <script src="assets/js/rsvp.js"></script>
     <script src="assets/js/fan.js"></script>
+    <script src="assets/js/wish.js"></script>
 </head>
 
 <body class="relative">
@@ -180,8 +181,7 @@
                 <div class="glass-card p-6 rounded-2xl text-center space-y-4 shadow-md hover:shadow-xl transition">
                     <!-- Viền ảnh chuyển thành màu hồng #d4b8cc -->
                     <div class="w-48 h-48 mx-auto rounded-full overflow-hidden border-4 border-[#d4b8cc] shadow-md">
-                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600"
-                            alt="Chú rể Xuân Trúc" class="w-full h-full object-cover">
+                        <img src="./assets/images/1.jpg" alt="Chú rể Xuân Trúc" class="w-full h-full object-cover">
                     </div>
                     <div>
                         <h4 class="font-serif text-2xl font-bold text-emeraldDeep">Nguyễn Thiện Lê Xuân Trúc</h4>
@@ -197,8 +197,7 @@
                 <div class="glass-card p-6 rounded-2xl text-center space-y-4 shadow-md hover:shadow-xl transition">
                     <!-- Viền ảnh chuyển thành màu hồng #d4b8cc -->
                     <div class="w-48 h-48 mx-auto rounded-full overflow-hidden border-4 border-[#d4b8cc] shadow-md">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600"
-                            alt="Cô dâu Bảo Trân" class="w-full h-full object-cover">
+                        <img src="./assets/images/2.jpg" alt="Cô dâu Bảo Trân" class="w-full h-full object-cover">
                     </div>
                     <div>
                         <h4 class="font-serif text-2xl font-bold text-emeraldDeep">Phạm Thị Bảo Trân</h4>
@@ -432,7 +431,8 @@
                 <div class="overflow-hidden rounded-2xl shadow cursor-pointer group"
                     onclick="openLightbox('./assets/images/lib1.jpg')">
                     <img src="./assets/images/lib1.jpg" alt="Wedding 1"
-                        class="w-full h-60 object-cover group-hover:scale-110 transition duration-500">
+                        class="w-full h-60 object-cover group-hover:scale-110 transition duration-500"
+                        style="object-position: center -35px">
                 </div>
                 <div class="overflow-hidden rounded-2xl shadow cursor-pointer group"
                     onclick="openLightbox('./assets/images/lib2.jpg')">
@@ -617,28 +617,13 @@
 
             <!-- LIVE WISHES WALL -->
             <div class="glass-card p-8 rounded-3xl shadow-xl">
-                <h4 class="font-serif text-2xl font-bold text-emeraldDeep mb-6 text-center">Lời Chúc Từ Bạn Bè & Gia
-                    Đình</h4>
+                <h4 class="font-serif text-2xl font-bold text-[#8B4A62] mb-6 text-center">Lời Chúc Từ Bạn Bè & Gia Đình
+                </h4>
 
-                <div id="wishesContainer" class="space-y-4 max-h-80 overflow-y-auto pr-2">
-                    <!-- Sample Wish 1 -->
-                    <div class="p-4 rounded-xl bg-white/80 border border-champagne/40 shadow-sm">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="font-bold text-emeraldDeep text-sm">Chị Minh Anh</span>
-                            <span class="text-xs text-gray-400">Vừa xong</span>
-                        </div>
-                        <p class="text-gray-600 text-sm">"Chúc hai em Trúc & Anh mãi hạnh phúc, răng long đầu bạc và
-                            luôn tràn ngập tiếng cười!"</p>
-                    </div>
-
-                    <!-- Sample Wish 2 -->
-                    <div class="p-4 rounded-xl bg-white/80 border border-champagne/40 shadow-sm">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="font-bold text-emeraldDeep text-sm">Hội Bạn Đại Học</span>
-                            <span class="text-xs text-gray-400">10 phút trước</span>
-                        </div>
-                        <p class="text-gray-600 text-sm">"Mừng cho Trúc đã tìm được bến đỗ bình yên. Chúc hai bạn trăm
-                            năm hạnh phúc nhé!"</p>
+                <!-- Container chứa lời chúc động -->
+                <div id="wishesContainer" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                    <div class="p-4 text-center text-gray-500 text-sm">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>Đang tải lời chúc...
                     </div>
                 </div>
             </div>
