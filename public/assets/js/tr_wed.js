@@ -137,10 +137,32 @@ function selectOption(fieldKey, value, textLabel, element) {
     }
 }
 
-// Tự động đóng dropdown khi click ra ngoài màn hình
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.custom-select-wrapper')) {
-        document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+document.body.addEventListener('click', (e) => {
+    // Nếu thiệp chưa mở (đang khóa), không làm gì cả
+    if (document.body.classList.contains('envelope-locked')) return;
+
+    // Nếu người dùng bấm vào nút bấm, input, form, link, selectbox hoặc lightbox, 
+    // thì BỎ QUA, để các tính năng đó hoạt động bình thường 100%.
+    if (
+        e.target.closest('button') ||
+        e.target.closest('input') ||
+        e.target.closest('select') ||
+        e.target.closest('textarea') ||
+        e.target.closest('a') ||
+        e.target.closest('form') ||
+        e.target.closest('.custom-select-wrapper') ||
+        e.target.closest('.lightbox') ||
+        e.target.closest('#lightbox') ||
+        e.target.closest('.fan-gallery-container')
+    ) {
+        return;
+    }
+
+    // Nếu bấm vào vùng trống/nền/chữ trên trang:
+    if (isAutoScrolling) {
+        stopAutoScroll(); // Đang lăn -> Bấm vào là DỪNG NGAY
+    } else {
+        startAutoScrollToFooter(); // Đang dừng -> Bấm vào là LĂN TIẾP
     }
 });
 
