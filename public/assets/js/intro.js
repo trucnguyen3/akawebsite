@@ -14,11 +14,7 @@ function openWeddingInvitation() {
     // 2. Mở khóa cuộn trang ngay lập tức
     document.body.classList.remove('envelope-locked');
 
-    // 3. Kích hoạt lớp phủ bắt sự kiện chạm màn hình (Kích hoạt pointer-events)
-    const shield = document.getElementById('clickShield');
-    if (shield) shield.style.pointerEvents = 'auto';
-
-    // 4. Tự động phát nhạc
+    // 3. Tự động phát nhạc
     const audio = document.getElementById('weddingAudio');
     const musicIcon = document.getElementById('musicIcon');
     if (audio) {
@@ -29,14 +25,14 @@ function openWeddingInvitation() {
         });
     }
 
-    // 5. CHỜ 2 CÁNH THIỆP MỞ XONG HẲN (1000ms), sau đó BẮT ĐẦU TỰ ĐỘNG LĂN
+    // 4. Đợi hiệu ứng mở cửa chạy xong (1000ms), bắt đầu tự động lăn
     setTimeout(() => {
         startAutoScrollToFooter();
     }, 1100);
 
-    // 6. Ẩn hẳn lớp phủ phong bì
+    // 5. ẨN HẲN VÀ XÓA BỎ LỚP MỜ KHỎI MÀN HÌNH (Thêm dòng này để mất hẳn khoảng mờ)
     setTimeout(() => {
-        envelope.classList.add('open-done');
+        envelope.style.display = 'none'; 
     }, 1200);
 }
 
