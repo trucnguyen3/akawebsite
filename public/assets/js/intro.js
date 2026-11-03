@@ -46,7 +46,7 @@ function startAutoScrollToFooter() {
     function step() {
         if (!isAutoScrolling) return;
 
-        currentScroll += 2; // Tốc độ lăn (tăng/giảm số này để điều chỉnh tốc độ)
+        currentScroll += 2; // Tốc độ lăn
         window.scrollTo(0, currentScroll);
 
         const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
@@ -70,23 +70,24 @@ function stopAutoScroll() {
     }
 }
 
-// BẤM VÀO BẤT CỨ ĐÂU ĐỂ TẠM DỪNG HOẶC TIẾP TỤC AUTO-SCROLL
-document.addEventListener('click', (e) => {
-    // Bỏ qua nếu đang mở thiệp, hoặc bấm vào nút nhạc, form, lightbox
+// LẮNG NGHE THAO TÁC CHẠM / CLICK BẤT CỨ ĐÂU TRÊN MÀN HÌNH ĐỂ BẬT / TẮT
+document.addEventListener('pointerdown', (e) => {
+    // Không xử lý nếu đang trong màn hình khóa mở thiệp hoặc bấm vào nút nhạc / form RSVP
     if (document.body.classList.contains('envelope-locked')) return;
-    if (e.target.closest('#musicToggle') || e.target.closest('form') || e.target.closest('.lightbox')) return;
+    if (e.target.closest('#musicToggle') || e.target.closest('form') || e.target.closest('.lightbox') || e.target.closest('input') || e.target.closest('button')) return;
 
-    // Đảo ngược trạng thái một cách rõ ràng
+    e.stopPropagation(); // Chặn sự kiện lan truyền để tránh xung đột
+
     if (isAutoScrolling) {
-        stopAutoScroll(); // Đang chạy -> Bấm vào thì DỪNG
+        stopAutoScroll(); // Đang lăn -> Chạm vào là DỪNG NGAY LẬP TỨC
     } else {
-        startAutoScrollToFooter(); // Đang dừng -> Bấm vào thì CHẠY TIẾP
+        startAutoScrollToFooter(); // Đang dừng -> Chạm vào là LĂN TIẾP
     }
-});
+}, { passive: true });
 
-// Ngắt tự động lăn ngay khi người dùng chủ động lăn chuột tay hoặc chạm vuốt
+// Ngắt tự động lăn ngay khi người dùng chủ động lăn chuột tay hoặc vuốt màn hình
 window.addEventListener('wheel', () => { if (isAutoScrolling) stopAutoScroll(); }, { passive: true });
-window.addEventListener('touchstart', () => { if (isAutoScrolling) stopAutoScroll(); }, { passive: true });
+window.addEventListener('touchmove', () => { if (isAutoScrolling) stopAutoScroll(); }, { passive: true });
 
 // Hàm bật/tắt nhạc thủ công
 function toggleAudio() {
