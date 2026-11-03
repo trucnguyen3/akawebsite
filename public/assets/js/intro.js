@@ -70,16 +70,17 @@ function stopAutoScroll() {
     }
 }
 
-// BẤM VÀO BẤT CỨ ĐÂU TRÊN MÀN HÌNH ĐỂ BẬT/TẮT AUTO-SCROLL
+// BẤM VÀO BẤT CỨ ĐÂU ĐỂ TẠM DỪNG HOẶC TIẾP TỤC AUTO-SCROLL
 document.addEventListener('click', (e) => {
-    // Không kích hoạt nếu đang trong màn hình mở thiệp hoặc bấm vào nút nhạc / form RSVP / Lightbox ảnh
+    // Bỏ qua nếu đang mở thiệp, hoặc bấm vào nút nhạc, form, lightbox
     if (document.body.classList.contains('envelope-locked')) return;
     if (e.target.closest('#musicToggle') || e.target.closest('form') || e.target.closest('.lightbox')) return;
 
+    // Đảo ngược trạng thái một cách rõ ràng
     if (isAutoScrolling) {
-        stopAutoScroll();
+        stopAutoScroll(); // Đang chạy -> Bấm vào thì DỪNG
     } else {
-        startAutoScrollToFooter();
+        startAutoScrollToFooter(); // Đang dừng -> Bấm vào thì CHẠY TIẾP
     }
 });
 
