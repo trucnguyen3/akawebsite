@@ -1,3 +1,13 @@
+/* Ẩn thanh cuộn cho trình duyệt Chrome, Safari, Opera và Edge */
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* Ẩn thanh cuộn cho trình duyệt Firefox */
+html {
+    scrollbar-width: none;
+}
+
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
 }

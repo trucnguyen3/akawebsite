@@ -1,3 +1,13 @@
+/* Ẩn thanh cuộn cho trình duyệt Chrome, Safari, Opera và Edge */
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* Ẩn thanh cuộn cho trình duyệt Firefox */
+html {
+    scrollbar-width: none;
+}
+
 /* Khóa cuộn trang khi màn hình mở thiệp đang hiển thị */
 body.envelope-locked {
     overflow: hidden;
