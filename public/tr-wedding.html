@@ -678,22 +678,6 @@
             class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border-2 border-white/20">
     </div>
 
-    <!-- Nhóm nút điều khiển nổi ở góc dưới bên phải -->
-    <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 items-end">
-
-        <!-- Nút Tự Động Trượt (Đã đổi icon thành mũi tên hướng xuống) -->
-        <button onclick="toggleAutoScroll()" title="Tự động cuộn trang"
-            class="w-11 h-11 rounded-full bg-white/90 backdrop-blur-md text-[#8B4A62] border border-[#E5BAC5] shadow-lg hover:bg-[#8B4A62] hover:text-white transition-all duration-300 flex items-center justify-center">
-            <i id="scrollIcon" class="fas fa-chevron-down text-xs"></i>
-        </button>
-
-        <!-- Nút Phát/Dừng Nhạc -->
-        <button id="musicToggle" onclick="toggleAudio()"
-            class="music-btn w-12 h-12 rounded-full bg-[#e8d6e2] text-[#4a3043] border border-[#d4b8cc] flex items-center justify-center text-lg shadow-lg transition-all hover:scale-110 focus:outline-none">
-            <i id="musicIcon" class="fas fa-music"></i>
-        </button>
-    </div>
-
     <!-- Audio Nhạc Nền -->
     <audio id="weddingAudio" loop>
         <source src="./assets/songs/motdoi.mp3" type="audio/mpeg">
