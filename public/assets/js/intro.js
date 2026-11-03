@@ -33,30 +33,23 @@ function openWeddingInvitation() {
     // 5. Ẩn hẳn lớp phủ phong bì
     setTimeout(() => {
         envelope.classList.add('open-done');
-    }, 100);
+    }, 1200);
 }
 
-// Hàm tự động lăn bằng tọa độ tuyệt đối (Cực kỳ mạnh và chắc chắn chạy)
+// Hàm tự động lăn
 function startAutoScrollToFooter() {
     isAutoScrolling = true;
-    const btnIcon = document.getElementById('scrollIcon');
-    if (btnIcon) btnIcon.className = "fas fa-pause text-xs";
-
     if (scrollAnimationId) cancelAnimationFrame(scrollAnimationId);
 
-    // Lấy vị trí cuộn hiện tại
     let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
 
     function step() {
         if (!isAutoScrolling) return;
 
-        // Tăng tọa độ lên 2 pixel mỗi khung hình (tăng số này nếu muốn lăn nhanh hơn)
-        currentScroll += 2;
+        currentScroll += 2; // Tốc độ lăn (tăng/giảm số này để điều chỉnh tốc độ)
         window.scrollTo(0, currentScroll);
 
-        // Tính toán điểm dừng khi đã tới gần đáy trang
         const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        
         if (currentScroll >= maxScroll || (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 5) {
             stopAutoScroll();
             return;
@@ -75,20 +68,22 @@ function stopAutoScroll() {
         cancelAnimationFrame(scrollAnimationId);
         scrollAnimationId = null;
     }
-    const btnIcon = document.getElementById('scrollIcon');
-    if (btnIcon) btnIcon.className = "fas fa-chevron-down text-xs";
 }
 
-// Bấm nút ở góc màn hình để Bật/Tắt
-function toggleAutoScroll() {
+// BẤM VÀO BẤT CỨ ĐÂU TRÊN MÀN HÌNH ĐỂ BẬT/TẮT AUTO-SCROLL
+document.addEventListener('click', (e) => {
+    // Không kích hoạt nếu đang trong màn hình mở thiệp hoặc bấm vào nút nhạc / form RSVP / Lightbox ảnh
+    if (document.body.classList.contains('envelope-locked')) return;
+    if (e.target.closest('#musicToggle') || e.target.closest('form') || e.target.closest('.lightbox')) return;
+
     if (isAutoScrolling) {
         stopAutoScroll();
     } else {
         startAutoScrollToFooter();
     }
-}
+});
 
-// Ngắt tự động lăn ngay khi người dùng chạm tay hoặc lăn chuột
+// Ngắt tự động lăn ngay khi người dùng chủ động lăn chuột tay hoặc chạm vuốt
 window.addEventListener('wheel', () => { if (isAutoScrolling) stopAutoScroll(); }, { passive: true });
 window.addEventListener('touchstart', () => { if (isAutoScrolling) stopAutoScroll(); }, { passive: true });
 
