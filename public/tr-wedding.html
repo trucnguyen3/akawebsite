@@ -70,6 +70,9 @@
     <div id="introEnvelope"
         class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#8B4A62]/10 backdrop-blur-sm">
 
+        <!-- Lớp phủ tàng hình bắt sự kiện chạm/click để bật/tắt auto-scroll sau khi mở thiệp -->
+        <div id="clickShield" onclick="toggleAutoScroll()" class="fixed inset-0 z-40 pointer-events-none"></div>
+
         <!-- Cánh cửa bên Trái -->
         <div
             class="envelope-door door-left absolute top-0 left-0 w-1/2 h-full bg-[#FDFBF7] border-r border-[#E5BAC5] shadow-2xl z-20 flex items-center justify-end transition-transform duration-1000 ease-in-out">
@@ -676,6 +679,15 @@
         </button>
         <img id="lightboxImg" src="" alt="Enlarged Photo"
             class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border-2 border-white/20">
+    </div>
+
+    <!-- Nhóm nút điều khiển nổi ở góc dưới bên phải -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 items-end">
+        <!-- Nút Phát/Dừng Nhạc -->
+        <button id="musicToggle" onclick="toggleAudio()"
+            class="music-btn w-12 h-12 rounded-full bg-[#e8d6e2] text-[#4a3043] border border-[#d4b8cc] flex items-center justify-center text-lg shadow-lg transition-all hover:scale-110 focus:outline-none">
+            <i id="musicIcon" class="fas fa-music"></i>
+        </button>
     </div>
 
     <!-- Audio Nhạc Nền -->
